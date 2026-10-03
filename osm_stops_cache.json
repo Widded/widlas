@@ -1,0 +1,7116 @@
+[
+ {
+  "id": 287820042,
+  "name": "Edirne",
+  "lat": 41.6547208,
+  "lon": 26.5800436,
+  "tags": {
+   "name": "Edirne",
+   "public_transport": "stop_position",
+   "railway": "stop",
+   "train": "yes"
+  }
+ },
+ {
+  "id": 1306553517,
+  "name": "Καστανέαι",
+  "lat": 41.6473831,
+  "lon": 26.4865774,
+  "tags": {
+   "int_name": "Kastanee",
+   "name": "Καστανέαι",
+   "public_transport": "stop_position",
+   "railway": "stop",
+   "train": "yes"
+  }
+ },
+ {
+  "id": 1801477254,
+  "name": "Bankalar",
+  "lat": 41.6768032,
+  "lon": 26.5505431,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bankalar",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20033",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1801477255,
+  "name": "Orduevi",
+  "lat": 41.6752182,
+  "lon": 26.5576745,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Orduevi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20034",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477263,
+  "name": "Zübeyde Hanım Parkı",
+  "lat": 41.6660729,
+  "lon": 26.5799407,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zübeyde Hanım Parkı",
+   "public_transport": "platform",
+   "ref": "20052",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477275,
+  "name": "Acar Park",
+  "lat": 41.6624766,
+  "lon": 26.5898767,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Acar Park",
+   "public_transport": "platform",
+   "ref": "20056",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477276,
+  "name": "Kaleiçi Sitesi",
+  "lat": 41.6608621,
+  "lon": 26.5922096,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaleiçi Sitesi",
+   "public_transport": "platform",
+   "ref": "20104",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477279,
+  "name": "Şafak Sitesi",
+  "lat": 41.6589657,
+  "lon": 26.5939787,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şafak Sitesi",
+   "public_transport": "platform",
+   "ref": "20105",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1801477280,
+  "name": "Plevne İlkokulu",
+  "lat": 41.6581039,
+  "lon": 26.5957002,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Plevne İlkokulu",
+   "public_transport": "platform",
+   "ref": "20106",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477281,
+  "name": "Zübeyde Hanım Kadın Merkezi",
+  "lat": 41.6561684,
+  "lon": 26.5975015,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zübeyde Hanım Kadın Merkezi",
+   "public_transport": "platform",
+   "ref": "20107",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477282,
+  "name": "Trafo",
+  "lat": 41.6535578,
+  "lon": 26.5987777,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Trafo",
+   "public_transport": "platform",
+   "ref": "20108",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1801477310,
+  "name": "Hacıkuşlar",
+  "lat": 41.6517475,
+  "lon": 26.597854,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Hacıkuşlar",
+   "public_transport": "platform",
+   "ref": "20112",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477311,
+  "name": "Kutlutaş Eczanesi",
+  "lat": 41.6507314,
+  "lon": 26.5941158,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kutlutaş Eczanesi",
+   "public_transport": "platform",
+   "ref": "20111",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 1801477312,
+  "name": "Tarımsal Araştırma",
+  "lat": 41.6469133,
+  "lon": 26.5979652,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tarımsal Araştırma",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20010",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 1801477313,
+  "name": "Fakülte Işıklar",
+  "lat": 41.6366778,
+  "lon": 26.6098896,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fakülte Işıklar",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20358",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1801477315,
+  "name": "Balkan Onkoloji Hastanesi",
+  "lat": 41.6404729,
+  "lon": 26.6136507,
+  "tags": {
+   "alt_name": "Tıp Fakültesi",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Balkan Onkoloji Hastanesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20007",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1801477353,
+  "name": "Yaşam Merkezi",
+  "lat": 41.6385063,
+  "lon": 26.6119607,
+  "tags": {
+   "alt_name": "Delta Park",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Yaşam Merkezi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20002",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 1810409063,
+  "name": null,
+  "lat": 41.6320924,
+  "lon": 26.6189755,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1812942149,
+  "name": null,
+  "lat": 41.6618588,
+  "lon": 26.5506046,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1812979591,
+  "name": null,
+  "lat": 41.6701761,
+  "lon": 26.5661236,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1812979662,
+  "name": null,
+  "lat": 41.6737584,
+  "lon": 26.5602575,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1812979672,
+  "name": null,
+  "lat": 41.6752745,
+  "lon": 26.5577547,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1812979677,
+  "name": null,
+  "lat": 41.6755773,
+  "lon": 26.5575521,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1813039273,
+  "name": null,
+  "lat": 41.6675699,
+  "lon": 26.5715882,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 1934132630,
+  "name": null,
+  "lat": 41.645724,
+  "lon": 26.6186777,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 2240689491,
+  "name": null,
+  "lat": 41.676945,
+  "lon": 26.5461726,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 2241163553,
+  "name": null,
+  "lat": 41.6548257,
+  "lon": 26.5795604,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 2498983768,
+  "name": "Tabya",
+  "lat": 41.6667347,
+  "lon": 26.5917811,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "yes",
+   "name": "Tabya",
+   "public_transport": "platform",
+   "ref": "20208",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 2498984507,
+  "name": "Barış Parkı",
+  "lat": 41.6697408,
+  "lon": 26.591154,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Barış Parkı",
+   "public_transport": "platform",
+   "ref": "20172",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 2498984508,
+  "name": "Tabya",
+  "lat": 41.666823,
+  "lon": 26.5919477,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "yes",
+   "name": "Tabya",
+   "public_transport": "platform",
+   "ref": "20209",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 2498984509,
+  "name": "Barış Parkı",
+  "lat": 41.6697443,
+  "lon": 26.5909955,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Barış Parkı",
+   "public_transport": "platform",
+   "ref": "20166",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 2498984609,
+  "name": "Göçmen Evleri",
+  "lat": 41.6643423,
+  "lon": 26.5929199,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Göçmen Evleri",
+   "public_transport": "platform",
+   "ref": "20156",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 2498984610,
+  "name": "Egeşah",
+  "lat": 41.6728529,
+  "lon": 26.5902803,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Egeşah",
+   "public_transport": "platform",
+   "ref": "20164",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 2498984611,
+  "name": "Egeşah",
+  "lat": 41.672996,
+  "lon": 26.5902338,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Egeşah",
+   "public_transport": "platform",
+   "ref": "20174",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 2498984612,
+  "name": "75. Yıl İlkokulu",
+  "lat": 41.6638668,
+  "lon": 26.5947942,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "75. Yıl İlkokulu",
+   "public_transport": "platform",
+   "ref": "20148",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 2498984613,
+  "name": "Göçmen Evleri",
+  "lat": 41.6642422,
+  "lon": 26.5930018,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Göçmen Evleri",
+   "public_transport": "platform",
+   "ref": "20147",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 2498984614,
+  "name": "75. Yıl İlkokulu",
+  "lat": 41.6636458,
+  "lon": 26.5952469,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "75. Yıl İlkokulu",
+   "public_transport": "platform",
+   "ref": "20155",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 2558452361,
+  "name": null,
+  "lat": 41.6529516,
+  "lon": 26.5225707,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 3445677789,
+  "name": null,
+  "lat": 41.6423858,
+  "lon": 26.6151951,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 3445677823,
+  "name": null,
+  "lat": 41.6457513,
+  "lon": 26.6185905,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 3987144281,
+  "name": "Üniversite",
+  "lat": 41.6672848,
+  "lon": 26.5734626,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Üniversite",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20082",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 5164297449,
+  "name": "Yıldırım Çeşme",
+  "lat": 41.6773958,
+  "lon": 26.5259042,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldırım Çeşme",
+   "public_transport": "platform",
+   "ref": "20022",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 5185700819,
+  "name": null,
+  "lat": 41.7460623,
+  "lon": 26.5462532,
+  "tags": {
+   "highway": "bus_stop"
+  }
+ },
+ {
+  "id": 5284875055,
+  "name": null,
+  "lat": 41.6565454,
+  "lon": 26.5934654,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 5770718567,
+  "name": null,
+  "lat": 41.6692673,
+  "lon": 26.5845939,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 5771319874,
+  "name": null,
+  "lat": 41.6236259,
+  "lon": 26.6276787,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 6718685986,
+  "name": "Bankalar",
+  "lat": 41.6769882,
+  "lon": 26.550901,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bankalar",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20021",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 6718688886,
+  "name": "Bayezid Külliyesi",
+  "lat": 41.6865116,
+  "lon": 26.5437649,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bayezid Külliyesi",
+   "public_transport": "platform",
+   "ref": "20103",
+   "ref:kentkart_sayi": "0",
+   "ref:kentkart_type": "G",
+   "shelter": "yes",
+   "wheelchair": "yes"
+  }
+ },
+ {
+  "id": 7244271525,
+  "name": null,
+  "lat": 41.673481,
+  "lon": 26.5549536,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 7251160085,
+  "name": "İki Köprü Arası",
+  "lat": 41.6659466,
+  "lon": 26.5532653,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "İki Köprü Arası",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20396",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 7257337514,
+  "name": "Ahmet Karadeniz Yerleşkesi",
+  "lat": 41.6350222,
+  "lon": 26.6216576,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Ahmet Karadeniz Yerleşkesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20047",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 8128174182,
+  "name": null,
+  "lat": 41.6188992,
+  "lon": 26.6481954,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 8280541066,
+  "name": "OLİN",
+  "lat": 41.6514368,
+  "lon": 26.5924226,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "OLİN",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20011",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 8280541067,
+  "name": "Margi",
+  "lat": 41.6602279,
+  "lon": 26.5815742,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Margi",
+   "public_transport": "platform",
+   "ref": "20014"
+  }
+ },
+ {
+  "id": 8281620554,
+  "name": "Köy Hizmetleri Arkası",
+  "lat": 41.65913,
+  "lon": 26.5868922,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Köy Hizmetleri Arkası",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20062",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 9122345972,
+  "name": "Fırınlar Sırtı TOKİ Çıkış",
+  "lat": 41.6879783,
+  "lon": 26.5802059,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ Çıkış",
+   "public_transport": "platform",
+   "ref": "20405",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 9122345980,
+  "name": "Kışla",
+  "lat": 41.6803073,
+  "lon": 26.5802769,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kışla",
+   "public_transport": "platform",
+   "ref": "20453",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 9122345981,
+  "name": "Kışla",
+  "lat": 41.6800158,
+  "lon": 26.5801415,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kışla",
+   "public_transport": "platform",
+   "ref": "20184",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 9122346169,
+  "name": null,
+  "lat": 41.6914183,
+  "lon": 26.5945436,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 9122346375,
+  "name": null,
+  "lat": 41.6810985,
+  "lon": 26.5820472,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 9429421562,
+  "name": null,
+  "lat": 41.6537583,
+  "lon": 26.5993561,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 9725267700,
+  "name": "Eski SSK Hastanesi",
+  "lat": 41.6704531,
+  "lon": 26.5688246,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Eski SSK Hastanesi",
+   "public_transport": "platform",
+   "ref": "20130"
+  }
+ },
+ {
+  "id": 9727761365,
+  "name": "Μαράσια",
+  "lat": 41.669025,
+  "lon": 26.4698383,
+  "tags": {
+   "int_name": "Marasia",
+   "name": "Μαράσια",
+   "public_transport": "stop_position",
+   "railway": "stop",
+   "train": "yes"
+  }
+ },
+ {
+  "id": 10050799417,
+  "name": "Sarayiçi",
+  "lat": 41.6848212,
+  "lon": 26.5612421,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sarayiçi",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 10086871606,
+  "name": null,
+  "lat": 41.662015,
+  "lon": 26.5130039,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 10922313585,
+  "name": null,
+  "lat": 41.6367014,
+  "lon": 26.6099214,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 10922362372,
+  "name": null,
+  "lat": 41.668904,
+  "lon": 26.5679192,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 11331490399,
+  "name": "Ayşekadın Karakol",
+  "lat": 41.6704331,
+  "lon": 26.5659472,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ayşekadın Karakol",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20017",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 11331497043,
+  "name": "Ayşekadın Camii",
+  "lat": 41.6714315,
+  "lon": 26.5641823,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ayşekadın Camii",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20018",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 11331499381,
+  "name": "Bulgar Konsolosluğu",
+  "lat": 41.6737937,
+  "lon": 26.5603078,
+  "tags": {
+   "alt_name": "Sosyal Bilimler Lisesi",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bulgar Konsolosluğu",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20365"
+  }
+ },
+ {
+  "id": 11415589695,
+  "name": "Fatih Camii",
+  "lat": 41.6536738,
+  "lon": 26.599723,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fatih Camii",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20324",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589697,
+  "name": "Fatih Camii",
+  "lat": 41.653691,
+  "lon": 26.5993324,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Fatih Camii",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20367",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589698,
+  "name": "Sultan 1. Murat Devlet Hastanesi",
+  "lat": 41.6544486,
+  "lon": 26.6060448,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sultan 1. Murat Devlet Hastanesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20323",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589699,
+  "name": "Sultan 1. Murat Devlet Hastanesi",
+  "lat": 41.6544253,
+  "lon": 26.6062853,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "realtime",
+   "highway": "bus_stop",
+   "name": "Sultan 1. Murat Devlet Hastanesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20413",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589700,
+  "name": "Yaşam Merkezi",
+  "lat": 41.6384501,
+  "lon": 26.6115999,
+  "tags": {
+   "alt_name": "Sabancı",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Yaşam Merkezi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20008",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589701,
+  "name": "OLİN",
+  "lat": 41.6511542,
+  "lon": 26.5922828,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "OLİN",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20044",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589702,
+  "name": "Erasta",
+  "lat": 41.6674598,
+  "lon": 26.5714888,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Erasta",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20038",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11415589703,
+  "name": "Tarım ve Orman Müdürlüğü",
+  "lat": 41.6598695,
+  "lon": 26.5814721,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tarım ve Orman Müdürlüğü",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20041"
+  }
+ },
+ {
+  "id": 11415589704,
+  "name": "Ayşekadın Karakol",
+  "lat": 41.6701247,
+  "lon": 26.5660941,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ayşekadın Karakol",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20037",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 11417641692,
+  "name": "Gazi Osman Paşa Ortaokulu",
+  "lat": 41.6587255,
+  "lon": 26.6031024,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gazi Osman Paşa Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20340",
+   "ref:kentkart_sayi": "3",
+   "short_name": "GOP"
+  }
+ },
+ {
+  "id": 11417641693,
+  "name": "Gazi Osman Paşa Ortaokulu",
+  "lat": 41.6588555,
+  "lon": 26.6032256,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gazi Osman Paşa Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20423",
+   "ref:kentkart_sayi": "4",
+   "shelter": "yes",
+   "short_name": "GOP"
+  }
+ },
+ {
+  "id": 11417641694,
+  "name": "Gazi Osman Paşa Ortaokulu",
+  "lat": 41.6583724,
+  "lon": 26.6029317,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gazi Osman Paşa Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20364",
+   "ref:kentkart_sayi": "2",
+   "short_name": "GOP"
+  }
+ },
+ {
+  "id": 11417641695,
+  "name": "Gazi Osman Paşa Ortaokulu",
+  "lat": 41.6583528,
+  "lon": 26.6025585,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gazi Osman Paşa Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20422",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes",
+   "short_name": "GOP"
+  }
+ },
+ {
+  "id": 11417641696,
+  "name": "Biz-Kent",
+  "lat": 41.6618292,
+  "lon": 26.6017253,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Biz-Kent",
+   "public_transport": "platform",
+   "ref": "20339",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 11417641697,
+  "name": "Nimet Er",
+  "lat": 41.6639475,
+  "lon": 26.6001614,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Nimet Er",
+   "public_transport": "platform",
+   "ref": "20149",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11417641698,
+  "name": "Nimet Er",
+  "lat": 41.6636657,
+  "lon": 26.6000706,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Nimet Er",
+   "public_transport": "platform",
+   "ref": "20153",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11417641699,
+  "name": "Özgür Çocuklar",
+  "lat": 41.6652995,
+  "lon": 26.5992966,
+  "tags": {
+   "alt_name": "Özgür Çocuklar Parkı",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "yes",
+   "name": "Özgür Çocuklar",
+   "public_transport": "platform",
+   "ref": "20385",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 11417641700,
+  "name": "Özgür Çocuklar Parkı",
+  "lat": 41.666926,
+  "lon": 26.5982606,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Özgür Çocuklar Parkı",
+   "public_transport": "platform",
+   "ref": "20442",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 11417641701,
+  "name": "Yıldız Apartmanı",
+  "lat": 41.6674607,
+  "lon": 26.5981967,
+  "tags": {
+   "alt_name": "Sakıp Ağa Sitesi",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldız Apartmanı",
+   "public_transport": "platform",
+   "ref": "20348"
+  }
+ },
+ {
+  "id": 11910144489,
+  "name": "Fen Lisesi",
+  "lat": 41.66198,
+  "lon": 26.5129802,
+  "tags": {
+   "bench": "no",
+   "bin": "no",
+   "bus": "yes",
+   "covered": "no",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Fen Lisesi",
+   "network": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "ref": "20229",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12033131523,
+  "name": "Şafak Sitesi",
+  "lat": 41.6592874,
+  "lon": 26.5937485,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şafak Sitesi",
+   "public_transport": "platform",
+   "ref": "20116",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12033376906,
+  "name": "Yıldırım Merkez",
+  "lat": 41.6830391,
+  "lon": 26.5283296,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldırım Merkez",
+   "public_transport": "platform",
+   "ref": "20448",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12181497859,
+  "name": null,
+  "lat": 41.6608891,
+  "lon": 26.5175164,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name:signed": "no",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "ref:signed": "no",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12190079419,
+  "name": null,
+  "lat": 41.6563865,
+  "lon": 26.5935871,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 12198873604,
+  "name": "Eczacılık Fakültesi",
+  "lat": 41.6480573,
+  "lon": 26.6192832,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Eczacılık Fakültesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20431",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12198873605,
+  "name": "Eczacılık Fakültesi",
+  "lat": 41.6481042,
+  "lon": 26.6196101,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Eczacılık Fakültesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20363",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12198873606,
+  "name": "Sağlık Bilimleri Fakültesi",
+  "lat": 41.6424561,
+  "lon": 26.6151423,
+  "tags": {
+   "alt_name": "Selimiye Öğrenci Yurdu",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Sağlık Bilimleri Fakültesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20290",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12198873607,
+  "name": "Sağlık Bilimleri Fakültesi",
+  "lat": 41.6422863,
+  "lon": 26.615375,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Sağlık Bilimleri Fakültesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20004",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12690839598,
+  "name": "Macur Evleri",
+  "lat": 41.6613259,
+  "lon": 26.514814,
+  "tags": {
+   "bench": "no",
+   "bin": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Macur Evleri",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20370",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12690839599,
+  "name": "Karaağaç Trafo",
+  "lat": 41.6602993,
+  "lon": 26.5187192,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Karaağaç Trafo",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20371",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12690839600,
+  "name": "Arap Kahvesi",
+  "lat": 41.6589033,
+  "lon": 26.5203069,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Arap Kahvesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20372",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050601,
+  "name": "Karaağaç Camii",
+  "lat": 41.6575887,
+  "lon": 26.5207965,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Karaağaç Camii",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20230",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050602,
+  "name": "Karaağaç Çınaraltı",
+  "lat": 41.6549084,
+  "lon": 26.5185317,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Karaağaç Çınaraltı",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20231",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050604,
+  "name": "Karaağaç Merkez",
+  "lat": 41.6529316,
+  "lon": 26.5225368,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Karaağaç Merkez",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20232",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050605,
+  "name": "Bahariye",
+  "lat": 41.6540773,
+  "lon": 26.5236745,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Bahariye",
+   "network": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20332",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050606,
+  "name": "Bahariye",
+  "lat": 41.6549023,
+  "lon": 26.5244294,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Bahariye",
+   "network": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20400",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050607,
+  "name": null,
+  "lat": 41.6557947,
+  "lon": 26.5267971,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050608,
+  "name": "Kafeteryalar",
+  "lat": 41.6574307,
+  "lon": 26.5329917,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Kafeteryalar",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20235",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12691050609,
+  "name": "Orman İşletme",
+  "lat": 41.6585089,
+  "lon": 26.5373214,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Orman İşletme",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20236",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 12691050610,
+  "name": "Söğütlük",
+  "lat": 41.6608569,
+  "lon": 26.5459825,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Söğütlük",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20237",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050611,
+  "name": "Emirgan",
+  "lat": 41.6618274,
+  "lon": 26.55061,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Emirgan",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20238",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050612,
+  "name": "Bostan Pazarı",
+  "lat": 41.6681715,
+  "lon": 26.5608614,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Bostan Pazarı",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20264",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050613,
+  "name": "Tarla Kapı Çıkış",
+  "lat": 41.6674182,
+  "lon": 26.5643727,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Tarla Kapı Çıkış",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20257",
+   "ref:kentkart_sayi": "1",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12691050615,
+  "name": "Tuğra Market",
+  "lat": 41.6686308,
+  "lon": 26.5678962,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Tuğra Market",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20223",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12691050616,
+  "name": "Üniversite",
+  "lat": 41.6672675,
+  "lon": 26.5741653,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "realtime",
+   "highway": "bus_stop",
+   "name": "Üniversite",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20050",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050617,
+  "name": "Huzurevi",
+  "lat": 41.6682453,
+  "lon": 26.5781671,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Huzurevi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20204",
+   "ref:kentkart_sayi": "3",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 12691050618,
+  "name": "Değirmen Market",
+  "lat": 41.6690253,
+  "lon": 26.5811683,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Değirmen Market",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20136",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050619,
+  "name": "İlhami Ertem Anadolu Lisesi",
+  "lat": 41.669198,
+  "lon": 26.5846008,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "İlhami Ertem Anadolu Lisesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20137",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050620,
+  "name": "Şükrüpaşa Muhtarlık",
+  "lat": 41.66772,
+  "lon": 26.5854988,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "realtime",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Muhtarlık",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20139",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050621,
+  "name": "Ören Sitesi",
+  "lat": 41.6661375,
+  "lon": 26.5867214,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Ören Sitesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20140",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050622,
+  "name": null,
+  "lat": 41.6650276,
+  "lon": 26.5879444,
+  "tags": {
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050623,
+  "name": "Tabipler Lokali",
+  "lat": 41.6642026,
+  "lon": 26.5876857,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Tabipler Lokali",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20142",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050624,
+  "name": "500 Evler",
+  "lat": 41.6613007,
+  "lon": 26.5861269,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "500 Evler",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20206",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050625,
+  "name": "Baca",
+  "lat": 41.6583695,
+  "lon": 26.589973,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "realtime",
+   "highway": "bus_stop",
+   "name": "Baca",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20064",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050626,
+  "name": "Köprü",
+  "lat": 41.6573974,
+  "lon": 26.5922069,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Köprü",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20065",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050627,
+  "name": "Mega Park",
+  "lat": 41.656499,
+  "lon": 26.5933693,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Mega Park",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20066",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050628,
+  "name": "Vali Konağı",
+  "lat": 41.6548307,
+  "lon": 26.5955077,
+  "tags": {
+   "bench": "no",
+   "bin": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Vali Konağı",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20067",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050629,
+  "name": "Gümrük Lojmanları",
+  "lat": 41.6540373,
+  "lon": 26.5971035,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Gümrük Lojmanları",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20068",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050631,
+  "name": "Hadımağa TOKİ",
+  "lat": 41.6559869,
+  "lon": 26.6075958,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Hadımağa TOKİ",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20283",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050632,
+  "name": "Bolca Ana Yemekhanesi",
+  "lat": 41.6457742,
+  "lon": 26.6184664,
+  "tags": {
+   "alt_name": "Kız Öğrenci Yurdu",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Bolca Ana Yemekhanesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050633,
+  "name": "Balkan Onkoloji Hastanesi",
+  "lat": 41.6407451,
+  "lon": 26.613438,
+  "tags": {
+   "alt_name": "Tıp Fakültesi",
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "lit": "no",
+   "name": "Balkan Onkoloji Hastanesi",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20003",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 12691050634,
+  "name": "Modavizyon",
+  "lat": 41.633224,
+  "lon": 26.6142817,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Modavizyon",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20320",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 12691050635,
+  "name": "Otogar",
+  "lat": 41.6322056,
+  "lon": 26.6190296,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Otogar",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "ref": "20001"
+  }
+ },
+ {
+  "id": 13516865737,
+  "name": "Gazimihal",
+  "lat": 41.6765782,
+  "lon": 26.5458444,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gazimihal",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20210"
+  }
+ },
+ {
+  "id": 13516865751,
+  "name": null,
+  "lat": 41.6765305,
+  "lon": 26.5459976,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865753,
+  "name": null,
+  "lat": 41.6768919,
+  "lon": 26.5505433,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865754,
+  "name": "Sosyal Bilimler Lisesi",
+  "lat": 41.6738234,
+  "lon": 26.5598578,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sosyal Bilimler Lisesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20035",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865755,
+  "name": null,
+  "lat": 41.673881,
+  "lon": 26.5599077,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865756,
+  "name": "SGK",
+  "lat": 41.6727065,
+  "lon": 26.5616964,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "SGK",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20281"
+  }
+ },
+ {
+  "id": 13516865757,
+  "name": null,
+  "lat": 41.6727663,
+  "lon": 26.5617436,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865758,
+  "name": "Ayşekadın Camii",
+  "lat": 41.6712548,
+  "lon": 26.564096,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ayşekadın Camii",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20036",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865759,
+  "name": null,
+  "lat": 41.6713199,
+  "lon": 26.5641471,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865764,
+  "name": "Sanayi Orta Kapı",
+  "lat": 41.6638365,
+  "lon": 26.5763881,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Orta Kapı",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20039",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865765,
+  "name": null,
+  "lat": 41.6638834,
+  "lon": 26.5764544,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865766,
+  "name": "Sanayi Çıkış",
+  "lat": 41.6621272,
+  "lon": 26.5785817,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Çıkış",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20040"
+  }
+ },
+ {
+  "id": 13516865767,
+  "name": null,
+  "lat": 41.6621956,
+  "lon": 26.5786417,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865768,
+  "name": null,
+  "lat": 41.6599384,
+  "lon": 26.5815587,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865769,
+  "name": "Köy Hizmetleri",
+  "lat": 41.6574315,
+  "lon": 26.5843725,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Köy Hizmetleri",
+   "public_transport": "platform",
+   "ref": "20042",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865770,
+  "name": null,
+  "lat": 41.6574714,
+  "lon": 26.5844234,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position"
+  }
+ },
+ {
+  "id": 13516865771,
+  "name": "Kipa",
+  "lat": 41.6557503,
+  "lon": 26.5864101,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kipa",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20043",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865772,
+  "name": null,
+  "lat": 41.6558178,
+  "lon": 26.5864826,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865773,
+  "name": "TREDAŞ",
+  "lat": 41.6524802,
+  "lon": 26.5903892,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TREDAŞ",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20211",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865774,
+  "name": null,
+  "lat": 41.6525325,
+  "lon": 26.590474,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865775,
+  "name": null,
+  "lat": 41.651218,
+  "lon": 26.5923678,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865778,
+  "name": null,
+  "lat": 41.6469453,
+  "lon": 26.597586,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865779,
+  "name": "Tarımsal Araştırma",
+  "lat": 41.6469012,
+  "lon": 26.597551,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tarımsal Araştırma",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20045",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865780,
+  "name": "Güzel Sanatlar Lisesi",
+  "lat": 41.6407313,
+  "lon": 26.6050342,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Güzel Sanatlar Lisesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20046",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516865781,
+  "name": null,
+  "lat": 41.640782,
+  "lon": 26.6051006,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865782,
+  "name": null,
+  "lat": 41.6333162,
+  "lon": 26.6143671,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865785,
+  "name": null,
+  "lat": 41.6283406,
+  "lon": 26.6212351,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865786,
+  "name": "Toyota",
+  "lat": 41.628256,
+  "lon": 26.6211488,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Toyota",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20092"
+  }
+ },
+ {
+  "id": 13516865787,
+  "name": "Ford",
+  "lat": 41.6235825,
+  "lon": 26.6276078,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ford",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20359"
+  }
+ },
+ {
+  "id": 13516865788,
+  "name": "Göksu Evleri",
+  "lat": 41.6101404,
+  "lon": 26.6479139,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Göksu Evleri",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20360"
+  }
+ },
+ {
+  "id": 13516865789,
+  "name": null,
+  "lat": 41.610032,
+  "lon": 26.6478931,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865792,
+  "name": "Gökyapı Evleri",
+  "lat": 41.6128983,
+  "lon": 26.6432036,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gökyapı Evleri",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20361"
+  }
+ },
+ {
+  "id": 13516865793,
+  "name": null,
+  "lat": 41.6127842,
+  "lon": 26.6430738,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516865795,
+  "name": "Gloria Park",
+  "lat": 41.617583,
+  "lon": 26.6365659,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gloria Park",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20362"
+  }
+ },
+ {
+  "id": 13516865800,
+  "name": null,
+  "lat": 41.6175225,
+  "lon": 26.6364938,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516866201,
+  "name": "Arseven Sitesi",
+  "lat": 41.6223026,
+  "lon": 26.632981,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Arseven Sitesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20093",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516866202,
+  "name": null,
+  "lat": 41.6223563,
+  "lon": 26.6329959,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516866203,
+  "name": "Bahçeşehir Koleji",
+  "lat": 41.6216333,
+  "lon": 26.6356922,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bahçeşehir Koleji",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20094",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516866205,
+  "name": null,
+  "lat": 41.6217189,
+  "lon": 26.6357265,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13516866209,
+  "name": "Avrupa Kent",
+  "lat": 41.6189196,
+  "lon": 26.6481733,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Avrupa Kent",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20096",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13516903600,
+  "name": null,
+  "lat": 41.6216309,
+  "lon": 26.6361052,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017101,
+  "name": "Bahçeşehir Koleji",
+  "lat": 41.6216824,
+  "lon": 26.6361292,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bahçeşehir Koleji",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20390",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017102,
+  "name": null,
+  "lat": 41.6224678,
+  "lon": 26.6325172,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017103,
+  "name": "Arseven Sitesi",
+  "lat": 41.6225165,
+  "lon": 26.6325402,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Arseven Sitesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20389",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017104,
+  "name": "Modavizyon",
+  "lat": 41.6345448,
+  "lon": 26.6129973,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Modavizyon",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20291",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017107,
+  "name": null,
+  "lat": 41.6344982,
+  "lon": 26.6129172,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017111,
+  "name": null,
+  "lat": 41.6361372,
+  "lon": 26.6110549,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017117,
+  "name": "Fakülte Işıklar",
+  "lat": 41.636155,
+  "lon": 26.611078,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fakülte Işıklar",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20430",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017118,
+  "name": null,
+  "lat": 41.6409944,
+  "lon": 26.6049893,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017119,
+  "name": "Güzel Sanatlar Lisesi",
+  "lat": 41.6410386,
+  "lon": 26.605057,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Güzel Sanatlar Lisesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20009",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017120,
+  "name": null,
+  "lat": 41.646837,
+  "lon": 26.5978665,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017121,
+  "name": null,
+  "lat": 41.6513849,
+  "lon": 26.5923273,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017122,
+  "name": null,
+  "lat": 41.6526494,
+  "lon": 26.5907932,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017123,
+  "name": "TREDAŞ",
+  "lat": 41.6527023,
+  "lon": 26.5908641,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TREDAŞ",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20282",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017125,
+  "name": "Kipa",
+  "lat": 41.6553725,
+  "lon": 26.5875765,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kipa",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20012",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017126,
+  "name": null,
+  "lat": 41.6553265,
+  "lon": 26.5875115,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017129,
+  "name": "Köy Hizmetleri",
+  "lat": 41.657541,
+  "lon": 26.5849294,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Köy Hizmetleri",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20013",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017130,
+  "name": null,
+  "lat": 41.6574773,
+  "lon": 26.5848313,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017136,
+  "name": null,
+  "lat": 41.6602094,
+  "lon": 26.5815444,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017137,
+  "name": "Sanayi Orta Kapı",
+  "lat": 41.663751,
+  "lon": 26.5769202,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Orta Kapı",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20015",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017138,
+  "name": null,
+  "lat": 41.6637126,
+  "lon": 26.5768549,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017139,
+  "name": "ETSO",
+  "lat": 41.6655211,
+  "lon": 26.5746917,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "ETSO",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20205"
+  }
+ },
+ {
+  "id": 13517017140,
+  "name": null,
+  "lat": 41.665456,
+  "lon": 26.5745894,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017141,
+  "name": "80. Yıl Cumhuriyet Anadolu Lisesi",
+  "lat": 41.6691818,
+  "lon": 26.569078,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "80. Yıl Cumhuriyet Anadolu Lisesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20016"
+  }
+ },
+ {
+  "id": 13517017142,
+  "name": null,
+  "lat": 41.6691373,
+  "lon": 26.569037,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017143,
+  "name": null,
+  "lat": 41.6703725,
+  "lon": 26.5658985,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017144,
+  "name": null,
+  "lat": 41.6714092,
+  "lon": 26.5641507,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017152,
+  "name": "Orduevi",
+  "lat": 41.6756135,
+  "lon": 26.5576051,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Orduevi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20020",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13517017158,
+  "name": null,
+  "lat": 41.6768916,
+  "lon": 26.5509004,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017159,
+  "name": "Cumhuriyet İlkokulu",
+  "lat": 41.6770384,
+  "lon": 26.5461427,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cumhuriyet İlkokulu",
+   "public_transport": "platform",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017160,
+  "name": "Cumhuriyet İlkokulu",
+  "lat": 41.6768883,
+  "lon": 26.5463243,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cumhuriyet İlkokulu",
+   "public_transport": "platform",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13517017161,
+  "name": null,
+  "lat": 41.6769529,
+  "lon": 26.546315,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735421,
+  "name": null,
+  "lat": 41.6480763,
+  "lon": 26.619402,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735422,
+  "name": null,
+  "lat": 41.6384249,
+  "lon": 26.6116487,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735423,
+  "name": "Bolca Ana Yemekhanesi",
+  "lat": 41.6457162,
+  "lon": 26.6188054,
+  "tags": {
+   "alt_name": "Kız Öğrenci Yurdu",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bolca Ana Yemekhanesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13518735441,
+  "name": null,
+  "lat": 41.6423588,
+  "lon": 26.6153176,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735452,
+  "name": null,
+  "lat": 41.6407163,
+  "lon": 26.6135371,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735453,
+  "name": null,
+  "lat": 41.6405142,
+  "lon": 26.6135347,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735473,
+  "name": null,
+  "lat": 41.6385331,
+  "lon": 26.6118787,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13518735475,
+  "name": null,
+  "lat": 41.6480981,
+  "lon": 26.619508,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13519117103,
+  "name": null,
+  "lat": 41.6528296,
+  "lon": 26.5804436,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13519117104,
+  "name": "Tuğra Market",
+  "lat": 41.6689313,
+  "lon": 26.5678617,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tuğra Market",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20217",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13519117105,
+  "name": null,
+  "lat": 41.6686486,
+  "lon": 26.5678488,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13519117106,
+  "name": "Sanayi Altı",
+  "lat": 41.6566811,
+  "lon": 26.576521,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Altı",
+   "public_transport": "platform",
+   "ref": "20247",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13519117107,
+  "name": "Sanayi Altı",
+  "lat": 41.6565758,
+  "lon": 26.5764637,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Altı",
+   "public_transport": "platform",
+   "ref": "20242",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13519117108,
+  "name": null,
+  "lat": 41.6566369,
+  "lon": 26.5764883,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13519117109,
+  "name": "İstasyon Mahallesi",
+  "lat": 41.6527878,
+  "lon": 26.580391,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İstasyon Mahallesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20243",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13519117110,
+  "name": "İstasyon Mahallesi",
+  "lat": 41.6548656,
+  "lon": 26.5796111,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İstasyon Mahallesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20246",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13519117111,
+  "name": "Kirişhane",
+  "lat": 41.6642943,
+  "lon": 26.5648913,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kirişhane",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20310",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13519117112,
+  "name": null,
+  "lat": 41.664272,
+  "lon": 26.5648774,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520225299,
+  "name": "Macur Evleri",
+  "lat": 41.6614126,
+  "lon": 26.5149011,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Macur Evleri",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20433",
+   "ref:kentkart_sayi": "1",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13520225300,
+  "name": null,
+  "lat": 41.6613819,
+  "lon": 26.5148577,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280001,
+  "name": null,
+  "lat": 41.6603661,
+  "lon": 26.5187223,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280002,
+  "name": null,
+  "lat": 41.6589287,
+  "lon": 26.5203547,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280003,
+  "name": null,
+  "lat": 41.6575624,
+  "lon": 26.5208295,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280004,
+  "name": null,
+  "lat": 41.6549573,
+  "lon": 26.5185584,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280005,
+  "name": null,
+  "lat": 41.6540952,
+  "lon": 26.523628,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280006,
+  "name": null,
+  "lat": 41.6549195,
+  "lon": 26.5243895,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280009,
+  "name": null,
+  "lat": 41.658654,
+  "lon": 26.5374101,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280010,
+  "name": "Kafeteryalar",
+  "lat": 41.6575576,
+  "lon": 26.5329183,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kafeteryalar",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20228",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13520280011,
+  "name": null,
+  "lat": 41.6574995,
+  "lon": 26.5329496,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280013,
+  "name": null,
+  "lat": 41.6609168,
+  "lon": 26.5459527,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280014,
+  "name": null,
+  "lat": 41.665958,
+  "lon": 26.5532179,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280022,
+  "name": null,
+  "lat": 41.6682352,
+  "lon": 26.5608703,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280023,
+  "name": null,
+  "lat": 41.66746,
+  "lon": 26.5643932,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280025,
+  "name": "GAZDAŞ",
+  "lat": 41.6670075,
+  "lon": 26.5669876,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "GAZDAŞ",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20278",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13520280026,
+  "name": null,
+  "lat": 41.6670344,
+  "lon": 26.5668884,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520280030,
+  "name": null,
+  "lat": 41.6673173,
+  "lon": 26.5741533,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999439,
+  "name": null,
+  "lat": 41.6682637,
+  "lon": 26.5781175,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999440,
+  "name": null,
+  "lat": 41.6690817,
+  "lon": 26.5811655,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999451,
+  "name": null,
+  "lat": 41.6677126,
+  "lon": 26.585616,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999452,
+  "name": null,
+  "lat": 41.6661806,
+  "lon": 26.5867282,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999453,
+  "name": null,
+  "lat": 41.6641801,
+  "lon": 26.5877677,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999454,
+  "name": null,
+  "lat": 41.6612613,
+  "lon": 26.5861843,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999458,
+  "name": null,
+  "lat": 41.6591809,
+  "lon": 26.5869013,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999459,
+  "name": null,
+  "lat": 41.6593075,
+  "lon": 26.5863781,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999460,
+  "name": "Köy Hizmetleri Arkası",
+  "lat": 41.6593844,
+  "lon": 26.5864038,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Köy Hizmetleri Arkası",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20091",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13520999461,
+  "name": null,
+  "lat": 41.6584315,
+  "lon": 26.5899532,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999462,
+  "name": "Baca",
+  "lat": 41.65849,
+  "lon": 26.5899388,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Baca",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20089",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13520999464,
+  "name": null,
+  "lat": 41.6574347,
+  "lon": 26.5922531,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999467,
+  "name": "Mega Park",
+  "lat": 41.6564263,
+  "lon": 26.593682,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Mega Park",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20087",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13520999468,
+  "name": null,
+  "lat": 41.6548742,
+  "lon": 26.5955392,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13520999496,
+  "name": "Vali Konağı",
+  "lat": 41.6547045,
+  "lon": 26.5959356,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Vali Konağı",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20086",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13520999497,
+  "name": null,
+  "lat": 41.6546672,
+  "lon": 26.5958981,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521016413,
+  "name": null,
+  "lat": 41.6540998,
+  "lon": 26.5971209,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521016416,
+  "name": null,
+  "lat": 41.6536344,
+  "lon": 26.5997,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521016428,
+  "name": null,
+  "lat": 41.6544396,
+  "lon": 26.606169,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521016430,
+  "name": null,
+  "lat": 41.6560096,
+  "lon": 26.6075305,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521016450,
+  "name": null,
+  "lat": 41.6349674,
+  "lon": 26.6217057,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152056,
+  "name": "Hadımağa TOKİ",
+  "lat": 41.6558969,
+  "lon": 26.607245,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Hadımağa TOKİ",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20288",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13521152057,
+  "name": null,
+  "lat": 41.6558767,
+  "lon": 26.6073045,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152059,
+  "name": "Gümrük Lojmanları",
+  "lat": 41.6539981,
+  "lon": 26.5979409,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gümrük Lojmanları",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20085",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152060,
+  "name": null,
+  "lat": 41.653952,
+  "lon": 26.5979338,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152061,
+  "name": null,
+  "lat": 41.6576081,
+  "lon": 26.5920247,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152062,
+  "name": "Köprü",
+  "lat": 41.6576419,
+  "lon": 26.5920667,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Köprü",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20088",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152063,
+  "name": null,
+  "lat": 41.6611542,
+  "lon": 26.5860817,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152064,
+  "name": "500 Evler",
+  "lat": 41.6611329,
+  "lon": 26.5861224,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "500 Evler",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20207",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13521152065,
+  "name": "Ören Sitesi",
+  "lat": 41.6663225,
+  "lon": 26.5862061,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ören Sitesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20122",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13521152066,
+  "name": null,
+  "lat": 41.6662627,
+  "lon": 26.5861888,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152067,
+  "name": "Şükrüpaşa Muhtarlık",
+  "lat": 41.6677072,
+  "lon": 26.5857334,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Muhtarlık",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20123",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152068,
+  "name": null,
+  "lat": 41.6692659,
+  "lon": 26.5852012,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152069,
+  "name": "İlhami Ertem Anadolu Lisesi",
+  "lat": 41.6693244,
+  "lon": 26.5852002,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İlhami Ertem Anadolu Lisesi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20125",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152071,
+  "name": "Değirmen Market",
+  "lat": 41.6691514,
+  "lon": 26.5813872,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Değirmen Market",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20126",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152072,
+  "name": null,
+  "lat": 41.6690807,
+  "lon": 26.5813813,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152077,
+  "name": null,
+  "lat": 41.6685217,
+  "lon": 26.5781576,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152080,
+  "name": null,
+  "lat": 41.6672461,
+  "lon": 26.5734791,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152082,
+  "name": "GAZDAŞ",
+  "lat": 41.6670616,
+  "lon": 26.5667821,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "GAZDAŞ",
+   "public_transport": "platform",
+   "ref": "20277",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13521152083,
+  "name": "Tarla Kapı Çıkış",
+  "lat": 41.6677806,
+  "lon": 26.5637223,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tarla Kapı Çıkış",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20256",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152084,
+  "name": null,
+  "lat": 41.6677399,
+  "lon": 26.5636983,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152085,
+  "name": "Bostan Pazarı",
+  "lat": 41.668282,
+  "lon": 26.5608848,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bostan Pazarı",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20402",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152087,
+  "name": "İki Köprü Arası",
+  "lat": 41.6654931,
+  "lon": 26.5529365,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İki Köprü Arası",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20224",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13521152088,
+  "name": null,
+  "lat": 41.6654755,
+  "lon": 26.5530141,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152089,
+  "name": "Emirgan",
+  "lat": 41.6623327,
+  "lon": 26.5512553,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Emirgan",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20225",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13521152090,
+  "name": null,
+  "lat": 41.6622911,
+  "lon": 26.5512732,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152091,
+  "name": "Söğütlük",
+  "lat": 41.6606919,
+  "lon": 26.5448061,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Söğütlük",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20226",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13521152092,
+  "name": null,
+  "lat": 41.6606194,
+  "lon": 26.5448437,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152093,
+  "name": "Orman İşletme",
+  "lat": 41.6587257,
+  "lon": 26.5374046,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Orman İşletme",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20227",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13521152094,
+  "name": "Karaağaç PTT",
+  "lat": 41.6539055,
+  "lon": 26.5243412,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Karaağaç PTT",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20373"
+  }
+ },
+ {
+  "id": 13521152095,
+  "name": null,
+  "lat": 41.6538718,
+  "lon": 26.5244032,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152096,
+  "name": "Karaağaç Merkez",
+  "lat": 41.6531159,
+  "lon": 26.5223606,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Karaağaç Merkez",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20399",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13521152097,
+  "name": null,
+  "lat": 41.6530723,
+  "lon": 26.5223304,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521152098,
+  "name": "Kayalar",
+  "lat": 41.6541212,
+  "lon": 26.5201224,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kayalar",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20452",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13521152099,
+  "name": null,
+  "lat": 41.6541592,
+  "lon": 26.5201512,
+  "tags": {
+   "bus": "yes",
+   "public_transport": "stop_position",
+   "public_transport:version": "2"
+  }
+ },
+ {
+  "id": 13521201401,
+  "name": "Karaağaç Trafo",
+  "lat": 41.6604388,
+  "lon": 26.5187283,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Karaağaç Trafo",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20331",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312081,
+  "name": "Acar Park",
+  "lat": 41.6627286,
+  "lon": 26.5893989,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Acar Park",
+   "public_transport": "platform",
+   "ref": "20075",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622312082,
+  "name": "Acı Çeşme Mezarlığı",
+  "lat": 41.6852902,
+  "lon": 26.5661796,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Acı Çeşme Mezarlığı",
+   "public_transport": "platform",
+   "ref": "20328",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622312083,
+  "name": "Acı Çeşme Mezarlığı",
+  "lat": 41.6851544,
+  "lon": 26.5662481,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Acı Çeşme Mezarlığı",
+   "public_transport": "platform",
+   "ref": "20416",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312084,
+  "name": "Adliye",
+  "lat": 41.6637655,
+  "lon": 26.5731295,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Adliye",
+   "public_transport": "platform",
+   "ref": "20220",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312085,
+  "name": "Adliye",
+  "lat": 41.6641749,
+  "lon": 26.5726032,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Adliye",
+   "public_transport": "platform",
+   "ref": "20221",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622312086,
+  "name": "Çocuk Sitesi",
+  "lat": 41.6725701,
+  "lon": 26.5802576,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çocuk Sitesi",
+   "public_transport": "platform",
+   "ref": "20160"
+  }
+ },
+ {
+  "id": 13622312087,
+  "name": "Aile ve Sosyal Politikalar Müdürlüğü",
+  "lat": 41.6726344,
+  "lon": 26.5800569,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Aile ve Sosyal Politikalar Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20178"
+  }
+ },
+ {
+  "id": 13622312088,
+  "name": "Aliko Market",
+  "lat": 41.6787905,
+  "lon": 26.5719776,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Aliko Market",
+   "public_transport": "platform",
+   "ref": "20304"
+  }
+ },
+ {
+  "id": 13622312089,
+  "name": "Kıyık Karakol",
+  "lat": 41.6789666,
+  "lon": 26.5726761,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kıyık Karakol",
+   "public_transport": "platform",
+   "ref": "20191"
+  }
+ },
+ {
+  "id": 13622312090,
+  "name": "Arap Kahvesi",
+  "lat": 41.6590421,
+  "lon": 26.5202984,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Arap Kahvesi",
+   "public_transport": "platform",
+   "ref": "20432",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312091,
+  "name": "Araz Cafe",
+  "lat": 41.6593738,
+  "lon": 26.5986447,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Araz Cafe",
+   "public_transport": "platform",
+   "ref": "20284",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312092,
+  "name": "Araz Cafe",
+  "lat": 41.6594894,
+  "lon": 26.59849,
+  "tags": {
+   "bench": "yes",
+   "bin": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Araz Cafe",
+   "public_transport": "platform",
+   "ref": "20388",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13622312093,
+  "name": "Araz Cafe",
+  "lat": 41.6589785,
+  "lon": 26.5983766,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Araz Cafe",
+   "public_transport": "platform",
+   "ref": "20060",
+   "ref:kentkart_sayi": "3",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13622312094,
+  "name": "Araz Cafe",
+  "lat": 41.6588401,
+  "lon": 26.5985545,
+  "tags": {
+   "bench": "no",
+   "bin": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Araz Cafe",
+   "public_transport": "platform",
+   "ref": "20071",
+   "ref:kentkart_sayi": "4",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13622312095,
+  "name": "Askerlik Şubesi",
+  "lat": 41.6710895,
+  "lon": 26.5794259,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Askerlik Şubesi",
+   "public_transport": "platform",
+   "ref": "20127",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622312096,
+  "name": "Askerlik Şubesi",
+  "lat": 41.6709838,
+  "lon": 26.5796072,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Askerlik Şubesi",
+   "public_transport": "platform",
+   "ref": "20135",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312097,
+  "name": "Atatürk Kültür Merkezi",
+  "lat": 41.6733611,
+  "lon": 26.57385,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Atatürk Kültür Merkezi",
+   "public_transport": "platform",
+   "ref": "20314",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622312098,
+  "name": "Atatürk Kültür Merkezi",
+  "lat": 41.673148,
+  "lon": 26.5747044,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Atatürk Kültür Merkezi",
+   "public_transport": "platform",
+   "ref": "20306",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622312099,
+  "name": "Ayçiçek Heykeli",
+  "lat": 41.6646355,
+  "lon": 26.5879791,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ayçiçek Heykeli",
+   "public_transport": "platform",
+   "ref": "20120",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13622312100,
+  "name": "Açık Cezaevi",
+  "lat": 41.7082718,
+  "lon": 26.5645216,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Açık Cezaevi",
+   "public_transport": "platform",
+   "ref": "20440",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622350101,
+  "name": "Açık Cezaevi",
+  "lat": 41.7082201,
+  "lon": 26.5643978,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Açık Cezaevi",
+   "public_transport": "platform",
+   "ref": "20383",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622350102,
+  "name": "Bademlik Altı",
+  "lat": 41.6851784,
+  "lon": 26.5347722,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Altı",
+   "public_transport": "platform",
+   "ref": "20403",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622350103,
+  "name": "Bademlik Altı",
+  "lat": 41.6853235,
+  "lon": 26.5344052,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Altı",
+   "public_transport": "platform",
+   "ref": "20267",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622350104,
+  "name": "Bademlik Köşe",
+  "lat": 41.6865011,
+  "lon": 26.5390636,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Köşe",
+   "public_transport": "platform",
+   "ref": "20406",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622350105,
+  "name": "Bademlik Köşe",
+  "lat": 41.6864569,
+  "lon": 26.5390949,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Köşe",
+   "public_transport": "platform",
+   "ref": "20292",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622350106,
+  "name": "Bademlik Mezarlık",
+  "lat": 41.6856338,
+  "lon": 26.537086,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Mezarlık",
+   "public_transport": "platform",
+   "ref": "20029",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622350107,
+  "name": "Bademlik Mezarlık",
+  "lat": 41.6855761,
+  "lon": 26.5371524,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bademlik Mezarlık",
+   "public_transport": "platform",
+   "ref": "20025",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622350108,
+  "name": "Balıkpazarı",
+  "lat": 41.674023,
+  "lon": 26.5515568,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Balıkpazarı",
+   "public_transport": "platform",
+   "ref": "20084"
+  }
+ },
+ {
+  "id": 13622408301,
+  "name": "Bankalar",
+  "lat": 41.6758932,
+  "lon": 26.5518169,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bankalar",
+   "public_transport": "platform",
+   "ref": "20083",
+   "ref:kentkart_sayi": "0"
+  }
+ },
+ {
+  "id": 13622408302,
+  "name": "Bayezid Külliyesi",
+  "lat": 41.6864367,
+  "lon": 26.5439182,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bayezid Külliyesi",
+   "public_transport": "platform",
+   "ref": "20118",
+   "ref:kentkart_sayi": "0",
+   "ref:kentkart_type": "D"
+  }
+ },
+ {
+  "id": 13622408303,
+  "name": "Bayezid Külliyesi",
+  "lat": 41.6885459,
+  "lon": 26.547472,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bayezid Külliyesi",
+   "public_transport": "platform",
+   "ref": "20102",
+   "ref:kentkart_sayi": "2",
+   "ref:kentkart_type": "G"
+  }
+ },
+ {
+  "id": 13622408304,
+  "name": "Bayezid Külliyesi",
+  "lat": 41.6884478,
+  "lon": 26.5475565,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bayezid Külliyesi",
+   "public_transport": "platform",
+   "ref": "20119",
+   "ref:kentkart_sayi": "2",
+   "ref:kentkart_type": "D"
+  }
+ },
+ {
+  "id": 13622408305,
+  "name": "Başar-Mar",
+  "lat": 41.6717786,
+  "lon": 26.5915306,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Başar-Mar",
+   "public_transport": "platform",
+   "ref": "20173",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13622408306,
+  "name": "Başar-Mar",
+  "lat": 41.6715409,
+  "lon": 26.5912742,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Başar-Mar",
+   "public_transport": "platform",
+   "ref": "20165",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13622408307,
+  "name": "Bektaş Yapı",
+  "lat": 41.6886849,
+  "lon": 26.5862623,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bektaş Yapı",
+   "public_transport": "platform",
+   "ref": "20470"
+  }
+ },
+ {
+  "id": 13622408308,
+  "name": "Belkoop",
+  "lat": 41.6827536,
+  "lon": 26.5746155,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Belkoop",
+   "public_transport": "platform",
+   "ref": "20188",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408309,
+  "name": "Belkoop",
+  "lat": 41.6826981,
+  "lon": 26.5747104,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Belkoop",
+   "public_transport": "platform",
+   "ref": "20186",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408310,
+  "name": "Belkoop Giriş",
+  "lat": 41.6846895,
+  "lon": 26.5760584,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Belkoop Giriş",
+   "public_transport": "platform",
+   "ref": "20318",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408311,
+  "name": "Belkoop Giriş",
+  "lat": 41.6846168,
+  "lon": 26.5761306,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Belkoop Giriş",
+   "public_transport": "platform",
+   "ref": "20410",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408312,
+  "name": "Beykent Koleji",
+  "lat": 41.6540664,
+  "lon": 26.5834414,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Beykent Koleji",
+   "public_transport": "platform",
+   "ref": "20456",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408313,
+  "name": "Beykent Koleji",
+  "lat": 41.6542452,
+  "lon": 26.5833514,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Beykent Koleji",
+   "public_transport": "platform",
+   "ref": "20335",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408314,
+  "name": "Biz Kent Sitesi",
+  "lat": 41.6608148,
+  "lon": 26.6025352,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Biz Kent Sitesi",
+   "public_transport": "platform",
+   "ref": "20421",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13622408315,
+  "name": "Bulut Apartmanı",
+  "lat": 41.6786229,
+  "lon": 26.5887209,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Bulut Apartmanı",
+   "public_transport": "platform",
+   "ref": "20463"
+  }
+ },
+ {
+  "id": 13622408316,
+  "name": "Buçuktepe Mezarlık",
+  "lat": 41.6764171,
+  "lon": 26.5721072,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Buçuktepe Mezarlık",
+   "public_transport": "platform",
+   "ref": "20197",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408317,
+  "name": "Buçuktepe Mezarlık",
+  "lat": 41.6764303,
+  "lon": 26.5719996,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Buçuktepe Mezarlık",
+   "public_transport": "platform",
+   "ref": "20202",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408318,
+  "name": "Cem Evi",
+  "lat": 41.6734518,
+  "lon": 26.5833548,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cem Evi",
+   "public_transport": "platform",
+   "ref": "20176",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408319,
+  "name": "Cem Evi",
+  "lat": 41.6733283,
+  "lon": 26.5828407,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cem Evi",
+   "public_transport": "platform",
+   "ref": "20162",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408320,
+  "name": "Cevahir Yaşam",
+  "lat": 41.6791112,
+  "lon": 26.5902304,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cevahir Yaşam",
+   "public_transport": "platform",
+   "ref": "20466"
+  }
+ },
+ {
+  "id": 13622408321,
+  "name": "Cumartesi Pazarı",
+  "lat": 41.6649655,
+  "lon": 26.5817866,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cumartesi Pazarı",
+   "public_transport": "platform",
+   "ref": "20053",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408322,
+  "name": "Cumartesi Pazarı",
+  "lat": 41.6649315,
+  "lon": 26.5839277,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Cumartesi Pazarı",
+   "public_transport": "platform",
+   "ref": "20078",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408323,
+  "name": "Darülhadis Camii",
+  "lat": 41.6713265,
+  "lon": 26.5495594,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Darülhadis Camii",
+   "public_transport": "platform",
+   "ref": "20295"
+  }
+ },
+ {
+  "id": 13622408324,
+  "name": "Defterdarlık",
+  "lat": 41.680662,
+  "lon": 26.5524914,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Defterdarlık",
+   "public_transport": "platform",
+   "ref": "20158",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408325,
+  "name": "Defterdarlık",
+  "lat": 41.6806026,
+  "lon": 26.5523189,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Defterdarlık",
+   "public_transport": "platform",
+   "ref": "20145",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408326,
+  "name": "Dilan Apartmanı",
+  "lat": 41.6771412,
+  "lon": 26.5741875,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Dilan Apartmanı",
+   "public_transport": "platform",
+   "ref": "20307",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408327,
+  "name": "Dilan Apartmanı",
+  "lat": 41.6770641,
+  "lon": 26.5741522,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Dilan Apartmanı",
+   "public_transport": "platform",
+   "ref": "20407",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13622408328,
+  "name": "Diş Hastanesi",
+  "lat": 41.6632864,
+  "lon": 26.5856558,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Diş Hastanesi",
+   "public_transport": "platform",
+   "ref": "20297",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13622408329,
+  "name": "Diş Hastanesi",
+  "lat": 41.6629808,
+  "lon": 26.586139,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Diş Hastanesi",
+   "public_transport": "platform",
+   "ref": "20298",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623155996,
+  "name": "EGS Sosyal Tesisleri",
+  "lat": 41.6664155,
+  "lon": 26.5678595,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "EGS Sosyal Tesisleri",
+   "public_transport": "platform",
+   "ref": "20222",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623155997,
+  "name": "EGS Sosyal Tesisleri",
+  "lat": 41.6663515,
+  "lon": 26.5677914,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "EGS Sosyal Tesisleri",
+   "public_transport": "platform",
+   "ref": "20218",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623155998,
+  "name": "Edirneliler",
+  "lat": 41.6909893,
+  "lon": 26.5818581,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Edirneliler",
+   "public_transport": "platform",
+   "ref": "20472"
+  }
+ },
+ {
+  "id": 13623188201,
+  "name": "Ekrem Demiray Spor Salonu",
+  "lat": 41.6727159,
+  "lon": 26.551384,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ekrem Demiray Spor Salonu",
+   "public_transport": "platform",
+   "ref": "20296"
+  }
+ },
+ {
+  "id": 13623188202,
+  "name": "Emel-Özgür Subaşıay Mesleki ve Teknik Anadolu Lisesi",
+  "lat": 41.6649881,
+  "lon": 26.6027239,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Emel-Özgür Subaşıay Mesleki ve Teknik Anadolu Lisesi",
+   "public_transport": "platform",
+   "ref": "20151",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623188203,
+  "name": "Emel-Özgür Subaşıay Mesleki ve Teknik Anadolu Lisesi",
+  "lat": 41.6650755,
+  "lon": 26.6023808,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Emel-Özgür Subaşıay Mesleki ve Teknik Anadolu Lisesi",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623188204,
+  "name": "Emniyet Müdürlüğü",
+  "lat": 41.6711883,
+  "lon": 26.5757056,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Emniyet Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20128",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188205,
+  "name": "Emniyet Müdürlüğü",
+  "lat": 41.671026,
+  "lon": 26.5758505,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Emniyet Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20134",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188206,
+  "name": "Erasta Arkası",
+  "lat": 41.6654515,
+  "lon": 26.5701458,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Erasta Arkası",
+   "public_transport": "platform",
+   "ref": "20219"
+  }
+ },
+ {
+  "id": 13623188207,
+  "name": "Esentepe",
+  "lat": 41.6605223,
+  "lon": 26.596163,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Esentepe",
+   "public_transport": "platform",
+   "ref": "20073",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188208,
+  "name": "Esentepe",
+  "lat": 41.6606901,
+  "lon": 26.5955776,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Esentepe",
+   "public_transport": "platform",
+   "ref": "20058",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188209,
+  "name": "Şükrüpaşa İlkokulu",
+  "lat": 41.6701705,
+  "lon": 26.5685254,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa İlkokulu",
+   "public_transport": "platform",
+   "ref": "20302"
+  }
+ },
+ {
+  "id": 13623188210,
+  "name": "Eğitim Fakültesi",
+  "lat": 41.6711813,
+  "lon": 26.574191,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Eğitim Fakültesi",
+   "public_transport": "platform",
+   "ref": "20129",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188211,
+  "name": "Eğitim Fakültesi",
+  "lat": 41.6710767,
+  "lon": 26.5738934,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Eğitim Fakültesi",
+   "public_transport": "platform",
+   "ref": "20133",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188212,
+  "name": "F Tipi Kapalı Cezaevi",
+  "lat": 41.7202675,
+  "lon": 26.5415944,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "F Tipi Kapalı Cezaevi",
+   "public_transport": "platform",
+   "ref": "20337"
+  }
+ },
+ {
+  "id": 13623188213,
+  "name": "Fen İşleri",
+  "lat": 41.6847262,
+  "lon": 26.5575642,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fen İşleri",
+   "public_transport": "platform",
+   "ref": "20325",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188214,
+  "name": "Fen İşleri",
+  "lat": 41.6845963,
+  "lon": 26.5576364,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fen İşleri",
+   "public_transport": "platform",
+   "ref": "20414",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188215,
+  "name": "Fırınlar Sırtı TOKİ",
+  "lat": 41.692759,
+  "lon": 26.5774754,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ",
+   "public_transport": "platform",
+   "ref": "20379",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188216,
+  "name": "Fırınlar Sırtı TOKİ",
+  "lat": 41.6925727,
+  "lon": 26.5777543,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ",
+   "public_transport": "platform",
+   "ref": "20187",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188217,
+  "name": "Fırınlar Sırtı TOKİ Çıkış",
+  "lat": 41.6879574,
+  "lon": 26.5804396,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ Çıkış",
+   "public_transport": "platform",
+   "ref": "20274",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188218,
+  "name": "Fırınlar Sırtı TOKİ Altı",
+  "lat": 41.6899312,
+  "lon": 26.5739909,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ Altı",
+   "public_transport": "platform",
+   "ref": "20417",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188219,
+  "name": "Fırınlar Sırtı TOKİ Altı",
+  "lat": 41.6900739,
+  "lon": 26.5738503,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Fırınlar Sırtı TOKİ Altı",
+   "public_transport": "platform",
+   "ref": "20329",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188220,
+  "name": "Gar",
+  "lat": 41.6554345,
+  "lon": 26.5810566,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gar",
+   "public_transport": "platform",
+   "ref": "20334",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188221,
+  "name": "Gar",
+  "lat": 41.6553985,
+  "lon": 26.5812069,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gar",
+   "public_transport": "platform",
+   "ref": "20419",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188222,
+  "name": "Gölet",
+  "lat": 41.6684194,
+  "lon": 26.5911846,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gölet",
+   "public_transport": "platform",
+   "ref": "20312",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188223,
+  "name": "Gölet",
+  "lat": 41.6684543,
+  "lon": 26.5908967,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Gölet",
+   "public_transport": "platform",
+   "ref": "20309",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188224,
+  "name": "Güllübahçe",
+  "lat": 41.6821801,
+  "lon": 26.5534354,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Güllübahçe",
+   "public_transport": "platform",
+   "ref": "20159",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188225,
+  "name": "Güllübahçe",
+  "lat": 41.6823226,
+  "lon": 26.5534462,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Güllübahçe",
+   "public_transport": "platform",
+   "ref": "20144",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188226,
+  "name": "Hacı İlbey İlkokulu",
+  "lat": 41.6839157,
+  "lon": 26.5300414,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Hacı İlbey İlkokulu",
+   "public_transport": "platform",
+   "ref": "20322",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188227,
+  "name": "Hacı İlbey İlkokulu",
+  "lat": 41.6838177,
+  "lon": 26.530037,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Hacı İlbey İlkokulu",
+   "public_transport": "platform",
+   "ref": "20412",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188228,
+  "name": "Hacıkuşlar",
+  "lat": 41.6518491,
+  "lon": 26.5975279,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Hacıkuşlar",
+   "public_transport": "platform",
+   "ref": "20109",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188229,
+  "name": "Selimiye Camii",
+  "lat": 41.6771555,
+  "lon": 26.5604525,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Selimiye Camii",
+   "public_transport": "platform",
+   "ref": "20315"
+  }
+ },
+ {
+  "id": 13623188230,
+  "name": "Halk Eğitim",
+  "lat": 41.6770242,
+  "lon": 26.5602701,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Halk Eğitim",
+   "public_transport": "platform",
+   "ref": "20180",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188231,
+  "name": "Huzurevi",
+  "lat": 41.6673466,
+  "lon": 26.5779585,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Huzurevi",
+   "public_transport": "platform",
+   "ref": "20051",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623188232,
+  "name": "Huzurevi",
+  "lat": 41.6680127,
+  "lon": 26.5782341,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Huzurevi",
+   "public_transport": "platform",
+   "ref": "20081",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188233,
+  "name": "Huzurevi",
+  "lat": 41.668289,
+  "lon": 26.5778819,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Huzurevi",
+   "public_transport": "platform",
+   "ref": "20203",
+   "ref:kentkart_sayi": "4",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13623188234,
+  "name": "Jandarma",
+  "lat": 41.6698047,
+  "lon": 26.5804204,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Jandarma",
+   "public_transport": "platform",
+   "ref": "20299",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623188235,
+  "name": "Jandarma",
+  "lat": 41.6696771,
+  "lon": 26.5801739,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Jandarma",
+   "public_transport": "platform",
+   "ref": "20300",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280043,
+  "name": "Kaleiçi Dört Yol",
+  "lat": 41.674669,
+  "lon": 26.5495783,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaleiçi Dört Yol",
+   "public_transport": "platform",
+   "ref": "20255"
+  }
+ },
+ {
+  "id": 13623280044,
+  "name": "Kaleiçi Sitesi",
+  "lat": 41.6614205,
+  "lon": 26.5920244,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaleiçi Sitesi",
+   "public_transport": "platform",
+   "ref": "20117",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280045,
+  "name": "Kaleiçi Çocuk Parkı",
+  "lat": 41.6728792,
+  "lon": 26.5492993,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaleiçi Çocuk Parkı",
+   "public_transport": "platform",
+   "ref": "20254"
+  }
+ },
+ {
+  "id": 13623280046,
+  "name": "Kaptanın Yeri",
+  "lat": 41.6696608,
+  "lon": 26.596177,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaptanın Yeri",
+   "public_transport": "platform",
+   "ref": "20170",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280047,
+  "name": "Kaptanın Yeri",
+  "lat": 41.6695211,
+  "lon": 26.5959682,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kaptanın Yeri",
+   "public_transport": "platform",
+   "ref": "20168",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280048,
+  "name": "Karaağaç Camii",
+  "lat": 41.6579028,
+  "lon": 26.5212462,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Karaağaç Camii",
+   "network": "ETUS",
+   "operator": "Edirne Toplu Ulaşım Sistemi",
+   "public_transport": "platform",
+   "public_transport:version": "2",
+   "ref": "20397",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623280051,
+  "name": "Kum Mahalle",
+  "lat": 41.6810881,
+  "lon": 26.5254118,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kum Mahalle",
+   "public_transport": "platform",
+   "ref": "20030",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280052,
+  "name": "Kum Mahalle",
+  "lat": 41.6810034,
+  "lon": 26.5254943,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kum Mahalle",
+   "note": "var olmayabilme ihtimali bulunan etus duragi.",
+   "public_transport": "platform",
+   "ref": "20023",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280053,
+  "name": "Kutlutaş Eczanesi",
+  "lat": 41.650991,
+  "lon": 26.5944939,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kutlutaş Eczanesi",
+   "public_transport": "platform",
+   "ref": "20110",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280054,
+  "name": "Kültür Kent",
+  "lat": 41.6696357,
+  "lon": 26.593092,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kültür Kent",
+   "public_transport": "platform",
+   "ref": "20171",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280055,
+  "name": "Kültür Kent",
+  "lat": 41.6695355,
+  "lon": 26.5929604,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kültür Kent",
+   "public_transport": "platform",
+   "ref": "20167",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280056,
+  "name": "Kıyık Camii",
+  "lat": 41.6784118,
+  "lon": 26.5689461,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kıyık Camii",
+   "public_transport": "platform",
+   "ref": "20182",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280057,
+  "name": "Kıyık Camii",
+  "lat": 41.6784334,
+  "lon": 26.568415,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kıyık Camii",
+   "public_transport": "platform",
+   "ref": "20193",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623280058,
+  "name": "Kıyık PTT",
+  "lat": 41.6787815,
+  "lon": 26.5705066,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Kıyık PTT",
+   "public_transport": "platform",
+   "ref": "20192"
+  }
+ },
+ {
+  "id": 13623280059,
+  "name": "Rakip Market",
+  "lat": 41.6786539,
+  "lon": 26.5702655,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Rakip Market",
+   "public_transport": "platform",
+   "ref": "20303"
+  }
+ },
+ {
+  "id": 13623280060,
+  "name": "İktisat Fakültesi",
+  "lat": 41.644787,
+  "lon": 26.6183763,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "İktisat Fakültesi",
+   "public_transport": "platform",
+   "ref": "20005",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13623280062,
+  "name": "Lala Şahin Paşa Camii",
+  "lat": 41.6668276,
+  "lon": 26.5817794,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Lala Şahin Paşa Camii",
+   "public_transport": "platform",
+   "ref": "20261",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623280063,
+  "name": "Mavi Evler",
+  "lat": 41.6766883,
+  "lon": 26.5882586,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Mavi Evler",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 13623280064,
+  "name": "Migros",
+  "lat": 41.6907669,
+  "lon": 26.5792498,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Migros",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 13623482918,
+  "name": "Olimpik Havuz",
+  "lat": 41.6569551,
+  "lon": 26.6067059,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Olimpik Havuz",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623482919,
+  "name": "Olimpik Havuz",
+  "lat": 41.6567495,
+  "lon": 26.6066764,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Olimpik Havuz",
+   "public_transport": "platform",
+   "ref": "20287",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623482920,
+  "name": "Orduevi (Kıyık Caddesi)",
+  "lat": 41.6765394,
+  "lon": 26.5571686,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Orduevi (Kıyık Caddesi)",
+   "public_transport": "platform",
+   "ref": "20179",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623482921,
+  "name": "Pazartesi Pazarı",
+  "lat": 41.6702505,
+  "lon": 26.5537842,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Pazartesi Pazarı",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 13623482922,
+  "name": "Pazartesi Pazarı",
+  "lat": 41.6701718,
+  "lon": 26.5541379,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Pazartesi Pazarı",
+   "public_transport": "platform"
+  }
+ },
+ {
+  "id": 13623482923,
+  "name": "Perşembe Pazarı",
+  "lat": 41.6822114,
+  "lon": 26.5749059,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Perşembe Pazarı",
+   "public_transport": "platform",
+   "ref": "20185",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623482924,
+  "name": "Perşembe Pazarı",
+  "lat": 41.6820582,
+  "lon": 26.5749221,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Perşembe Pazarı",
+   "public_transport": "platform",
+   "ref": "20189",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623482925,
+  "name": "Petrol Durağı",
+  "lat": 41.6790201,
+  "lon": 26.5768368,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Petrol Durağı",
+   "public_transport": "platform",
+   "ref": "20381"
+  }
+ },
+ {
+  "id": 13623482926,
+  "name": "Platin",
+  "lat": 41.6817193,
+  "lon": 26.5800892,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Platin",
+   "public_transport": "platform",
+   "ref": "20386",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623482927,
+  "name": "Platin",
+  "lat": 41.6817838,
+  "lon": 26.5797168,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Platin",
+   "public_transport": "platform",
+   "ref": "20441",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623482928,
+  "name": "Plevne İlkokulu",
+  "lat": 41.658087,
+  "lon": 26.5959926,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Plevne İlkokulu",
+   "public_transport": "platform",
+   "ref": "20115",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623482929,
+  "name": "Püsküllü",
+  "lat": 41.6846907,
+  "lon": 26.5326582,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Püsküllü",
+   "public_transport": "platform",
+   "ref": "20253",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623482930,
+  "name": "Püsküllü",
+  "lat": 41.6846934,
+  "lon": 26.5328579,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Püsküllü",
+   "public_transport": "platform",
+   "ref": "20252",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623482931,
+  "name": "Role",
+  "lat": 41.6871987,
+  "lon": 26.5882554,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Role",
+   "public_transport": "platform",
+   "ref": "20461"
+  }
+ },
+ {
+  "id": 13623482932,
+  "name": "Safran",
+  "lat": 41.6762447,
+  "lon": 26.5925867,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Safran",
+   "public_transport": "platform",
+   "ref": "20467"
+  }
+ },
+ {
+  "id": 13623482935,
+  "name": "Sanayi Cami",
+  "lat": 41.6609486,
+  "lon": 26.5773682,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Cami",
+   "public_transport": "platform",
+   "ref": "20316",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623482936,
+  "name": "Sanayi Cami",
+  "lat": 41.6611712,
+  "lon": 26.576913,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sanayi Cami",
+   "public_transport": "platform",
+   "ref": "20409",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623482938,
+  "name": "Sarayiçi",
+  "lat": 41.6843261,
+  "lon": 26.560368,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sarayiçi",
+   "public_transport": "platform",
+   "ref": "20326",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623605035,
+  "name": "Saraçhane",
+  "lat": 41.6840585,
+  "lon": 26.5559256,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Saraçhane",
+   "public_transport": "platform",
+   "ref": "20143",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623605036,
+  "name": "Saraçhane",
+  "lat": 41.6841216,
+  "lon": 26.5558734,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Saraçhane",
+   "public_transport": "platform",
+   "ref": "20394",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623605037,
+  "name": "Sarıbayır",
+  "lat": 41.6781224,
+  "lon": 26.5238657,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Sarıbayır",
+   "public_transport": "platform",
+   "ref": "20321",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623605038,
+  "name": "Selimiye İmam Hatip Ortaokulu",
+  "lat": 41.6731435,
+  "lon": 26.5782531,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Selimiye İmam Hatip Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20200",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623605039,
+  "name": "Selimiye İmam Hatip Ortaokulu",
+  "lat": 41.6729565,
+  "lon": 26.5777544,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Selimiye İmam Hatip Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20199",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623605040,
+  "name": "Mevlana Camii",
+  "lat": 41.6733389,
+  "lon": 26.5923429,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Mevlana Camii",
+   "public_transport": "platform",
+   "ref": "20351",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623605041,
+  "name": "Serhat İMKB Anadolu Lisesi",
+  "lat": 41.6698303,
+  "lon": 26.598465,
+  "tags": {
+   "alt_name": "Serhat Borsa İstanbul Mesleki ve Teknik Anadolu Lisesi",
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Serhat İMKB Anadolu Lisesi",
+   "public_transport": "platform",
+   "ref": "20395",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623605043,
+  "name": "Somuncu Baba",
+  "lat": 41.6851439,
+  "lon": 26.5640931,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Somuncu Baba",
+   "public_transport": "platform",
+   "ref": "20327",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13623605044,
+  "name": "Somuncu Baba",
+  "lat": 41.6852571,
+  "lon": 26.5640536,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Somuncu Baba",
+   "public_transport": "platform",
+   "ref": "20415",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13623605045,
+  "name": "Son Bakkal",
+  "lat": 41.6790573,
+  "lon": 26.5750318,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Son Bakkal",
+   "public_transport": "platform",
+   "ref": "20190"
+  }
+ },
+ {
+  "id": 13623605046,
+  "name": "Sultan Çelebi Mehmet KYK Yurdu",
+  "lat": 41.6965225,
+  "lon": 26.5818824,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Sultan Çelebi Mehmet KYK Yurdu",
+   "public_transport": "platform",
+   "ref": "20384"
+  }
+ },
+ {
+  "id": 13623605047,
+  "name": "Tabya Altı",
+  "lat": 41.6654445,
+  "lon": 26.5910622,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tabya Altı",
+   "public_transport": "platform",
+   "ref": "20280",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13623605048,
+  "name": "Tabya Altı",
+  "lat": 41.664943,
+  "lon": 26.5914748,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Tabya Altı",
+   "public_transport": "platform",
+   "ref": "20279",
+   "ref:kentkart_sayi": "1",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13624657957,
+  "name": "Ticaret Borsası",
+  "lat": 41.7120277,
+  "lon": 26.5648853,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ticaret Borsası",
+   "public_transport": "platform",
+   "ref": "20439",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657958,
+  "name": "Ticaret Borsası",
+  "lat": 41.7119391,
+  "lon": 26.5647665,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Ticaret Borsası",
+   "public_transport": "platform",
+   "ref": "20382",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657959,
+  "name": "TOKİ Sağlık Müdürlüğü",
+  "lat": 41.6897587,
+  "lon": 26.5784018,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ Sağlık Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20275",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657960,
+  "name": "TOKİ Sağlık Müdürlüğü",
+  "lat": 41.6897735,
+  "lon": 26.5781175,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ Sağlık Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20276",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657961,
+  "name": "TOKİ Yaşam Merkezi",
+  "lat": 41.6912808,
+  "lon": 26.5766148,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ Yaşam Merkezi",
+   "public_transport": "platform",
+   "ref": "20438",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657962,
+  "name": "TOKİ Yaşam Merkezi",
+  "lat": 41.6913611,
+  "lon": 26.5763834,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ Yaşam Merkezi",
+   "public_transport": "platform",
+   "ref": "20380",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657963,
+  "name": "TOKİ İmam Hatip Lisesi",
+  "lat": 41.6865314,
+  "lon": 26.5819286,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ İmam Hatip Lisesi",
+   "public_transport": "platform",
+   "ref": "20418",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657964,
+  "name": "TOKİ İmam Hatip Lisesi",
+  "lat": 41.6865137,
+  "lon": 26.5817556,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TOKİ İmam Hatip Lisesi",
+   "public_transport": "platform",
+   "ref": "20333",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657965,
+  "name": "Topuz Market",
+  "lat": 41.6788986,
+  "lon": 26.5735626,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Topuz Market",
+   "public_transport": "platform",
+   "ref": "20305"
+  }
+ },
+ {
+  "id": 13624657966,
+  "name": "Trafo",
+  "lat": 41.6535285,
+  "lon": 26.5989976,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Trafo",
+   "public_transport": "platform",
+   "ref": "20113",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13624657967,
+  "name": "Traliçe",
+  "lat": 41.6779086,
+  "lon": 26.5842035,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Traliçe",
+   "public_transport": "platform",
+   "ref": "20342",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657968,
+  "name": "Twin Life",
+  "lat": 41.6805404,
+  "lon": 26.5903084,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Twin Life",
+   "public_transport": "platform",
+   "ref": "20465"
+  }
+ },
+ {
+  "id": 13624657969,
+  "name": "TÜİK",
+  "lat": 41.6538504,
+  "lon": 26.5865157,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TÜİK",
+   "public_transport": "platform",
+   "ref": "20336",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657970,
+  "name": "TÜİK",
+  "lat": 41.6538963,
+  "lon": 26.5863509,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "TÜİK",
+   "public_transport": "platform",
+   "ref": "20420",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657971,
+  "name": "Vadi Konakları",
+  "lat": 41.6882006,
+  "lon": 26.5840989,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Vadi Konakları",
+   "public_transport": "platform",
+   "ref": "20471"
+  }
+ },
+ {
+  "id": 13624657972,
+  "name": "Vitrin",
+  "lat": 41.6731469,
+  "lon": 26.5960363,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Vitrin",
+   "public_transport": "platform",
+   "ref": "20468"
+  }
+ },
+ {
+  "id": 13624657973,
+  "name": "Yabancılar Şubesi",
+  "lat": 41.6887115,
+  "lon": 26.5504237,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yabancılar Şubesi",
+   "public_transport": "platform",
+   "ref": "20404",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657974,
+  "name": "Yabancılar Şubesi",
+  "lat": 41.6889327,
+  "lon": 26.5502542,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yabancılar Şubesi",
+   "public_transport": "platform",
+   "ref": "20269",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657975,
+  "name": "Yeniimaret Merkez",
+  "lat": 41.6876733,
+  "lon": 26.5410974,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeniimaret Merkez",
+   "public_transport": "platform",
+   "ref": "20028",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13624657976,
+  "name": "Yeniimaret Merkez",
+  "lat": 41.6876257,
+  "lon": 26.5407579,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeniimaret Merkez",
+   "public_transport": "platform",
+   "ref": "20026",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657977,
+  "name": "Yeniimaret Mezarlık",
+  "lat": 41.6874287,
+  "lon": 26.5455699,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeniimaret Mezarlık",
+   "public_transport": "platform",
+   "ref": "20268",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657978,
+  "name": "Yeniimaret Mezarlık",
+  "lat": 41.6873441,
+  "lon": 26.5456455,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeniimaret Mezarlık",
+   "public_transport": "platform",
+   "ref": "20270",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657979,
+  "name": "Yeşil Evler",
+  "lat": 41.6657823,
+  "lon": 26.5892076,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeşil Evler",
+   "public_transport": "platform",
+   "ref": "20141",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657981,
+  "name": "Yeşiltepe",
+  "lat": 41.6717155,
+  "lon": 26.5702214,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeşiltepe",
+   "public_transport": "platform",
+   "ref": "20131",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657982,
+  "name": "Yeşiltepe",
+  "lat": 41.6717254,
+  "lon": 26.5704837,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yeşiltepe",
+   "public_transport": "platform",
+   "ref": "20301",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657983,
+  "name": "Yıldırım Merkez",
+  "lat": 41.6831111,
+  "lon": 26.5287586,
+  "tags": {
+   "bench": "yes",
+   "bin": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldırım Merkez",
+   "public_transport": "platform",
+   "ref": "20024",
+   "ref:kentkart_sayi": "2",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13624657984,
+  "name": "Yıldırım Çeşme",
+  "lat": 41.6772527,
+  "lon": 26.5254483,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldırım Çeşme",
+   "public_transport": "platform",
+   "ref": "20031",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657985,
+  "name": "Yıldız Evler",
+  "lat": 41.6704641,
+  "lon": 26.5975169,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Yıldız Evler",
+   "public_transport": "platform",
+   "ref": "20469"
+  }
+ },
+ {
+  "id": 13624657986,
+  "name": "Zübeyde Hanım Kadın Merkezi",
+  "lat": 41.656247,
+  "lon": 26.5977427,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zübeyde Hanım Kadın Merkezi",
+   "public_transport": "platform",
+   "ref": "20114",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657987,
+  "name": "Zübeyde Hanım Parkı",
+  "lat": 41.6670736,
+  "lon": 26.5806282,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zübeyde Hanım Parkı",
+   "public_transport": "platform",
+   "ref": "20080",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657988,
+  "name": "Çeşme",
+  "lat": 41.6735496,
+  "lon": 26.5866602,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çeşme",
+   "public_transport": "platform",
+   "ref": "20163",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657989,
+  "name": "Çeşme",
+  "lat": 41.6736101,
+  "lon": 26.5868329,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çeşme",
+   "public_transport": "platform",
+   "ref": "20175",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657990,
+  "name": "Çocuk Müzesi",
+  "lat": 41.6681944,
+  "lon": 26.5999459,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çocuk Müzesi",
+   "public_transport": "platform",
+   "ref": "20437",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657991,
+  "name": "Çocuk Müzesi",
+  "lat": 41.66822,
+  "lon": 26.6001528,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çocuk Müzesi",
+   "public_transport": "platform",
+   "ref": "20378",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657992,
+  "name": "Çınar Life",
+  "lat": 41.6812884,
+  "lon": 26.5887085,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çınar Life",
+   "public_transport": "platform",
+   "ref": "20464"
+  }
+ },
+ {
+  "id": 13624657993,
+  "name": "Çınaraltı",
+  "lat": 41.6769712,
+  "lon": 26.5579051,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Çınaraltı",
+   "public_transport": "platform",
+   "ref": "20196"
+  }
+ },
+ {
+  "id": 13624657994,
+  "name": "Önder Market",
+  "lat": 41.6733944,
+  "lon": 26.5804302,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Önder Market",
+   "public_transport": "platform",
+   "ref": "20161",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657995,
+  "name": "Önder Market",
+  "lat": 41.673477,
+  "lon": 26.5806497,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Önder Market",
+   "public_transport": "platform",
+   "ref": "20177",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657996,
+  "name": "Üç Şerefeli Cami",
+  "lat": 41.6777685,
+  "lon": 26.5529007,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Üç Şerefeli Cami",
+   "public_transport": "platform",
+   "ref": "20157",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624657997,
+  "name": "Üç Şerefeli Cami",
+  "lat": 41.6781426,
+  "lon": 26.5527272,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Üç Şerefeli Cami",
+   "public_transport": "platform",
+   "ref": "20146",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657998,
+  "name": "İl Sağlık Müdürlüğü",
+  "lat": 41.677571,
+  "lon": 26.5658191,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İl Sağlık Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20194",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624657999,
+  "name": "İl Sağlık Müdürlüğü",
+  "lat": 41.6774852,
+  "lon": 26.5658177,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İl Sağlık Müdürlüğü",
+   "public_transport": "platform",
+   "ref": "20181",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624658000,
+  "name": "İstiklal Ortaokulu",
+  "lat": 41.6760153,
+  "lon": 26.5497199,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "İstiklal Ortaokulu",
+   "public_transport": "platform",
+   "ref": "20273"
+  }
+ },
+ {
+  "id": 13624677601,
+  "name": "Şahin Tepesi",
+  "lat": 41.6826918,
+  "lon": 26.5765452,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şahin Tepesi",
+   "public_transport": "platform",
+   "ref": "20411",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624677602,
+  "name": "Şahin Tepesi",
+  "lat": 41.6825937,
+  "lon": 26.576574,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şahin Tepesi",
+   "public_transport": "platform",
+   "ref": "20319",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624677605,
+  "name": "Şükrüpaşa Anıtı",
+  "lat": 41.6739482,
+  "lon": 26.570316,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Anıtı",
+   "public_transport": "platform",
+   "ref": "20198",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13624677606,
+  "name": "Şükrüpaşa Anıtı",
+  "lat": 41.6740877,
+  "lon": 26.5705203,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Anıtı",
+   "public_transport": "platform",
+   "ref": "20201",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13624891478,
+  "name": null,
+  "lat": 41.653196,
+  "lon": 26.6016596,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13624891479,
+  "name": null,
+  "lat": 41.6529005,
+  "lon": 26.6023634,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13634510544,
+  "name": "Öz Serhad",
+  "lat": 41.6564891,
+  "lon": 26.5987859,
+  "tags": {
+   "alt_name": "Halı Saha",
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Öz Serhad",
+   "public_transport": "platform",
+   "ref": "20061",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13634510545,
+  "name": "Halı Saha",
+  "lat": 41.6564107,
+  "lon": 26.5989375,
+  "tags": {
+   "bench": "no",
+   "bus": "yes",
+   "departures_board": "no",
+   "highway": "bus_stop",
+   "name": "Halı Saha",
+   "public_transport": "platform",
+   "ref": "20070",
+   "ref:kentkart_sayi": "2",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13643661907,
+  "name": "Nehir Market",
+  "lat": 41.6687955,
+  "lon": 26.5942762,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Nehir Market",
+   "public_transport": "platform",
+   "ref": "20347",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13643661908,
+  "name": "Nehir Market",
+  "lat": 41.6689049,
+  "lon": 26.5944384,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Nehir Market",
+   "public_transport": "platform",
+   "ref": "20349",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13643661909,
+  "name": "Macera Parkı",
+  "lat": 41.6710155,
+  "lon": 26.593698,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Macera Parkı",
+   "public_transport": "platform",
+   "ref": "20425",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13643661910,
+  "name": "Macera Parkı",
+  "lat": 41.6712529,
+  "lon": 26.5934929,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Macera Parkı",
+   "public_transport": "platform",
+   "ref": "20346",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13643661911,
+  "name": "Mevlana Camii",
+  "lat": 41.6734018,
+  "lon": 26.5915478,
+  "tags": {
+   "bench": "yes",
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Mevlana Camii",
+   "public_transport": "platform",
+   "ref": "20345",
+   "ref:kentkart_sayi": "1",
+   "shelter": "yes"
+  }
+ },
+ {
+  "id": 13643661912,
+  "name": "Şükrüpaşa Konakları",
+  "lat": 41.6753143,
+  "lon": 26.5885302,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Konakları",
+   "public_transport": "platform",
+   "ref": "20344",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13643661913,
+  "name": "Şükrüpaşa Konakları",
+  "lat": 41.6755583,
+  "lon": 26.5885189,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Şükrüpaşa Konakları",
+   "public_transport": "platform",
+   "ref": "20352",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13643661914,
+  "name": "Zirve Yaşam Sitesi",
+  "lat": 41.6768476,
+  "lon": 26.5859657,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zirve Yaşam Sitesi",
+   "public_transport": "platform",
+   "ref": "20343",
+   "ref:kentkart_sayi": "1"
+  }
+ },
+ {
+  "id": 13643661915,
+  "name": "Zirve Yaşam Sitesi",
+  "lat": 41.6770698,
+  "lon": 26.5859342,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Zirve Yaşam Sitesi",
+   "public_transport": "platform",
+   "ref": "20427",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13643661916,
+  "name": "Traliçe",
+  "lat": 41.6780309,
+  "lon": 26.5843094,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "name": "Traliçe",
+   "public_transport": "platform",
+   "ref": "20424",
+   "ref:kentkart_sayi": "2"
+  }
+ },
+ {
+  "id": 13968948695,
+  "name": null,
+  "lat": 41.6558558,
+  "lon": 26.6022788,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 13968976516,
+  "name": null,
+  "lat": 41.6560037,
+  "lon": 26.6026447,
+  "tags": {
+   "bus": "yes",
+   "highway": "bus_stop",
+   "public_transport": "platform",
+   "shelter": "no"
+  }
+ },
+ {
+  "id": 14229519356,
+  "name": null,
+  "lat": 41.6902186,
+  "lon": 26.4569148,
+  "tags": {
+   "bench": "yes",
+   "public_transport": "platform",
+   "shelter": "yes"
+  }
+ }
+]
