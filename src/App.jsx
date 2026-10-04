@@ -16,8 +16,69 @@ import {
 } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+
+const createCustomIcon = (svgString, color) => {
+  return L.divIcon({
+    className: 'custom-leaflet-icon',
+    html: `
+      <div style="
+        background-color: ${color}; 
+        width: 32px; 
+        height: 32px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        border-radius: 50%; 
+        border: 3px solid white;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
+        color: white;
+      ">
+        ${svgString}
+      </div>
+      <div style="
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 10px solid ${color};
+        margin: -2px auto 0 auto;
+        filter: drop-shadow(0px 3px 2px rgba(0,0,0,0.2));
+      "></div>
+    `,
+    iconSize: [32, 42],
+    iconAnchor: [16, 42],
+    popupAnchor: [0, -42]
+  });
+};
+
+const userLocationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
+const destinationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
+const busStopSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="15" cy="18" r="2"/></svg>`;
+const transferSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4-4-4-4"/><path d="M2 10h20"/><path d="m6 10-4 4 4 4"/><path d="M22 14H2"/></svg>`;
+
+const customIcons = {
+  start: createCustomIcon(userLocationSvg, '#10b981'), // Emerald
+  end: createCustomIcon(destinationSvg, '#ef4444'), // Red
+  busStart: createCustomIcon(busStopSvg, '#3b82f6'), // Blue
+  transfer: createCustomIcon(transferSvg, '#f59e0b') // Amber
+};
 import { calculateSmartRoute } from './data/routes';
+import RouteItinerary, { buildItinerary, terminalOf } from './components/RouteItinerary';
 import './index.css';
+
+// Yol çizgisinin (polyline) toplam uzunluğu, metre
+const pathLengthM = (path) => {
+  let total = 0;
+  for (let i = 1; i < path.length; i++) {
+    const [a, b] = path[i - 1];
+    const [c, d] = path[i];
+    const r = Math.PI / 180;
+    const x = Math.sin((c - a) * r / 2) ** 2 + Math.cos(a * r) * Math.cos(c * r) * Math.sin((d - b) * r / 2) ** 2;
+    total += 2 * 6371000 * Math.asin(Math.sqrt(x));
+  }
+  return total;
+};
 
 // Haritayı dinamik olarak belirli bir konuma kaydırmak için yardımcı bileşen
 function MapUpdater({ center, zoom }) {
@@ -63,7 +124,7 @@ function App() {
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
   const [searchResults, setSearchResults] = useState(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
-  const [showStopDetails, setShowStopDetails] = useState(false);
+  const [searchTime, setSearchTime] = useState(() => new Date());
   const [hasSearched, setHasSearched] = useState(false);
 
   const [walkingPathStart, setWalkingPathStart] = useState([]);
@@ -165,21 +226,21 @@ function App() {
   };
 
   // Yerel veritabanı (Özel Noktalar / Yurtlar)
-  // Koordinatlar OpenStreetMap/Nominatim'den doğrulanmıştır
+  // Koordinatlar OpenStreetMap/Nominatim'den doğrulanmıştır (Ekim 2026)
   const localPlaces = [
-    { name: 'Edirne Şehir Merkezi (Heykel)', lat: 41.6771, lon: 26.5557 },
-    { name: 'Saraçlar Caddesi', lat: 41.6749, lon: 26.5568 },
-    { name: 'Edirne Otogar', lat: 41.6323, lon: 26.6195 },
-    { name: 'Erasta AVM', lat: 41.6667, lon: 26.5684 },
-    { name: 'Margi Outlet', lat: 41.6631, lon: 26.5653 },
-    { name: 'Edirne Devlet Hastanesi (1. Murat)', lat: 41.6575, lon: 26.5866 },
-    { name: 'Trakya Üni. Tıp Fakültesi Hastanesi', lat: 41.6669, lon: 26.5772 },
-    { name: 'Trakya Üni. Ayşekadın Yerleşkesi', lat: 41.6696, lon: 26.5750 },
-    { name: 'Sultan Çelebi Mehmet KYK Yurdu', lat: 41.6965, lon: 26.5818 },
-    { name: 'Selimiye KYK Öğrenci Yurdu', lat: 41.6443, lon: 26.6145 },
-    { name: 'Şükrüpaşa (Gölet / Marketler)', lat: 41.6833, lon: 26.5731 },
-    { name: 'Tunca Köprüsü', lat: 41.6738, lon: 26.5543 },
-    { name: 'Meriç Köprüsü (Karaağaç Yolu)', lat: 41.6669, lon: 26.5492 }
+    { name: 'Edirne Şehir Merkezi (Heykel)', lat: 41.6771, lon: 26.5550 },
+    { name: 'Saraçlar Caddesi', lat: 41.6735, lon: 26.5537 },
+    { name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 },
+    { name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 },
+    { name: 'Margi Outlet', lat: 41.6620, lon: 26.5813 },
+    { name: 'Edirne Devlet Hastanesi (1. Murat)', lat: 41.6545, lon: 26.6060 },
+    { name: 'Trakya Üni. Tıp Fakültesi Hastanesi', lat: 41.6389, lon: 26.6150 },
+    { name: 'Trakya Üni. Ayşekadın Yerleşkesi', lat: 41.6697, lon: 26.5751 },
+    { name: 'Sultan Çelebi Mehmet KYK Yurdu', lat: 41.6965, lon: 26.5819 },
+    { name: 'Selimiye KYK Öğrenci Yurdu', lat: 41.6443, lon: 26.6146 },
+    { name: 'Şükrüpaşa (Gölet / Marketler)', lat: 41.6670, lon: 26.5911 },
+    { name: 'Tunca Köprüsü', lat: 41.6682, lon: 26.5544 },
+    { name: 'Meriç Köprüsü (Karaağaç Yolu)', lat: 41.6634, lon: 26.5521 }
   ];
 
   // Türkçe karakter duyarsız arama anahtarı (build_stops.mjs'teki ile aynı)
@@ -367,8 +428,27 @@ function App() {
     const result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
     setSearchResults(result);
     setSelectedRouteIndex(0);
-    setShowStopDetails(false);
+    setSearchTime(new Date());
     setHasSearched(true);
+  };
+
+  // Tarifteki bir adıma tıklanınca haritayı oraya yakınlaştır
+  const focusOnMap = (lat, lon) => {
+    setMapCenter([lat, lon]);
+    setMapZoom(17);
+    if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Yürüme mesafeleri: Mapbox yaya rotası geldiyse gerçek sokak mesafesi, yoksa kuş uçuşu
+  const getWalk = (route, isSelected) => {
+    const startExact = isSelected && walkingPathStart.length > 2;
+    const endExact = isSelected && walkingPathEnd.length > 2;
+    return {
+      startM: startExact ? pathLengthM(walkingPathStart) : (route.walkDistanceStart || 0) * 1000,
+      endM: endExact ? pathLengthM(walkingPathEnd) : (route.walkDistanceEnd || 0) * 1000,
+      startExact,
+      endExact
+    };
   };
 
   const swapLocations = () => {
@@ -413,24 +493,28 @@ function App() {
             <MapClickHandler onMapClick={handleMapClick} />
 
             {isValidCoord([fromLocation.lat, fromLocation.lon]) && (
-              <CircleMarker center={[fromLocation.lat, fromLocation.lon]} pathOptions={{ color: 'transparent', fillColor: '#3b82f6', fillOpacity: 1 }} radius={8}>
-                <Popup>Başlangıç</Popup>
-              </CircleMarker>
+              <Marker position={[fromLocation.lat, fromLocation.lon]} icon={customIcons.start}>
+                <Popup><b>Başlangıç:</b><br/>{fromLocation.name}</Popup>
+              </Marker>
             )}
 
             {isValidCoord([toLocation.lat, toLocation.lon]) && (
-              <CircleMarker center={[toLocation.lat, toLocation.lon]} pathOptions={{ color: 'transparent', fillColor: '#ef4444', fillOpacity: 1 }} radius={8}>
-                <Popup>Hedef</Popup>
-              </CircleMarker>
+              <Marker position={[toLocation.lat, toLocation.lon]} icon={customIcons.end}>
+                <Popup><b>Hedef:</b><br/>{toLocation.name}</Popup>
+              </Marker>
             )}
 
             {hasSearched && activeRoute && (
               <>
                 {isValidCoord([activeRoute.startStop?.lat, activeRoute.startStop?.lon]) && (
-                  <CircleMarker key={`sstop_${activeRoute.id}`} center={[activeRoute.startStop.lat, activeRoute.startStop.lon]} pathOptions={{ color: '#fff', fillColor: '#3b82f6', fillOpacity: 1, weight: 2 }} radius={6} />
+                  <Marker key={`sstop_${activeRoute.id}`} position={[activeRoute.startStop.lat, activeRoute.startStop.lon]} icon={customIcons.busStart}>
+                    <Popup><b>Biniş Durağı:</b><br/>{activeRoute.startStop.name}</Popup>
+                  </Marker>
                 )}
                 {isValidCoord([activeRoute.endStop?.lat, activeRoute.endStop?.lon]) && (
-                  <CircleMarker key={`estop_${activeRoute.id}`} center={[activeRoute.endStop.lat, activeRoute.endStop.lon]} pathOptions={{ color: '#fff', fillColor: '#3b82f6', fillOpacity: 1, weight: 2 }} radius={6} />
+                  <Marker key={`estop_${activeRoute.id}`} position={[activeRoute.endStop.lat, activeRoute.endStop.lon]} icon={customIcons.busStart}>
+                    <Popup><b>İniş Durağı:</b><br/>{activeRoute.endStop.name}</Popup>
+                  </Marker>
                 )}
 
                 {walkingPathStart.length > 0 && (
@@ -445,9 +529,9 @@ function App() {
                       <Polyline key={`geom1_${activeRoute.id}`} positions={geom1.filter(isValidCoord)} pathOptions={{ color: activeRoute.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
                     )}
                     {isValidCoord([activeRoute.transferStop?.lat, activeRoute.transferStop?.lon]) && (
-                      <CircleMarker key={`tstop_${activeRoute.id}`} center={[activeRoute.transferStop.lat, activeRoute.transferStop.lon]} pathOptions={{ color: '#fff', fillColor: '#f59e0b', fillOpacity: 1, weight: 2 }} radius={7}>
-                        <Popup>Aktarma: {activeRoute.transferStop.name}</Popup>
-                      </CircleMarker>
+                      <Marker key={`tstop_${activeRoute.id}`} position={[activeRoute.transferStop.lat, activeRoute.transferStop.lon]} icon={customIcons.transfer}>
+                        <Popup><b>Aktarma Durağı:</b><br/>{activeRoute.transferStop.name}</Popup>
+                      </Marker>
                     )}
                     {geom2 && geom2.filter(isValidCoord).length > 0 && (
                       <Polyline key={`geom2_${activeRoute.id}`} positions={geom2.filter(isValidCoord)} pathOptions={{ color: activeRoute.color2 || '#10b981', weight: 5, opacity: 0.9 }} />
@@ -466,7 +550,7 @@ function App() {
                   if (isValidCoord([coord[0], coord[1]])) {
                     return (
                       <CircleMarker key={`passed_${activeRoute.id}_${i}`} center={[coord[0], coord[1]]} radius={4} pathOptions={{ color: '#fff', fillColor: '#94a3b8', fillOpacity: 1, weight: 1 }}>
-                        {showStopDetails && <Popup>{coord[2]}</Popup>}
+                        <Popup>{coord[2]}</Popup>
                       </CircleMarker>
                     );
                   }
@@ -539,22 +623,24 @@ function App() {
 
           {searchResults.routes && searchResults.routes.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {searchResults.routes.map((route, idx) => (
+              {searchResults.routes.map((route, idx) => {
+                const isSelected = selectedRouteIndex === idx;
+                const itin = buildItinerary(route, getWalk(route, isSelected), searchTime);
+                const fmt = (d) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                return (
                 <div
                   key={route.id}
                   className="route-card"
-                  onClick={() => {
-                    setSelectedRouteIndex(idx);
-                    setShowStopDetails(false);
-                  }}
+                  onClick={() => setSelectedRouteIndex(idx)}
                   style={{
-                    borderColor: selectedRouteIndex === idx ? 'var(--primary)' : 'var(--border-color)',
-                    backgroundColor: selectedRouteIndex === idx ? '#f0f9ff' : 'white',
-                    borderWidth: selectedRouteIndex === idx ? '2px' : '1px',
-                    padding: selectedRouteIndex === idx ? '15px' : '16px', // border-width offset
+                    borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
+                    backgroundColor: isSelected ? '#fbfdff' : 'white',
+                    borderWidth: isSelected ? '2px' : '1px',
+                    padding: isSelected ? '15px' : '16px', // border-width offset
+                    cursor: isSelected ? 'default' : 'pointer'
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isSelected ? '14px' : '10px' }}>
                     {route.isTransfer ? (
                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span className="bus-badge" style={{ background: route.color }}>{route.line1}</span>
@@ -564,73 +650,39 @@ function App() {
                     ) : (
                        <span className="bus-badge" style={{ background: route.color || 'var(--primary)' }}>{route.name}</span>
                     )}
-                    <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)' }}>
-                      {route.totalTime} dk
-                    </span>
-                  </div>
-
-                  <div className="timeline-step">
-                    <Footprints size={20} color="var(--primary)" />
-                    <span><b>{route.startStop.name}</b> durağına yürü ({(route.walkDistanceStart * 1000).toFixed(0)}m)</span>
-                  </div>
-                  
-                  {route.isTransfer && (
-                    <div className="timeline-step">
-                      <BusFront size={20} color="var(--text-muted)" />
-                      <span><b>{route.transferStop.name}</b> durağında inip <b>{route.line2}</b> hattına aktarma yap</span>
-                    </div>
-                  )}
-
-                  <div className="timeline-step">
-                    <MapPin size={20} color="#ef4444" />
-                    <span><b>{route.endStop.name}</b> durağında in ({(route.walkDistanceEnd * 1000).toFixed(0)}m yürü)</span>
-                  </div>
-
-                  {selectedRouteIndex === idx && route.passedStops && route.passedStops.length > 0 && (
-                    <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid var(--border-color)' }}>
-                      <button 
-                        className="action-pill" 
-                        style={{ width: '100%', justifyContent: 'center' }}
-                        onClick={(e) => { e.stopPropagation(); setShowStopDetails(!showStopDetails); }}
-                      >
-                        {showStopDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                        {showStopDetails ? 'Detayları Gizle' : 'Durak Detaylarını Göster'}
-                      </button>
-                      
-                      {showStopDetails && (
-                        <div style={{ marginTop: '16px' }}>
-                          <p style={{ fontWeight: '600', fontSize: '0.9rem', marginBottom: '16px', color: 'var(--text-muted)' }}>GEÇİLECEK DURAKLAR ({route.passedStops.length})</p>
-                          <div style={{ maxHeight: '200px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px', fontSize: '0.95rem', paddingRight: '4px' }}>
-                            {route.passedStops.map((s, i) => {
-                              if (s === '>>>TRANSFER<<<') {
-                                return (
-                                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 6px', margin: '4px 0', backgroundColor: '#fef3c7', borderLeft: '4px solid #d97706', borderRadius: '4px' }}>
-                                    <BusFront size={16} color="#d97706" />
-                                    <span style={{ color: '#b45309', fontWeight: '700', fontSize: '0.9rem' }}>
-                                      {route.transferStop.name} durağında inip {route.line2} hattına bin
-                                    </span>
-                                  </div>
-                                );
-                              }
-                              return (
-                                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                  <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'var(--border-focus)' }}></div>
-                                  <span style={{ color: 'var(--text-main)' }}>{s}</span>
-                                </div>
-                              );
-                            })}
-                            {/* Son durak eklentisi */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '6px 0', borderTop: '1px dashed var(--border-color)', marginTop: '4px' }}>
-                              <MapPin size={14} color="#ef4444" />
-                              <span style={{ color: '#ef4444', fontWeight: '700' }}>{route.endStop.name} (İniş Durağı)</span>
-                            </div>
-                          </div>
-                        </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)' }}>
+                        {itin ? itin.totalMin : route.totalTime} dk
+                      </span>
+                      {itin && (
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                          <Clock size={12} /> {fmt(itin.departAt)} → {fmt(itin.arriveAt)}
+                        </span>
                       )}
+                    </div>
+                  </div>
+
+                  {isSelected && itin ? (
+                    <RouteItinerary
+                      itin={itin}
+                      fromName={fromLocation.name}
+                      toName={toLocation.name}
+                      fromCoord={{ lat: fromLocation.lat, lon: fromLocation.lon }}
+                      toCoord={{ lat: toLocation.lat, lon: toLocation.lon }}
+                      onFocus={focusOnMap}
+                    />
+                  ) : (
+                    <div className="route-compact">
+                      <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> Biniş: <b>{route.startStop.name}</b></span>
+                      {route.isTransfer && <span>Aktarma: <b>{route.transferStop.name}</b></span>}
+                      <span>İniş: <b>{route.endStop.name}</b></span>
+                      {route.legs?.[0] && <span>Yön: <b>{terminalOf(route.legs[0].headSign)}</b></span>}
+                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Detay için dokun</span>}
                     </div>
                   )}
                 </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="premium-card" style={{ textAlign: 'center' }}>

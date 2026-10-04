@@ -1,4 +1,3 @@
-
 export const allStopsDB = {
   "20001": {
     "id": "20001",
@@ -7,7 +6,6 @@ export const allStopsDB = {
     "searchIndex": "otogar",
     "routes": [
       "3",
-      "8",
       "1G",
       "1T",
       "2A",
@@ -28,7 +26,6 @@ export const allStopsDB = {
     "searchIndex": "deltapark",
     "routes": [
       "3",
-      "8",
       "1F",
       "2A",
       "2B",
@@ -50,7 +47,6 @@ export const allStopsDB = {
     "searchIndex": "tipfakultesi",
     "routes": [
       "3",
-      "8",
       "1F",
       "1G",
       "2A",
@@ -111,7 +107,6 @@ export const allStopsDB = {
     "searchIndex": "tipfakultesi",
     "routes": [
       "3",
-      "8",
       "1F",
       "1G",
       "2A",
@@ -245,7 +240,6 @@ export const allStopsDB = {
     "searchIndex": "sanayiortakapi",
     "routes": [
       "5",
-      "8",
       "1A",
       "1F",
       "1T",
@@ -574,7 +568,6 @@ export const allStopsDB = {
     "fullName": "Erasta",
     "searchIndex": "erasta",
     "routes": [
-      "8",
       "1A",
       "1F",
       "1T",
@@ -591,7 +584,6 @@ export const allStopsDB = {
     "searchIndex": "sanayiortakapi",
     "routes": [
       "5",
-      "8",
       "1A",
       "1F",
       "1T",
@@ -608,7 +600,6 @@ export const allStopsDB = {
     "searchIndex": "sanayicikis",
     "routes": [
       "5",
-      "8",
       "1A",
       "1F",
       "1T",
@@ -625,7 +616,6 @@ export const allStopsDB = {
     "searchIndex": "tarimveormanmd",
     "routes": [
       "5",
-      "8",
       "1A",
       "1F",
       "1T",
@@ -718,7 +708,6 @@ export const allStopsDB = {
     "searchIndex": "ahmetkaradenizyerleskesi",
     "routes": [
       "3",
-      "8",
       "1G",
       "1T",
       "3A",
@@ -1402,7 +1391,6 @@ export const allStopsDB = {
     "fullName": "Ayçiçek Heykeli",
     "searchIndex": "aycicekheykeli",
     "routes": [
-      "8",
       "3C"
     ],
     "lat": 41.6646219,
@@ -1425,7 +1413,6 @@ export const allStopsDB = {
     "fullName": "Ören Sitesi 2",
     "searchIndex": "orensitesi",
     "routes": [
-      "8",
       "2A",
       "3C"
     ],
@@ -1438,7 +1425,6 @@ export const allStopsDB = {
     "fullName": "Şükrüpaşa Muhtarlık 2",
     "searchIndex": "sukrupasamuhtarlik",
     "routes": [
-      "8",
       "2A",
       "3C"
     ],
@@ -1451,7 +1437,6 @@ export const allStopsDB = {
     "fullName": "İlhami Ertem Lisesi 2",
     "searchIndex": "ilhamiertemlisesi",
     "routes": [
-      "8",
       "2A",
       "3C"
     ],
@@ -1579,7 +1564,6 @@ export const allStopsDB = {
     "fullName": "İlhami Ertem Lisesi 1",
     "searchIndex": "ilhamiertemlisesi",
     "routes": [
-      "8",
       "2A"
     ],
     "lat": 41.6691949,
@@ -1591,7 +1575,6 @@ export const allStopsDB = {
     "fullName": "Şükrüpaşa Muhtarlık 1",
     "searchIndex": "sukrupasamuhtarlik",
     "routes": [
-      "8",
       "2A"
     ],
     "lat": 41.6677097,
@@ -1603,7 +1586,6 @@ export const allStopsDB = {
     "fullName": "Ören Sitesi 1",
     "searchIndex": "orensitesi",
     "routes": [
-      "8",
       "2A"
     ],
     "lat": 41.666227,
@@ -1626,7 +1608,6 @@ export const allStopsDB = {
     "fullName": "Tabipler Lokali",
     "searchIndex": "tabiplerlokali",
     "routes": [
-      "8",
       "3C"
     ],
     "lat": 41.6640908,
@@ -1709,7 +1690,6 @@ export const allStopsDB = {
     "searchIndex": "nimeter",
     "routes": [
       "7",
-      "8",
       "5B",
       "7E"
     ],
@@ -1734,7 +1714,6 @@ export const allStopsDB = {
     "searchIndex": "nimeter",
     "routes": [
       "7",
-      "8",
       "5B",
       "7E"
     ],
@@ -2368,7 +2347,6 @@ export const allStopsDB = {
     "fullName": "500 Evler 1",
     "searchIndex": "500evler",
     "routes": [
-      "8",
       "2B",
       "3C"
     ],
@@ -2381,7 +2359,6 @@ export const allStopsDB = {
     "fullName": "500 Evler 2",
     "searchIndex": "500evler",
     "routes": [
-      "8",
       "2B"
     ],
     "lat": 41.6610805,
@@ -3087,7 +3064,6 @@ export const allStopsDB = {
     "searchIndex": "hadimagatoki",
     "routes": [
       "3",
-      "8",
       "1G",
       "2A",
       "2B",
@@ -3154,7 +3130,6 @@ export const allStopsDB = {
     "routes": [
       "3",
       "7",
-      "8",
       "1G",
       "2A",
       "2B",
@@ -3174,7 +3149,6 @@ export const allStopsDB = {
     "searchIndex": "kizogrenciyurdu",
     "routes": [
       "3",
-      "8",
       "1F",
       "1G",
       "2A",
@@ -3197,7 +3171,6 @@ export const allStopsDB = {
     "searchIndex": "selimiyeogrenciyurdu",
     "routes": [
       "3",
-      "8",
       "1F",
       "1G",
       "2A",
@@ -3220,7 +3193,6 @@ export const allStopsDB = {
     "searchIndex": "modavizyon",
     "routes": [
       "3",
-      "8",
       "1A",
       "1G",
       "1T",
@@ -3531,7 +3503,6 @@ export const allStopsDB = {
     "searchIndex": "modavizyonduragi",
     "routes": [
       "3",
-      "8",
       "1A",
       "1G",
       "1T",
@@ -3597,7 +3568,6 @@ export const allStopsDB = {
     "searchIndex": "fatihcamii",
     "routes": [
       "3",
-      "8",
       "1G",
       "2B",
       "3A",
@@ -3751,7 +3721,6 @@ export const allStopsDB = {
     "searchIndex": "bizkentsitesi",
     "routes": [
       "7",
-      "8",
       "5B",
       "7E"
     ],
@@ -3962,7 +3931,6 @@ export const allStopsDB = {
     "searchIndex": "eczacilikfakultesi",
     "routes": [
       "3",
-      "8",
       "1F",
       "1G",
       "2A",
@@ -3985,7 +3953,6 @@ export const allStopsDB = {
     "searchIndex": "gaziosmanpasaortaokulu",
     "routes": [
       "7",
-      "8",
       "2A"
     ],
     "lat": 41.6583645,
@@ -4017,7 +3984,6 @@ export const allStopsDB = {
     "searchIndex": "fatihcamii",
     "routes": [
       "3",
-      "8",
       "1G",
       "2B",
       "3A",
@@ -4422,7 +4388,6 @@ export const allStopsDB = {
     "fullName": "Sultan 1. Murat Devlet Hastanesi 1",
     "searchIndex": "sultan1muratdevlethastanesi",
     "routes": [
-      "8",
       "1G",
       "2A",
       "3A",
@@ -4522,7 +4487,6 @@ export const allStopsDB = {
     "searchIndex": "bizkentsitesi",
     "routes": [
       "7",
-      "8",
       "5B",
       "7E"
     ],
@@ -4535,7 +4499,6 @@ export const allStopsDB = {
     "fullName": "Gazi Osman Paşa Ortaokulu 1",
     "searchIndex": "gaziosmanpasaortaokulu",
     "routes": [
-      "8",
       "2A",
       "7E"
     ],
@@ -4605,7 +4568,6 @@ export const allStopsDB = {
     "searchIndex": "eczacilikfakultesi",
     "routes": [
       "3",
-      "8",
       "1G",
       "2A",
       "2B",
@@ -4759,9 +4721,7 @@ export const allStopsDB = {
     "name": "Emel Özgür Subaşı Ay Mesleki ve Teknik Anadolu Lisesi",
     "fullName": "Emel Özgür Subaşı Ay Mesleki ve Teknik Anadolu Lisesi 1",
     "searchIndex": "emelozgursubasiaymeslekiveteknikanadolulisesi",
-    "routes": [
-      "8"
-    ],
+    "routes": [],
     "lat": 41.6650322,
     "lon": 26.6028478
   },
@@ -4781,9 +4741,7 @@ export const allStopsDB = {
     "name": "Enes Sitesi",
     "fullName": "Enes Sitesi 1",
     "searchIndex": "enessitesi",
-    "routes": [
-      "8"
-    ],
+    "routes": [],
     "lat": 41.6571661,
     "lon": 26.6029913
   },
@@ -4792,9 +4750,7 @@ export const allStopsDB = {
     "name": "Enes Sitesi",
     "fullName": "Enes Sitesi 2",
     "searchIndex": "enessitesi",
-    "routes": [
-      "8"
-    ],
+    "routes": [],
     "lat": 41.6571421,
     "lon": 26.603163
   },
@@ -4862,8 +4818,7 @@ export const allStopsDB = {
     "fullName": "Cevahir Yaşam",
     "searchIndex": "cevahiryasam",
     "routes": [
-      "7",
-      "8"
+      "7"
     ],
     "lat": 41.6791219,
     "lon": 26.5902776
@@ -4874,8 +4829,7 @@ export const allStopsDB = {
     "fullName": "Safran",
     "searchIndex": "safran",
     "routes": [
-      "7",
-      "8"
+      "7"
     ],
     "lat": 41.6762131,
     "lon": 26.5926326
@@ -4886,8 +4840,7 @@ export const allStopsDB = {
     "fullName": "Vitrin",
     "searchIndex": "vitrin",
     "routes": [
-      "7",
-      "8"
+      "7"
     ],
     "lat": 41.6731038,
     "lon": 26.5960551
@@ -4898,8 +4851,7 @@ export const allStopsDB = {
     "fullName": "Yıldız Evler",
     "searchIndex": "yildizevler",
     "routes": [
-      "7",
-      "8"
+      "7"
     ],
     "lat": 41.670419,
     "lon": 26.5975679
@@ -4922,7 +4874,6 @@ export const allStopsDB = {
     "searchIndex": "vadikonaklari",
     "routes": [
       "5",
-      "8",
       "6B"
     ],
     "lat": 41.6883204,
@@ -4995,6 +4946,7 @@ export const allStopsDB = {
     "lon": 26.5699036
   }
 };
+
 export const etusLines = {
   "3": {
     "code": "3",
@@ -9272,338 +9224,6 @@ export const etusLines = {
           "20021",
           "20266",
           "20210"
-        ]
-      }
-    ]
-  },
-  "8": {
-    "code": "8",
-    "color": "#0D9488",
-    "directions": [
-      {
-        "direction": "0",
-        "headSign": "Erasta - Otogar",
-        "path": [
-          [
-            41.667416,
-            26.571662
-          ],
-          [
-            41.663812,
-            26.57648
-          ],
-          [
-            41.662196,
-            26.578571
-          ],
-          [
-            41.659915,
-            26.581505
-          ],
-          [
-            41.661071,
-            26.585976
-          ],
-          [
-            41.664622,
-            26.587897
-          ],
-          [
-            41.664091,
-            26.587844
-          ],
-          [
-            41.666227,
-            26.58631
-          ],
-          [
-            41.66771,
-            26.58554
-          ],
-          [
-            41.669195,
-            26.584309
-          ],
-          [
-            41.68832,
-            26.584157
-          ],
-          [
-            41.679122,
-            26.590278
-          ],
-          [
-            41.676213,
-            26.592633
-          ],
-          [
-            41.673104,
-            26.596055
-          ],
-          [
-            41.670419,
-            26.597568
-          ],
-          [
-            41.665032,
-            26.602848
-          ],
-          [
-            41.663635,
-            26.60013
-          ],
-          [
-            41.661786,
-            26.601749
-          ],
-          [
-            41.658287,
-            26.602605
-          ],
-          [
-            41.657166,
-            26.602991
-          ],
-          [
-            41.653703,
-            26.599317
-          ],
-          [
-            41.654433,
-            26.606309
-          ],
-          [
-            41.656001,
-            26.607595
-          ],
-          [
-            41.648304,
-            26.619278
-          ],
-          [
-            41.645792,
-            26.618494
-          ],
-          [
-            41.642414,
-            26.61511
-          ],
-          [
-            41.64056,
-            26.613368
-          ],
-          [
-            41.638426,
-            26.611862
-          ],
-          [
-            41.63312,
-            26.614474
-          ],
-          [
-            41.635086,
-            26.622093
-          ],
-          [
-            41.632311,
-            26.619509
-          ]
-        ],
-        "stopIds": [
-          "20038",
-          "20039",
-          "20040",
-          "20041",
-          "20206",
-          "20120",
-          "20142",
-          "20140",
-          "20139",
-          "20137",
-          "20471",
-          "20466",
-          "20467",
-          "20468",
-          "20469",
-          "20455",
-          "20153",
-          "20339",
-          "20422",
-          "20457",
-          "20367",
-          "20413",
-          "20283",
-          "20431",
-          "20289",
-          "20290",
-          "20003",
-          "20002",
-          "20320",
-          "20047",
-          "20001"
-        ]
-      },
-      {
-        "direction": "1",
-        "headSign": "Otogar - Erasta",
-        "path": [
-          [
-            41.632311,
-            26.619509
-          ],
-          [
-            41.635086,
-            26.622093
-          ],
-          [
-            41.63454,
-            26.613017
-          ],
-          [
-            41.638426,
-            26.611862
-          ],
-          [
-            41.640573,
-            26.613637
-          ],
-          [
-            41.642414,
-            26.61511
-          ],
-          [
-            41.645792,
-            26.618494
-          ],
-          [
-            41.648564,
-            26.61957
-          ],
-          [
-            41.655944,
-            26.607253
-          ],
-          [
-            41.654433,
-            26.606309
-          ],
-          [
-            41.653693,
-            26.599668
-          ],
-          [
-            41.657142,
-            26.603163
-          ],
-          [
-            41.658364,
-            26.602986
-          ],
-          [
-            41.661833,
-            26.601937
-          ],
-          [
-            41.663942,
-            26.600141
-          ],
-          [
-            41.665032,
-            26.602848
-          ],
-          [
-            41.670419,
-            26.597568
-          ],
-          [
-            41.673104,
-            26.596055
-          ],
-          [
-            41.676213,
-            26.592633
-          ],
-          [
-            41.679122,
-            26.590278
-          ],
-          [
-            41.68832,
-            26.584157
-          ],
-          [
-            41.669288,
-            26.584962
-          ],
-          [
-            41.667708,
-            26.585728
-          ],
-          [
-            41.666314,
-            26.586365
-          ],
-          [
-            41.664091,
-            26.587844
-          ],
-          [
-            41.664622,
-            26.587897
-          ],
-          [
-            41.66108,
-            26.586118
-          ],
-          [
-            41.659915,
-            26.581505
-          ],
-          [
-            41.662196,
-            26.578571
-          ],
-          [
-            41.663738,
-            26.576885
-          ],
-          [
-            41.667416,
-            26.571662
-          ]
-        ],
-        "stopIds": [
-          "20001",
-          "20047",
-          "20291",
-          "20002",
-          "20007",
-          "20290",
-          "20289",
-          "20363",
-          "20288",
-          "20413",
-          "20324",
-          "20458",
-          "20364",
-          "20421",
-          "20149",
-          "20455",
-          "20469",
-          "20468",
-          "20467",
-          "20466",
-          "20471",
-          "20125",
-          "20123",
-          "20122",
-          "20142",
-          "20120",
-          "20207",
-          "20041",
-          "20040",
-          "20015",
-          "20038"
         ]
       }
     ]

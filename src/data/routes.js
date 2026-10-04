@@ -48,6 +48,11 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     return path.slice(Math.min(i1, i2), Math.max(i1, i2) + 1);
   };
 
+  // Detaylı tarif için durak nesnesi (koordinatı olmayan duraklar da isimle listelenir)
+  const toStopObj = (id) => {
+    const s = allStopsDB[id];
+    return s ? { id: s.id, name: s.name, lat: s.lat || null, lon: s.lon || null } : null;
+  };
 
   // 800 metre (yaklaşık 10 dk yürüme) çapındaki tüm durakları al
   const startStops = findNearbyStops(fromLat, fromLon, 0.8);
@@ -106,7 +111,20 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
               walkDistanceStart: sStop.distanceKm,
               walkDistanceEnd: eStop.distanceKm,
               passedStops: passedStops,
-              passedStopCoords: passedStopCoords
+              passedStopCoords: passedStopCoords,
+              walkStartMins: walkStart,
+              walkEndMins: walkEnd,
+              transferWaitMins: 0,
+              legs: [{
+                line: code,
+                color: lineData.color || '#4f46e5',
+                headSign: dir.headSign,
+                fromStop: toStopObj(sStop.id),
+                toStop: toStopObj(eStop.id),
+                stops: passedStopIds.map(toStopObj).filter(Boolean),
+                stopCount,
+                minutes: Math.ceil(estimatedBusTime)
+              }]
             });
           }
         }
@@ -205,7 +223,32 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                     walkDistanceStart: sStop.distanceKm,
                     walkDistanceEnd: match.walkEnd,
                     passedStops: passedStops,
-                    passedStopCoords: passedStopCoords
+                    passedStopCoords: passedStopCoords,
+                    walkStartMins: walkStart,
+                    walkEndMins: walkEnd,
+                    transferWaitMins: transferWaitTime,
+                    legs: [
+                      {
+                        line: line1Code,
+                        color: line1Data.color || '#4f46e5',
+                        headSign: dir1.headSign,
+                        fromStop: toStopObj(sStop.id),
+                        toStop: toStopObj(tStopId),
+                        stops: dir1.stopIds.slice(idxA + 1, tIdx).map(toStopObj).filter(Boolean),
+                        stopCount: leg1Stops,
+                        minutes: Math.ceil(leg1Time)
+                      },
+                      {
+                        line: line2Code,
+                        color: etusLines[line2Code]?.color || '#f59e0b',
+                        headSign: dir2.headSign,
+                        fromStop: toStopObj(tStopId),
+                        toStop: toStopObj(match.eStop.id),
+                        stops: dir2.stopIds.slice(idxT + 1, match.idxB).map(toStopObj).filter(Boolean),
+                        stopCount: leg2Stops,
+                        minutes: Math.ceil(leg2Time)
+                      }
+                    ]
                   });
                }
             }
