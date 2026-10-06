@@ -277,8 +277,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     }
   }
 
-  // Sadece en mantıklı ilk 5 rotayı al
-  const topRoutes = uniqueLines.slice(0, 5);
+  // En mantıklı ilk 15 rotayı al (Artık UI'da gruplandığı için fazla sonuç göstermek sorun yaratmaz)
+  const topRoutes = uniqueLines.slice(0, 15);
 
   const bestRoute = uniqueLines[0];
 
