@@ -125,6 +125,7 @@ function App() {
   const [searchResults, setSearchResults] = useState(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
+  const [activeSubRouteId, setActiveSubRouteId] = useState(null);
   const [searchTime, setSearchTime] = useState(() => new Date());
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -648,7 +649,11 @@ function App() {
                   const idx = routeGroup.originalIdx;
                   const isSelected = selectedRouteIndex === idx;
                   const isExpanded = expandedRouteId === routeGroup.groupId;
-                  const itin = buildItinerary(routeGroup, getWalk(routeGroup, isSelected), searchTime);
+                  
+                  const activeSubIndex = activeSubRouteId?.startsWith(routeGroup.groupId) ? parseInt(activeSubRouteId.split('_').pop()) : 0;
+                  const activeRouteObj = (isExpanded && routeGroup.groupedLines[activeSubIndex]) ? routeGroup.groupedLines[activeSubIndex] : routeGroup;
+                  
+                  const itin = buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), searchTime);
                   const fmt = (d) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                   
                   return (
@@ -711,6 +716,29 @@ function App() {
                     
                     {isSelected && isExpanded && itin && (
                       <>
+                        {routeGroup.groupedLines.length > 1 && (
+                          <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+                            {routeGroup.groupedLines.map((r, subIdx) => {
+                               const isActive = activeSubIndex === subIdx;
+                               return (
+                                 <button 
+                                   key={subIdx} 
+                                   onClick={(e) => { e.stopPropagation(); setActiveSubRouteId(`${routeGroup.groupId}_${subIdx}`); }}
+                                   style={{ 
+                                     padding: '6px 10px', borderRadius: '6px', border: isActive ? `2px solid ${r.color || 'var(--primary)'}` : '1px solid var(--border-color)', 
+                                     background: isActive ? '#f0f9ff' : 'transparent',
+                                     color: 'var(--text-main)', fontWeight: isActive ? '700' : '500',
+                                     fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap',
+                                     display: 'flex', alignItems: 'center', gap: '4px'
+                                   }}
+                                 >
+                                   <BusFront size={14} color={r.color || 'var(--primary)'} />
+                                   {r.isTransfer ? `${r.line1}➔${r.line2}` : r.name} Detayı
+                                 </button>
+                               );
+                            })}
+                          </div>
+                        )}
                         <RouteItinerary
                           itin={itin}
                           fromName={fromLocation.name}

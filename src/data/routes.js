@@ -83,8 +83,9 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           if (idxA !== -1 && idxB !== -1 && idxA < idxB) {
             const stopCount = idxB - idxA;
             const estimatedBusTime = stopCount * 1.5; // Ortalama her durak 1.5 dk
-            const walkStart = Math.ceil(sStop.distanceKm * 12); // km başı ~12 dk yürüme
-            const walkEnd = Math.ceil(eStop.distanceKm * 12);
+            // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
+            const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12); // km başı ~12 dk yürüme
+            const walkEnd = Math.ceil(eStop.distanceKm * 1.4 * 12);
             const totalTime = walkStart + estimatedBusTime + walkEnd;
 
             // Ara durakları topla
@@ -168,25 +169,37 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const tStop = allStopsDB[tStopId];
           if (!tStop) continue;
 
-          for (const line2Code of (tStop.routes || [])) {
-            if (line1Code === line2Code) continue;
+          // Aktarma için tStop ve çevresindeki (max 250m) yürünebilir durakları topla
+          const nearbyTransferStops = [tStop];
+          for (const s of Object.values(allStopsDB)) {
+             if (s.id !== tStop.id && getDistance(tStop.lat, tStop.lon, s.lat, s.lon) <= 0.25) {
+                nearbyTransferStops.push(s);
+             }
+          }
 
-            const endMatches = linesToEnd[line2Code];
-            if (!endMatches) continue;
+          for (const actualTransferStop of nearbyTransferStops) {
+            for (const line2Code of (actualTransferStop.routes || [])) {
+              if (line1Code === line2Code) continue;
 
-            for (const match of endMatches) {
-               const dir2 = etusLines[line2Code].directions[match.dirIdx];
-               const idxT = dir2.stopIds.indexOf(tStopId);
-               
-               if (idxT !== -1 && idxT < match.idxB) {
-                  const leg1Stops = tIdx - idxA;
-                  const leg2Stops = match.idxB - idxT;
-                  const leg1Time = leg1Stops * 1.5;
-                  const leg2Time = leg2Stops * 1.5;
-                  const transferWaitTime = 12; // Aktarma bekleme süresi cezası
-                  const walkStart = Math.ceil(sStop.distanceKm * 12);
-                  const walkEnd = Math.ceil(match.walkEnd * 12);
-                  const totalTime = walkStart + leg1Time + transferWaitTime + leg2Time + walkEnd;
+              const endMatches = linesToEnd[line2Code];
+              if (!endMatches) continue;
+
+              for (const match of endMatches) {
+                 const dir2 = etusLines[line2Code].directions[match.dirIdx];
+                 const idxT = dir2.stopIds.indexOf(actualTransferStop.id);
+                 
+                 if (idxT !== -1 && idxT < match.idxB) {
+                    const leg1Stops = tIdx - idxA;
+                    const leg2Stops = match.idxB - idxT;
+                    const leg1Time = leg1Stops * 1.5;
+                    const leg2Time = leg2Stops * 1.5;
+                    const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
+                    const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
+                    const transferWaitTime = 10 + transferWalkTime; // Aktarma bekleme + aktarma yürüme süresi cezası
+                    // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
+                    const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12);
+                    const walkEnd = Math.ceil(match.walkEnd * 1.4 * 12);
+                    const totalTime = walkStart + leg1Time + transferWaitTime + leg2Time + walkEnd;
 
                   const passedStops = [];
                   const passedStopCoords = [];
@@ -243,7 +256,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         line: line2Code,
                         color: etusLines[line2Code]?.color || '#f59e0b',
                         headSign: dir2.headSign,
-                        fromStop: toStopObj(tStopId),
+                        fromStop: toStopObj(actualTransferStop.id),
                         toStop: toStopObj(match.eStop.id),
                         stops: dir2.stopIds.slice(idxT + 1, match.idxB).map(toStopObj).filter(Boolean),
                         stopCount: leg2Stops,
@@ -252,6 +265,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                     ]
                   });
                }
+             }
             }
           }
         }
