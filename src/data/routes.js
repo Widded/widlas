@@ -54,9 +54,10 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     return s ? { id: s.id, name: s.name, lat: s.lat || null, lon: s.lon || null } : null;
   };
 
-  // 800 metre (yaklaşık 10 dk yürüme) çapındaki tüm durakları al
-  const startStops = findNearbyStops(fromLat, fromLon, 0.8);
-  const endStops = findNearbyStops(toLat, toLon, 0.8);
+  // Navigasyon mantığı: Hedefe tam giden hat yoksa bile en yakın durakta (örn: 2.5km uzakta) bırakıp yürütebilir.
+  // Bu yüzden arama çapını 0.8 km'den 2.5 km'ye çıkarıyoruz. (Yaklaşık 30 dk yürüme mesafesi)
+  const startStops = findNearbyStops(fromLat, fromLon, 2.5);
+  const endStops = findNearbyStops(toLat, toLon, 2.5);
 
   if (startStops.length === 0 || endStops.length === 0) return null;
 

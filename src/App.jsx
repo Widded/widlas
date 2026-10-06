@@ -692,9 +692,9 @@ function App() {
 
                     {!isExpanded && (
                       <div className="route-compact">
-                        <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> Biniş: <b>{routeGroup.startStop.name}</b></span>
+                        <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> <b>{routeGroup.walkStartMins} dk</b> yürü (Biniş: <b>{routeGroup.startStop.name}</b>)</span>
                         {routeGroup.isTransfer && <span>Aktarma: <b>{routeGroup.transferStop.name}</b></span>}
-                        <span>İniş: <b>{routeGroup.endStop.name}</b></span>
+                        <span>İniş: <b>{routeGroup.endStop.name}</b> (<Footprints size={13} style={{ verticalAlign: '-2px' }} /> <b>{routeGroup.walkEndMins} dk</b> yürü)</span>
                         {routeGroup.legs?.[0] && <span>Yön: <b>{terminalOf(routeGroup.legs[0].headSign)}</b></span>}
                         {isSelected && (
                            <button 
