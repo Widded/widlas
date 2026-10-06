@@ -169,33 +169,24 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const tStop = allStopsDB[tStopId];
           if (!tStop) continue;
 
-          // Aktarma için tStop ve çevresindeki (max 250m) yürünebilir durakları topla
-          const nearbyTransferStops = [tStop];
-          for (const s of Object.values(allStopsDB)) {
-             if (s.id !== tStop.id && getDistance(tStop.lat, tStop.lon, s.lat, s.lon) <= 0.25) {
-                nearbyTransferStops.push(s);
-             }
-          }
+          // Sadece aktarma durağının BİREBİR kendisindeki hatlara bak (Performans için)
+          // 250m taraması OOM (Out of Memory) ve 40M+ iterasyona sebep olduğu için kaldırıldı.
+          for (const line2Code of (tStop.routes || [])) {
+            if (line1Code === line2Code) continue;
 
-          for (const actualTransferStop of nearbyTransferStops) {
-            for (const line2Code of (actualTransferStop.routes || [])) {
-              if (line1Code === line2Code) continue;
+            const endMatches = linesToEnd[line2Code];
+            if (!endMatches) continue;
 
-              const endMatches = linesToEnd[line2Code];
-              if (!endMatches) continue;
-
-              for (const match of endMatches) {
-                 const dir2 = etusLines[line2Code].directions[match.dirIdx];
-                 const idxT = dir2.stopIds.indexOf(actualTransferStop.id);
+            for (const match of endMatches) {
+               const dir2 = etusLines[line2Code].directions[match.dirIdx];
+               const idxT = dir2.stopIds.indexOf(tStop.id);
                  
                  if (idxT !== -1 && idxT < match.idxB) {
                     const leg1Stops = tIdx - idxA;
                     const leg2Stops = match.idxB - idxT;
                     const leg1Time = leg1Stops * 1.5;
                     const leg2Time = leg2Stops * 1.5;
-                    const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
-                    const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
-                    const transferWaitTime = 10 + transferWalkTime; // Aktarma bekleme + aktarma yürüme süresi cezası
+                    const transferWaitTime = 12; // Aktarma bekleme süresi cezası
                     // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
                     const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12);
                     const walkEnd = Math.ceil(match.walkEnd * 1.4 * 12);
@@ -256,7 +247,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         line: line2Code,
                         color: etusLines[line2Code]?.color || '#f59e0b',
                         headSign: dir2.headSign,
-                        fromStop: toStopObj(actualTransferStop.id),
+                        fromStop: toStopObj(tStopId),
                         toStop: toStopObj(match.eStop.id),
                         stops: dir2.stopIds.slice(idxT + 1, match.idxB).map(toStopObj).filter(Boolean),
                         stopCount: leg2Stops,
@@ -266,7 +257,6 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                   });
                }
              }
-            }
           }
         }
       });
