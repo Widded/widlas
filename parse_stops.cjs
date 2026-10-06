@@ -11,7 +11,7 @@ A R S E V E N S İ T E S İ 1 A
 A S K E R L İ K Ş U B E S İ ( H a s t a n e Y ö n ü ) 2 A 7 A
 A T A T Ü R K K Ü L T Ü R M E R K E Z İ 5 5 A
 A V R U P A K E N T 1 A
-A Y Ç İ Ç E K H E Y K E L İ 3 C
+A Y Ç İ Ç E K H E Y K E L İ 3 C 8
 A Y Ş E K A D I N C A M İ İ 1 A 1 F 2 A 2 B 3 3 A 4 5 5 B 6
 A Y Ş E K A D I N K A R A K O L 1 A 1 F 2 A 2 B 3 3 A 4 5 5 B 6
 B A C A ( Ç a r ş ı Y ö n ü ) 2 B 3 C
@@ -29,14 +29,14 @@ B A Ş A R - M A R 5 5 A 5 B
 B E K T A Ş Y A P I 6 B
 B E L K O O P 6 6 A 7 A 7 E
 B E L K O O P G İ R İ Ş 6 6 A 7 A 7 E
-B İ Z K E N T 5 B 7 7 E
+B İ Z K E N T 5 B 7 7 E 8
 B O S T A N P A Z A R I 3 C 4 A
 B U Ç U K T E P E M E Z A R L I K 5 5 A
 B U L U T A P A R T M A N I 5
 B U L G A R K O N S O L O S L U Ğ U 1 A 1 F 2 A 2 B 3 3 A 4 5 5 B 6
 T U Ğ R A M A R K E T 4 3 C 6
 C E M E V İ 5 A 5 B
-C E V A H İ R Y A Ş A M
+C E V A H İ R Y A Ş A M 8
 C U M A R T E S İ P A Z A R I 2 B 3
 Ç A M M O B İ L Y A 5
 Ç E L İ K İ N Ş A A T 5
@@ -48,7 +48,7 @@ D E F T E R D A R L I K 5 B
 D E Ğ İ R M E N M A R K E T 2 A 3 C
 D E L T A P A R K 1 F 2 A 2 B 3 3 A 3 C 4 A 5 A 7 A 7 E
 D E V L E T H A S T A N E S İ ( Ç a r ş ı Y ö n ü ) 2 A 2 B 3 3 A 3 C 4 A 5 A 5 B 7 7 E
-D E V L E T H A S T A N E S İ ( O t o g a r Y ö n ü ) 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E
+D E V L E T H A S T A N E S İ ( O t o g a r Y ö n ü ) 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E 8
 D İ N Ç E L S İ T E S İ ( Ç a r ş ı Y ö n ü ) 2 A
 D İ N Ç E L S İ T E S İ ( H a s t a n e Y ö n ü ) 2 A
 D İ Ş H A S T A N E S İ 2 B 3
@@ -56,23 +56,23 @@ E D İ R N E L İ L E R 6 B
 E C Z A C I L I K F A K Ü L T E S İ 1 F 2 A 2 B 3 3 A 3 C 4 A 5 A 7 A 7 E
 E G E Ş A H 5 A 5 B
 E Ğ İ T İ M F A K . 2 A 5
-E M E L Ö Z G Ü R S U B A Ş I A Y L İ S E S İ 5 B
+E M E L Ö Z G Ü R S U B A Ş I A Y L İ S E S İ 5 B 8
 E M İ R G A N 3 C 6 A
 E S K İ E M N İ Y E T M Ü D Ü R L Ü Ğ Ü 2 A 7 A
-E R A S T A 1 A 2 B 1 F 3 A 7 A
+E R A S T A 1 A 2 B 1 F 3 A 7 A 8
 E R D E M Y A P I 2 B 3
 E S E N T E P E 2 A 5 5 A
 E T S O 1 A 1 F 3 A 5 7 A
 F T İ P İ C E Z A E V İ 6
 F A K Ü L T E I Ş I K L A R 1 A
-F A T İ H C A M İ İ 1 G 2 B 3 3 A 3 C 4 A 5 A
+F A T İ H C A M İ İ 1 G 2 B 3 3 A 3 C 4 A 5 A 8
 F E N İ Ş L E R İ 5 B
 F E N L İ S E S İ 3 C 6 A
 F I R I N L A R S I R T I T O K İ 6 6 A 6 B 7 A 7 E
 F I R I N L A R S I R T I T O K İ G İ R İ Ş 6 6 A 6 B 7 A 7 E
 G A R 1 G 4 A 6
 G A Z D A Ş 3 C 4 6
-G A Z İ O S M A N P A Ş A O R T A O K U L U 2 A 5 B 7 7 E
+G A Z İ O S M A N P A Ş A O R T A O K U L U 2 A 5 B 7 7 E 8
 G A Z İ M İ H A L 1 A 1 F 3 3 A 3 A Y M 4 5 A 7
 G Ö Ç M E N E V L E R İ 2 A 5 5 A
 G Ö K S U E V L E R İ 1 A
@@ -85,7 +85,7 @@ H A D I M A Ğ A T O K İ 2 A 2 B 3 3 A 3 C 4 A 5 A 5 B 7 7 E
 H A L K E Ğ İ T İ M 5 A 6 6 A 7
 İ K İ K Ö P R Ü A R A S I 3 C 6 A
 İ K T İ S A T F A K Ü L T E S İ 1 F 2 A 2 B 3 3 A 3 C 4 A 5 A 7 A 7 E
-İ L H A M İ E R T E M 2 A 3 C
+İ L H A M İ E R T E M 2 A 3 C 8
 İ S T A S Y O N M A H A L L E S İ 4
 J A N D A R M A 2 A 3 C 5
 K A F E T E R Y A L A R 3 C 6 A
@@ -114,22 +114,22 @@ K Ü L T Ü R K E N T 5 B
 L A D İ N S İ T E S İ 1 A
 M A C E R A P A R K I 7 7 E
 M A C U R E V L E R İ 3 C 6 A
-M A R G İ 1 A 1 F 3 A 7 A
+M A R G İ 1 A 1 F 3 A 7 A 8
 M E G A P A R K 1 G 2 B 3 C 4 A
 M E R İ Ç H O U S E 5
 M E V L A N A C A M İ İ 5 7 7 E
-M O D A V İ Z Y O N 1 A 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E
+M O D A V İ Z Y O N 1 A 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E 8
 N E H İ R M A R K E T 4 4 A
-N İ M E T - E R 5 B 7 7 E
-O L İ M P İ K H A V U Z 5 B 7 7 E
+N İ M E T - E R 5 B 7 7 E 8
+O L İ M P İ K H A V U Z 5 B 7 7 E 8
 O L İ N 1 A 1 F 3 A 5 7 A
 O R D U E V İ ( A T A T Ü R K B u l v a r ı ) 1 A 1 F 2 A 2 B 3 3 A 4 5 B 6
 O R D U E V İ 2 ( K ı y ı k C a d d e s i ) 5 A 6 6 A 6 B 7
 O R M A N İ Ş L E T M E M Ü D . 3 C 6 A
-O T O G A R 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E
+O T O G A R 2 A 2 B 3 3 A 3 C 4 A 5 A 7 E 8
 Ö N D E R M A R K E T 5 A 5 B
 Ö N D E R T A R I M 5
-Ö R E N S İ T E S İ 2 A 3 C
+Ö R E N S İ T E S İ 2 A 3 C 8
 Ö Z B İ Z İ M E V L E R 7 7 E
 Ö Z G Ü R Ç O C U K L A R P A R K I 7 7 E
 P A Z A R T E S İ P A Z A R I 2 A 2 B 6 A
@@ -139,14 +139,14 @@ P L A T İ N 6 6 A 7 A 7 E
 P L E V N E İ L K O K U L U 3
 P Ü S K Ü L L Ü 3 A
 R Ö L E 5 6 B
-S A F R A N
+S A F R A N 8
 S A Ğ L I K B İ L İ M L E R İ 1 F 2 A 2 B 3 3 A 3 C 5 A 7 A 7 E
 S A Ğ L I K M Ü D Ü R L Ü Ğ Ü ( K ı y ı k C a d d e s i ) 5 A 6 6 A 6 B 7
 S A K I P A Ğ A S İ T E S İ 7 7 E
 S A N A Y İ A L T I 4
 S A N A Y İ C A M İ İ 6
-S A N A Y İ Ç I K I Ş 1 A 1 F 3 A 5 7 A
-S A N A Y İ O R T A K A P I 1 A 1 F 3 A 5 7 A
+S A N A Y İ Ç I K I Ş 1 A 1 F 3 A 5 7 A 8
+S A N A Y İ O R T A K A P I 1 A 1 F 3 A 5 7 A 8
 S A R A Ç H A N E 5 B
 S A R A Y O T E L 4 A
 S A R A Y İ Ç İ 5 B
@@ -163,7 +163,7 @@ S U L T A N Ç E L E B İ M E H M E T K Y K Y U R D U 5 B 6 A 7 A 7 E
 Ş A H İ N T E P E S İ 6 6 A 7 A 7 E
 Ş Ü K R Ü P A Ş A A N I T I 5 5 A
 Ş Ü K R Ü P A Ş A K O N A K L A R I 5 7 7 E
-Ş Ü K R Ü P A Ş A M U H T A R L I Ğ I 2 A 3 C
+Ş Ü K R Ü P A Ş A M U H T A R L I Ğ I 2 A 3 C 8
 T A B Y A ( Y e ş i l E v l e r R a m p a s ı ) 2 A
 T A B Y A ( G Ö L E T ) 5 5 A
 T A R I M S A L A R A Ş T I R M A 1 A 1 F 7 A
@@ -182,17 +182,17 @@ T R E D A Ş 1 A 1 F 3 A 5 6 7 A
 Ü N İ V E R S İ T E 2 B 3 3 C 5 5 B
 V A D İ K O N A K L A R I 5 6 B
 V A L İ K O N A Ğ I 2 B 3 C 4 A
-V İ T R İ N 7
+V İ T R İ N 7 8
 Y A B A N C I L A R Ş U B E 3 A
-Y A Y L A T A K S İ 5 A 5 B
+Y A Y L A T A K S İ 5 A 5 B 8
 Y E N İ İ M A R E T M E R K E Z 3 A 3 A Y M
 Y E N İ İ M A R E T M E Z A R L I K 3 A
 Y E Ş İ L T E P E 2 A 7 A
 Y E Ş İ L E V L E R 2 A
-Y E Ş İ L E V L E R 2 ( A y ç i ç e k H e y k e l i Y ö n ü ) 3 C
+Y E Ş İ L E V L E R 2 ( A y ç i ç e k H e y k e l i Y ö n ü ) 3 C 8
 Y I L D I R I M Ç E Ş M E 3 A 3 A Y M
 Y I L D I R I M M E R K E Z 3 A 3 A Y M
-Y I L D I Z A P A R T M A N I 7 7 E
+Y I L D I Z A P A R T M A N I 7 7 E 8
 Z İ R V E Y A Ş A M S İ T E S İ 7 7 E
 Z Ü B E Y D E H A N I M P A R K I ( Ç a r ş ı Y ö n ü ) 2 B
 Z Ü B E Y D E H A N I M K A D I N M E R K E Z İ 3`;
