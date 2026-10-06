@@ -629,8 +629,8 @@ function App() {
                 const groupMap = new Map();
                 searchResults.routes.forEach((route, idx) => {
                   const key = route.isTransfer 
-                    ? `transfer_${route.startStop.id}_${route.transferStop.id}_${route.endStop.id}`
-                    : `direct_${route.startStop.id}_${route.endStop.id}`;
+                    ? `transfer_${route.startStop.name}_${route.transferStop.name}_${route.endStop.name}`
+                    : `direct_${route.startStop.name}_${route.endStop.name}`;
                   if (!groupMap.has(key)) {
                     groupMap.set(key, {
                       ...route,
