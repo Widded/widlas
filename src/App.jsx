@@ -124,6 +124,7 @@ function App() {
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
   const [searchResults, setSearchResults] = useState(null);
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
+  const [expandedRouteId, setExpandedRouteId] = useState(null);
   const [searchTime, setSearchTime] = useState(() => new Date());
   const [hasSearched, setHasSearched] = useState(false);
 
@@ -623,66 +624,114 @@ function App() {
 
           {searchResults.routes && searchResults.routes.length > 0 ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {searchResults.routes.map((route, idx) => {
-                const isSelected = selectedRouteIndex === idx;
-                const itin = buildItinerary(route, getWalk(route, isSelected), searchTime);
-                const fmt = (d) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                return (
-                <div
-                  key={route.id}
-                  className="route-card"
-                  onClick={() => setSelectedRouteIndex(idx)}
-                  style={{
-                    borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
-                    backgroundColor: isSelected ? '#fbfdff' : 'white',
-                    borderWidth: isSelected ? '2px' : '1px',
-                    padding: isSelected ? '15px' : '16px', // border-width offset
-                    cursor: isSelected ? 'default' : 'pointer'
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isSelected ? '14px' : '10px' }}>
-                    {route.isTransfer ? (
-                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span className="bus-badge" style={{ background: route.color }}>{route.line1}</span>
-                          <ArrowRight size={16} color="var(--text-muted)" />
-                          <span className="bus-badge" style={{ background: route.color2 }}>{route.line2}</span>
-                       </div>
-                    ) : (
-                       <span className="bus-badge" style={{ background: route.color || 'var(--primary)' }}>{route.name}</span>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                      <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)' }}>
-                        {itin ? itin.totalMin : route.totalTime} dk
-                      </span>
-                      {itin && (
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
-                          <Clock size={12} /> {fmt(itin.departAt)} → {fmt(itin.arriveAt)}
+              {(() => {
+                const groupedRoutes = [];
+                const groupMap = new Map();
+                searchResults.routes.forEach((route, idx) => {
+                  const key = route.isTransfer 
+                    ? `transfer_${route.startStop.id}_${route.transferStop.id}_${route.endStop.id}`
+                    : `direct_${route.startStop.id}_${route.endStop.id}`;
+                  if (!groupMap.has(key)) {
+                    groupMap.set(key, {
+                      ...route,
+                      groupId: key,
+                      originalIdx: idx,
+                      groupedLines: [route]
+                    });
+                  } else {
+                    groupMap.get(key).groupedLines.push(route);
+                  }
+                });
+                groupedRoutes.push(...groupMap.values());
+                
+                return groupedRoutes.map((routeGroup) => {
+                  const idx = routeGroup.originalIdx;
+                  const isSelected = selectedRouteIndex === idx;
+                  const isExpanded = expandedRouteId === routeGroup.groupId;
+                  const itin = buildItinerary(routeGroup, getWalk(routeGroup, isSelected), searchTime);
+                  const fmt = (d) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+                  
+                  return (
+                  <div
+                    key={routeGroup.groupId}
+                    className="route-card"
+                    onClick={() => { setSelectedRouteIndex(idx); if (!isSelected) setExpandedRouteId(null); }}
+                    style={{
+                      borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
+                      backgroundColor: isSelected ? '#fbfdff' : 'white',
+                      borderWidth: isSelected ? '2px' : '1px',
+                      padding: isSelected ? '15px' : '16px',
+                      cursor: isSelected ? 'default' : 'pointer'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isSelected && isExpanded ? '14px' : '10px' }}>
+                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                        {routeGroup.groupedLines.map((r, i) => (
+                           r.isTransfer ? (
+                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
+                                <ArrowRight size={14} color="var(--text-muted)" />
+                                <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
+                             </div>
+                           ) : (
+                             <span key={i} className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
+                           )
+                        ))}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: '12px' }}>
+                        <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+                          {itin ? itin.totalMin : routeGroup.totalTime} dk
                         </span>
-                      )}
+                        {itin && (
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                            <Clock size={12} /> {fmt(itin.departAt)} → {fmt(itin.arriveAt)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
 
-                  {isSelected && itin ? (
-                    <RouteItinerary
-                      itin={itin}
-                      fromName={fromLocation.name}
-                      toName={toLocation.name}
-                      fromCoord={{ lat: fromLocation.lat, lon: fromLocation.lon }}
-                      toCoord={{ lat: toLocation.lat, lon: toLocation.lon }}
-                      onFocus={focusOnMap}
-                    />
-                  ) : (
-                    <div className="route-compact">
-                      <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> Biniş: <b>{route.startStop.name}</b></span>
-                      {route.isTransfer && <span>Aktarma: <b>{route.transferStop.name}</b></span>}
-                      <span>İniş: <b>{route.endStop.name}</b></span>
-                      {route.legs?.[0] && <span>Yön: <b>{terminalOf(route.legs[0].headSign)}</b></span>}
-                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Detay için dokun</span>}
-                    </div>
-                  )}
-                </div>
-                );
-              })}
+                    {!isExpanded && (
+                      <div className="route-compact">
+                        <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> Biniş: <b>{routeGroup.startStop.name}</b></span>
+                        {routeGroup.isTransfer && <span>Aktarma: <b>{routeGroup.transferStop.name}</b></span>}
+                        <span>İniş: <b>{routeGroup.endStop.name}</b></span>
+                        {routeGroup.legs?.[0] && <span>Yön: <b>{terminalOf(routeGroup.legs[0].headSign)}</b></span>}
+                        {isSelected && (
+                           <button 
+                             className="btn-primary" 
+                             style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '8px', alignSelf: 'flex-start', borderRadius: '6px' }}
+                             onClick={(e) => { e.stopPropagation(); setExpandedRouteId(routeGroup.groupId); }}
+                           >
+                             Detayları Göster
+                           </button>
+                        )}
+                        {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Seçmek için dokun</span>}
+                      </div>
+                    )}
+                    
+                    {isSelected && isExpanded && itin && (
+                      <>
+                        <RouteItinerary
+                          itin={itin}
+                          fromName={fromLocation.name}
+                          toName={toLocation.name}
+                          fromCoord={{ lat: fromLocation.lat, lon: fromLocation.lon }}
+                          toCoord={{ lat: toLocation.lat, lon: toLocation.lon }}
+                          onFocus={focusOnMap}
+                        />
+                        <button 
+                           className="action-pill" 
+                           style={{ marginTop: '12px', width: '100%', justifyContent: 'center' }}
+                           onClick={(e) => { e.stopPropagation(); setExpandedRouteId(null); }}
+                         >
+                           Detayları Gizle
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  );
+                });
+              })()}
             </div>
           ) : (
             <div className="premium-card" style={{ textAlign: 'center' }}>
