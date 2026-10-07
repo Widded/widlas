@@ -61,7 +61,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
 
   if (startStops.length === 0 || endStops.length === 0) return null;
 
-  const possibleRoutes = [];
+  // Olası rotalar için Map (Her hat için sadece en hızlı olanı tutacağız)
+  const directMap = new Map();
 
   for (const sStop of startStops) {
     for (const eStop of endStops) {
@@ -80,63 +81,78 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const idxA = dir.stopIds.indexOf(sStop.id);
           const idxB = dir.stopIds.indexOf(eStop.id);
           
-          if (idxA !== -1 && idxB !== -1 && idxA < idxB) {
-            const stopCount = idxB - idxA;
+          if (idxA !== -1 && idxB !== -1) {
+            let stopCount;
+            let passedStopIds = [];
+            if (idxA < idxB) {
+              stopCount = idxB - idxA;
+              passedStopIds = dir.stopIds.slice(idxA + 1, idxB);
+            } else {
+              // Ring hattı varsayımı: Otobüs son durağa gidip başa dönüyor
+              stopCount = (dir.stopIds.length - idxA) + idxB;
+              passedStopIds = dir.stopIds.slice(idxA + 1).concat(dir.stopIds.slice(0, idxB));
+            }
+
             const estimatedBusTime = stopCount * 1.5; // Ortalama her durak 1.5 dk
             // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
             const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12); // km başı ~12 dk yürüme
             const walkEnd = Math.ceil(eStop.distanceKm * 1.4 * 12);
             const totalTime = walkStart + estimatedBusTime + walkEnd;
 
-            // Ara durakları topla
-            const passedStopIds = dir.stopIds.slice(idxA + 1, idxB);
-            const passedStops = [];
-            const passedStopCoords = [];
-            passedStopIds.forEach(id => {
-              const s = allStopsDB[id];
-              if (s) {
-                passedStops.push(s.name);
-                if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]);
-              }
-            });
+            const key = `D_${code}_${dir.headSign}`; // Hat ve yön bazında tekilleştir
+            const existing = directMap.get(key);
+            if (!existing || totalTime < existing.totalTime) {
+              const passedStops = [];
+              const passedStopCoords = [];
+              passedStopIds.forEach(id => {
+                const s = allStopsDB[id];
+                if (s) {
+                  passedStops.push(s.name);
+                  if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]);
+                }
+              });
 
-            possibleRoutes.push({
-              id: `${code}_${sStop.id}_${eStop.id}`,
-              name: code,
-              description: `${dir.headSign} yönü, ${stopCount} durak`,
-              color: lineData.color || '#4f46e5',
-              busTimeMins: Math.ceil(estimatedBusTime),
-              totalTime: Math.ceil(totalTime),
-              startStop: sStop,
-              endStop: eStop,
-              routeGeometry: slicePath(dir.path, sStop, eStop),
-              walkDistanceStart: sStop.distanceKm,
-              walkDistanceEnd: eStop.distanceKm,
-              passedStops: passedStops,
-              passedStopCoords: passedStopCoords,
-              walkStartMins: walkStart,
-              walkEndMins: walkEnd,
-              transferWaitMins: 0,
-              legs: [{
-                line: code,
+              directMap.set(key, {
+                id: `${code}_${sStop.id}_${eStop.id}`,
+                name: code,
+                description: `${dir.headSign} yönü, ${stopCount} durak`,
                 color: lineData.color || '#4f46e5',
-                headSign: dir.headSign,
-                fromStop: toStopObj(sStop.id),
-                toStop: toStopObj(eStop.id),
-                stops: passedStopIds.map(toStopObj).filter(Boolean),
-                stopCount,
-                minutes: Math.ceil(estimatedBusTime)
-              }]
-            });
+                busTimeMins: Math.ceil(estimatedBusTime),
+                totalTime: Math.ceil(totalTime),
+                startStop: sStop,
+                endStop: eStop,
+                routeGeometry: slicePath(dir.path, sStop, eStop),
+                walkDistanceStart: sStop.distanceKm,
+                walkDistanceEnd: eStop.distanceKm,
+                passedStops: passedStops,
+                passedStopCoords: passedStopCoords,
+                walkStartMins: walkStart,
+                walkEndMins: walkEnd,
+                transferWaitMins: 0,
+                legs: [{
+                  line: code,
+                  color: lineData.color || '#4f46e5',
+                  headSign: dir.headSign,
+                  fromStop: toStopObj(sStop.id),
+                  toStop: toStopObj(eStop.id),
+                  stops: passedStopIds.map(toStopObj).filter(Boolean),
+                  stopCount,
+                  minutes: Math.ceil(estimatedBusTime)
+                }]
+              });
+            }
           }
         }
       }
     }
   }
 
+  // Map'i Array'e çevir
+  const possibleRoutes = Array.from(directMap.values());
+
   // 1-TRANSFER ROTALARI (Aktarma)
   // Eğer doğrudan rota yoksa veya çeşitlilik olsun istiyorsak, 1 aktarmalı rotaları bulalım
-  const transferRoutes = [];
+  const transferMap = new Map();
   
   const linesToEnd = {}; 
   for (const eStop of endStops) {
@@ -169,99 +185,127 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const tStop = allStopsDB[tStopId];
           if (!tStop) continue;
 
-          // Sadece aktarma durağının BİREBİR kendisindeki hatlara bak (Performans için)
-          // 250m taraması OOM (Out of Memory) ve 40M+ iterasyona sebep olduğu için kaldırıldı.
-          for (const line2Code of (tStop.routes || [])) {
-            if (line1Code === line2Code) continue;
+          // YENİ OPTİMİZASYON: Sadece en iyi kombinasyonu tutan Map yapısı kullanıldı.
+          // Bu sayede 250m taraması OOM yapmadan geri getirildi!
+          const nearbyTransferStops = [tStop];
+          for (const s of Object.values(allStopsDB)) {
+             if (s.id !== tStop.id && getDistance(tStop.lat, tStop.lon, s.lat, s.lon) <= 0.25) {
+                nearbyTransferStops.push(s);
+             }
+          }
 
-            const endMatches = linesToEnd[line2Code];
-            if (!endMatches) continue;
+          for (const actualTransferStop of nearbyTransferStops) {
+            for (const line2Code of (actualTransferStop.routes || [])) {
+              if (line1Code === line2Code) continue;
 
-            for (const match of endMatches) {
-               const dir2 = etusLines[line2Code].directions[match.dirIdx];
-               const idxT = dir2.stopIds.indexOf(tStop.id);
+              const endMatches = linesToEnd[line2Code];
+              if (!endMatches) continue;
+
+              for (const match of endMatches) {
+                 const dir2 = etusLines[line2Code].directions[match.dirIdx];
+                 const idxT = dir2.stopIds.indexOf(actualTransferStop.id);
                  
-                 if (idxT !== -1 && idxT < match.idxB) {
+                 if (idxT !== -1) {
+                    let leg2Stops;
+                    let passedStopIds2 = [];
+                    if (idxT < match.idxB) {
+                      leg2Stops = match.idxB - idxT;
+                      passedStopIds2 = dir2.stopIds.slice(idxT + 1, match.idxB);
+                    } else {
+                      // Ring hattı varsayımı (Aktarma 2. bacağı)
+                      leg2Stops = (dir2.stopIds.length - idxT) + match.idxB;
+                      passedStopIds2 = dir2.stopIds.slice(idxT + 1).concat(dir2.stopIds.slice(0, match.idxB));
+                    }
+
                     const leg1Stops = tIdx - idxA;
-                    const leg2Stops = match.idxB - idxT;
                     const leg1Time = leg1Stops * 1.5;
                     const leg2Time = leg2Stops * 1.5;
-                    const transferWaitTime = 12; // Aktarma bekleme süresi cezası
-                    // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
+                    
+                    const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
+                    const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
+                    const transferWaitTime = 10 + transferWalkTime;
+
                     const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12);
                     const walkEnd = Math.ceil(match.walkEnd * 1.4 * 12);
                     const totalTime = walkStart + leg1Time + transferWaitTime + leg2Time + walkEnd;
 
-                  const passedStops = [];
-                  const passedStopCoords = [];
-                  // 1. bacak
-                  dir1.stopIds.slice(idxA + 1, tIdx).forEach(id => {
-                    const s = allStopsDB[id];
-                    if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
-                  });
-                  
-                  // Aktarma İşareti
-                  passedStops.push('>>>TRANSFER<<<');
-                  
-                  // 2. bacak (aktarma noktası hariç, zaten eklenebilir ama atlıyoruz)
-                  dir2.stopIds.slice(idxT + 1, match.idxB).forEach(id => {
-                    const s = allStopsDB[id];
-                    if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
-                  });
+                    const key = `T_${line1Code}_${line2Code}_${dir1.headSign}_${dir2.headSign}`;
+                    const existing = transferMap.get(key);
+                    if (!existing || totalTime < existing.totalTime) {
+                      const passedStops = [];
+                      const passedStopCoords = [];
+                      
+                      // 1. bacak
+                      dir1.stopIds.slice(idxA + 1, tIdx).forEach(id => {
+                        const s = allStopsDB[id];
+                        if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
+                      });
+                      
+                      passedStops.push('>>>TRANSFER<<<');
+                      
+                      // 2. bacak
+                      passedStopIds2.forEach(id => {
+                        const s = allStopsDB[id];
+                        if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
+                      });
 
-                  transferRoutes.push({
-                    id: `T_${line1Code}_${line2Code}_${sStop.id}_${match.eStop.id}`,
-                    isTransfer: true,
-                    name: `${line1Code} ➔ ${line2Code}`,
-                    line1: line1Code,
-                    line2: line2Code,
-                    color: line1Data.color || '#4f46e5',
-                    color2: etusLines[line2Code]?.color || '#f59e0b',
-                    busTimeMins: Math.ceil(leg1Time + leg2Time + transferWaitTime),
-                    totalTime: Math.ceil(totalTime),
-                    startStop: sStop,
-                    transferStop: tStop,
-                    endStop: match.eStop,
-                    routeGeometry: [], // fallback
-                    routeGeometry1: slicePath(dir1.path, sStop, tStop),
-                    routeGeometry2: slicePath(dir2.path, tStop, match.eStop),
-                    walkDistanceStart: sStop.distanceKm,
-                    walkDistanceEnd: match.walkEnd,
-                    passedStops: passedStops,
-                    passedStopCoords: passedStopCoords,
-                    walkStartMins: walkStart,
-                    walkEndMins: walkEnd,
-                    transferWaitMins: transferWaitTime,
-                    legs: [
-                      {
-                        line: line1Code,
+                      transferMap.set(key, {
+                        id: `T_${line1Code}_${line2Code}_${sStop.id}_${match.eStop.id}`,
+                        isTransfer: true,
+                        name: `${line1Code} ➔ ${line2Code}`,
+                        line1: line1Code,
+                        line2: line2Code,
                         color: line1Data.color || '#4f46e5',
-                        headSign: dir1.headSign,
-                        fromStop: toStopObj(sStop.id),
-                        toStop: toStopObj(tStopId),
-                        stops: dir1.stopIds.slice(idxA + 1, tIdx).map(toStopObj).filter(Boolean),
-                        stopCount: leg1Stops,
-                        minutes: Math.ceil(leg1Time)
-                      },
-                      {
-                        line: line2Code,
-                        color: etusLines[line2Code]?.color || '#f59e0b',
-                        headSign: dir2.headSign,
-                        fromStop: toStopObj(tStopId),
-                        toStop: toStopObj(match.eStop.id),
-                        stops: dir2.stopIds.slice(idxT + 1, match.idxB).map(toStopObj).filter(Boolean),
-                        stopCount: leg2Stops,
-                        minutes: Math.ceil(leg2Time)
-                      }
-                    ]
-                  });
-               }
-             }
+                        color2: etusLines[line2Code]?.color || '#f59e0b',
+                        busTimeMins: Math.ceil(leg1Time + leg2Time + transferWaitTime),
+                        totalTime: Math.ceil(totalTime),
+                        startStop: sStop,
+                        transferStop: actualTransferStop,
+                        endStop: match.eStop,
+                        routeGeometry: [], // fallback
+                        routeGeometry1: slicePath(dir1.path, sStop, tStop),
+                        routeGeometry2: slicePath(dir2.path, actualTransferStop, match.eStop),
+                        walkDistanceStart: sStop.distanceKm,
+                        walkDistanceEnd: match.walkEnd,
+                        passedStops: passedStops,
+                        passedStopCoords: passedStopCoords,
+                        walkStartMins: walkStart,
+                        walkEndMins: walkEnd,
+                        transferWaitMins: transferWaitTime,
+                        legs: [
+                          {
+                            line: line1Code,
+                            color: line1Data.color || '#4f46e5',
+                            headSign: dir1.headSign,
+                            fromStop: toStopObj(sStop.id),
+                            toStop: toStopObj(tStopId),
+                            stops: dir1.stopIds.slice(idxA + 1, tIdx).map(toStopObj).filter(Boolean),
+                            stopCount: leg1Stops,
+                            minutes: Math.ceil(leg1Time)
+                          },
+                          {
+                            line: line2Code,
+                            color: etusLines[line2Code]?.color || '#f59e0b',
+                            headSign: dir2.headSign,
+                            fromStop: toStopObj(actualTransferStop.id),
+                            toStop: toStopObj(match.eStop.id),
+                            stops: passedStopIds2.map(toStopObj).filter(Boolean),
+                            stopCount: leg2Stops,
+                            minutes: Math.ceil(leg2Time)
+                          }
+                        ]
+                      });
+                    }
+                 }
+              }
+            }
           }
         }
       });
     }
   }
+
+  const transferRoutes = Array.from(transferMap.values());
 
   // Bütün rotaları birleştir
   const allRoutes = [...possibleRoutes, ...transferRoutes];
