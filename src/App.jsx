@@ -126,7 +126,6 @@ function App() {
   const [selectedRouteIndex, setSelectedRouteIndex] = useState(0);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
   const [activeSubRouteId, setActiveSubRouteId] = useState(null);
-  const [searchTime, setSearchTime] = useState(() => new Date());
   const [hasSearched, setHasSearched] = useState(false);
 
   const [walkingPathStart, setWalkingPathStart] = useState([]);
@@ -444,7 +443,6 @@ function App() {
 
     setSearchResults(result);
     setSelectedRouteIndex(0);
-    setSearchTime(new Date());
     setHasSearched(true);
   };
 
