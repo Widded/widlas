@@ -1,26 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --bg-color: #f1f5f9;
-  --surface: #ffffff;
-  --surface-hover: #f8fafc;
-  --border-color: #e2e8f0;
-  --border-focus: #cbd5e1;
+  --bg-color: #0b1120;
+  --surface: #1e293b;
+  --surface-hover: #334155;
+  --border-color: #334155;
+  --border-focus: #475569;
   
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --text-dim: #94a3b8;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
   
   --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --primary-light: #eff6ff;
+  --primary-hover: #60a5fa;
+  --primary-light: rgba(59, 130, 246, 0.15);
   
   --radius-xl: 32px;
   --radius-lg: 24px;
   --radius-md: 16px;
   --radius-sm: 12px;
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-  --shadow-md: 0 12px 32px rgba(0, 0, 0, 0.08);
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 16px 40px rgba(0, 0, 0, 0.5);
 }
 
 * {
@@ -505,7 +505,7 @@ body {
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--border-color);
   padding: 4px 10px;
   border-radius: 999px;
@@ -549,7 +549,7 @@ body {
 }
 
 .itin-dot-ring {
-  background: #fff;
+  background: var(--surface);
   border: 3px solid;
 }
 
@@ -655,7 +655,7 @@ body {
   gap: 4px;
   margin-top: 6px;
   font-size: 0.85rem;
-  color: #92400e;
+  color: var(--text-dim);
 }
 
 .itin-wait {
@@ -663,8 +663,8 @@ body {
   align-items: center;
   gap: 5px;
   align-self: flex-start;
-  background: #fef3c7;
-  color: #b45309;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
   font-weight: 700;
   font-size: 0.78rem;
   padding: 3px 10px;
@@ -688,7 +688,7 @@ body {
   transition: background 0.2s;
 }
 
-.itin-toggle:hover { background: #dbeafe; }
+.itin-toggle:hover { background: var(--primary); color: #fff; }
 
 .itin-stoplist {
   list-style: none;

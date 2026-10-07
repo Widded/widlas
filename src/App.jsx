@@ -678,7 +678,7 @@ function App() {
                     onClick={() => { setSelectedRouteIndex(idx); if (!isSelected) setExpandedRouteId(null); }}
                     style={{
                       borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
-                      backgroundColor: isSelected ? '#fbfdff' : 'white',
+                      backgroundColor: isSelected ? 'var(--surface-hover)' : 'var(--surface)',
                       borderWidth: isSelected ? '2px' : '1px',
                       padding: isSelected ? '15px' : '16px',
                       cursor: isSelected ? 'default' : 'pointer'
@@ -693,9 +693,9 @@ function App() {
                         ) : (
                           <>
                             {routeGroup.walkDistanceStart > 0 && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-dim)' }}>
                                 <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceStart)})</span>
-                                <ArrowRight size={14} color="var(--border-color)" style={{ marginLeft: '2px' }} />
+                                <ArrowRight size={14} color="var(--text-dim)" style={{ marginLeft: '2px' }} />
                               </div>
                             )}
 
@@ -708,13 +708,13 @@ function App() {
                                       <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
                                       {r.transferWalkDistance > 0 && (
                                         <>
-                                          <ArrowRight size={14} color="var(--border-color)" />
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#64748b' }}>
+                                          <ArrowRight size={14} color="var(--text-dim)" />
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--text-dim)' }}>
                                             <Footprints size={13} /> <span>({fmtWalk(r.transferWalkDistance)})</span>
                                           </div>
                                         </>
                                       )}
-                                      <ArrowRight size={14} color="var(--border-color)" />
+                                      <ArrowRight size={14} color="var(--text-dim)" />
                                       <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
                                     </div>
                                   ) : (
@@ -725,8 +725,8 @@ function App() {
                             </div>
 
                             {routeGroup.walkDistanceEnd > 0 && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b' }}>
-                                <ArrowRight size={14} color="var(--border-color)" />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-dim)' }}>
+                                <ArrowRight size={14} color="var(--text-dim)" />
                                 <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceEnd)})</span>
                               </div>
                             )}
@@ -774,7 +774,7 @@ function App() {
                                    onClick={(e) => { e.stopPropagation(); setActiveSubRouteId(`${routeGroup.groupId}_${subIdx}`); }}
                                    style={{ 
                                      padding: '6px 10px', borderRadius: '6px', border: isActive ? `2px solid ${r.color || 'var(--primary)'}` : '1px solid var(--border-color)', 
-                                     background: isActive ? '#f0f9ff' : 'transparent',
+                                     background: isActive ? 'var(--primary-light)' : 'transparent',
                                      color: 'var(--text-main)', fontWeight: isActive ? '700' : '500',
                                      fontSize: '0.85rem', cursor: 'pointer', whiteSpace: 'nowrap',
                                      display: 'flex', alignItems: 'center', gap: '4px'

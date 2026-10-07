@@ -240,7 +240,7 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
       </ol>
 
       {!itin.isWalkOnly && (
-        <div className="itin-fares" style={{ margin: '16px 0', padding: '12px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '0.85rem' }}>
+        <div className="itin-fares" style={{ margin: '16px 0', padding: '12px', background: 'var(--surface-hover)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '0.85rem' }}>
           <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-main)' }}>Tahmini Biniş Ücreti (2026)</div>
           <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <li><b>Öğrenci (Kent Kart):</b> 28,50 TL</li>
