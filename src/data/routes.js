@@ -82,17 +82,9 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const idxA = dir.stopIds.indexOf(sStop.id);
           const idxB = dir.stopIds.indexOf(eStop.id);
           
-          if (idxA !== -1 && idxB !== -1) {
-            let stopCount;
-            let passedStopIds = [];
-            if (idxA < idxB) {
-              stopCount = idxB - idxA;
-              passedStopIds = dir.stopIds.slice(idxA + 1, idxB);
-            } else {
-              // Ring hattı varsayımı: Otobüs son durağa gidip başa dönüyor
-              stopCount = (dir.stopIds.length - idxA) + idxB;
-              passedStopIds = dir.stopIds.slice(idxA + 1).concat(dir.stopIds.slice(0, idxB));
-            }
+          if (idxA !== -1 && idxB !== -1 && idxA < idxB) {
+            let stopCount = idxB - idxA;
+            let passedStopIds = dir.stopIds.slice(idxA + 1, idxB);
 
             const estimatedBusTime = stopCount * 1.5; // Ortalama her durak 1.5 dk
             // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
@@ -206,17 +198,9 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                  const dir2 = etusLines[line2Code].directions[match.dirIdx];
                  const idxT = dir2.stopIds.indexOf(actualTransferStop.id);
                  
-                 if (idxT !== -1) {
-                    let leg2Stops;
-                    let passedStopIds2 = [];
-                    if (idxT < match.idxB) {
-                      leg2Stops = match.idxB - idxT;
-                      passedStopIds2 = dir2.stopIds.slice(idxT + 1, match.idxB);
-                    } else {
-                      // Ring hattı varsayımı (Aktarma 2. bacağı)
-                      leg2Stops = (dir2.stopIds.length - idxT) + match.idxB;
-                      passedStopIds2 = dir2.stopIds.slice(idxT + 1).concat(dir2.stopIds.slice(0, match.idxB));
-                    }
+                 if (idxT !== -1 && idxT < match.idxB) {
+                    let leg2Stops = match.idxB - idxT;
+                    let passedStopIds2 = dir2.stopIds.slice(idxT + 1, match.idxB);
 
                     const leg1Stops = tIdx - idxA;
                     const leg1Time = leg1Stops * 1.5;

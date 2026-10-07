@@ -702,7 +702,7 @@ function App() {
                             <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {routeGroup.groupedLines.map((r, i) => (
                                 <React.Fragment key={i}>
-                                  {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 2px' }}>veya</span>}
+                                  {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 4px', fontWeight: 400 }}>/</span>}
                                   {r.isTransfer ? (
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                       <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
