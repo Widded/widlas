@@ -16,28 +16,35 @@ export const terminalOf = (headSign) => (headSign || '').split(' - ').pop().trim
  * walk: { startM, endM, startExact, endExact } -> yürüme mesafeleri (metre)
  */
 export function buildItinerary(route, walk, departAt) {
-  if (!route?.legs?.length) return null;
+  if (!route) return null;
+  const isWalkOnly = route.isWalkOnly;
+  if (!isWalkOnly && !route.legs?.length) return null;
+
   const startWalkMin = walkMinutes(walk.startM);
-  const endWalkMin = walkMinutes(walk.endM);
+  const endWalkMin = isWalkOnly ? 0 : walkMinutes(walk.endM);
   const waitMin = route.transferWaitMins || 0;
 
   let t = departAt;
   const atStop1 = addMin(t, startWalkMin);
   t = atStop1;
-  const legs = route.legs.map((leg, i) => {
+  
+  const legs = (route.legs || []).map((leg, i) => {
     const boardAt = t;
     const alightAt = addMin(boardAt, leg.minutes);
     t = alightAt;
     if (i < route.legs.length - 1) t = addMin(t, waitMin);
     return { ...leg, boardAt, alightAt };
   });
-  const arriveAt = addMin(t, endWalkMin);
+  
+  const arriveAt = isWalkOnly ? atStop1 : addMin(t, endWalkMin);
 
-  const segments = [
-    { kind: 'walk', min: startWalkMin },
-    ...legs.flatMap((l, i) => (i > 0 ? [{ kind: 'wait', min: waitMin }, { kind: 'bus', min: l.minutes, color: l.color }] : [{ kind: 'bus', min: l.minutes, color: l.color }])),
-    { kind: 'walk', min: endWalkMin }
-  ];
+  const segments = isWalkOnly 
+    ? [{ kind: 'walk', min: startWalkMin }]
+    : [
+      { kind: 'walk', min: startWalkMin },
+      ...legs.flatMap((l, i) => (i > 0 ? [{ kind: 'wait', min: waitMin }, { kind: 'bus', min: l.minutes, color: l.color }] : [{ kind: 'bus', min: l.minutes, color: l.color }])),
+      { kind: 'walk', min: endWalkMin }
+    ];
 
   return {
     departAt,
@@ -48,7 +55,8 @@ export function buildItinerary(route, walk, departAt) {
     waitMin,
     totalWalkM: walk.startM + walk.endM,
     totalStops: legs.reduce((s, l) => s + l.stopCount, 0),
-    transfers: legs.length - 1,
+    transfers: isWalkOnly ? 0 : Math.max(0, legs.length - 1),
+    isWalkOnly,
     legs,
     segments,
     walk
@@ -125,8 +133,12 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
 
         <div className="itin-chips">
           <span className="itin-chip"><Footprints size={13} /> {fmtDist(itin.totalWalkM)} yürüme</span>
-          <span className="itin-chip"><BusFront size={13} /> {itin.totalStops} durak</span>
-          <span className="itin-chip"><Repeat size={13} /> {itin.transfers === 0 ? 'Aktarmasız' : `${itin.transfers} aktarma`}</span>
+          {!itin.isWalkOnly && (
+            <>
+              <span className="itin-chip"><BusFront size={13} /> {itin.totalStops} durak</span>
+              <span className="itin-chip"><Repeat size={13} /> {itin.transfers === 0 ? 'Aktarmasız' : `${itin.transfers} aktarma`}</span>
+            </>
+          )}
         </div>
       </div>
 

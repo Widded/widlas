@@ -54,10 +54,13 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     return s ? { id: s.id, name: s.name, lat: s.lat || null, lon: s.lon || null } : null;
   };
 
-  // Navigasyon mantığı: Hedefe tam giden hat yoksa bile en yakın durakta (örn: 2.5km uzakta) bırakıp yürütebilir.
-  // Bu yüzden arama çapını 0.8 km'den 2.5 km'ye çıkarıyoruz. (Yaklaşık 30 dk yürüme mesafesi)
-  const startStops = findNearbyStops(fromLat, fromLon, 2.5);
-  const endStops = findNearbyStops(toLat, toLon, 2.5);
+  // Toplam kuş uçuşu mesafe
+  const totalDistKm = getDistance(fromLat, fromLon, toLat, toLon);
+
+  // Arama çapını aşırı büyütüp saçma rotalar üretmesini engellemek için max 1.0 km (veya mesafenin yarısı) alıyoruz.
+  const maxSearchRadius = Math.max(0.4, Math.min(1.0, totalDistKm * 0.7));
+  const startStops = findNearbyStops(fromLat, fromLon, maxSearchRadius);
+  const endStops = findNearbyStops(toLat, toLon, maxSearchRadius);
 
   if (startStops.length === 0 || endStops.length === 0) return null;
 
@@ -309,6 +312,33 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
 
   // Bütün rotaları birleştir
   const allRoutes = [...possibleRoutes, ...transferRoutes];
+
+  // SADECE YÜRÜME ROTASI (Kullanıcı Otobüsle gideceğinden daha kısa sürede yürüyebiliyorsa ekle)
+  // totalDistKm hesaplanmıştı. Yürüme süresi hesaplanır:
+  const directWalkMins = Math.ceil(totalDistKm * 1.4 * 12);
+  // Eğer 60 dakikadan (yaklaşık 4-5 km) kısaysa "Sadece Yürüme" rotası sunulabilir
+  if (directWalkMins <= 60) {
+    allRoutes.push({
+      id: 'walk_only',
+      name: 'Sadece Yürü',
+      isWalkOnly: true,
+      description: 'Otobüs kullanmadan doğrudan hedefe yürüme',
+      color: '#10b981', // Yeşil renk
+      busTimeMins: 0,
+      totalTime: directWalkMins,
+      startStop: { name: 'Başlangıç Konumu', lat: fromLat, lon: fromLon },
+      endStop: { name: 'Varış Konumu', lat: toLat, lon: toLon },
+      routeGeometry: [], // Sadece başlangıç ve son var
+      walkDistanceStart: totalDistKm,
+      walkDistanceEnd: 0,
+      passedStops: [],
+      passedStopCoords: [],
+      walkStartMins: directWalkMins,
+      walkEndMins: 0,
+      transferWaitMins: 0,
+      legs: [] // Bacak yok
+    });
+  }
 
   if (allRoutes.length === 0) return null;
 
