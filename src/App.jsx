@@ -432,13 +432,10 @@ function App() {
     let result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
     
     if (isNightTime && result && result.routes) {
-      alert("Dikkat: Saat 00:00 ile 06:00 arasında Edirne'de otobüs seferleri aktif değildir. Sadece yürüme rotaları gösterilecektir.");
-      result.routes = result.routes.filter(r => r.isWalkOnly);
-      if (result.routes.length === 0) {
-        alert("Hedefiniz yürümek için çok uzak (1 saatin üzerinde) ve şu an otobüs seferi yok.");
-        setSearchResults(null);
-        return;
-      }
+      alert("Dikkat: Saat 00:00 ile 06:00 arasında Edirne'de otobüs seferleri aktif değildir. Gösterilen rotalar bilgi ve test amaçlıdır.");
+      // TEST İÇİN GEÇİCİ OLARAK FİLTRE KALDIRILDI:
+      // result.routes = result.routes.filter(r => r.isWalkOnly);
+      // if (result.routes.length === 0) { ... }
     }
 
     setSearchResults(result);
