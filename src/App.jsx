@@ -662,7 +662,7 @@ function App() {
                   const activeSubIndex = activeSubRouteId?.startsWith(routeGroup.groupId) ? parseInt(activeSubRouteId.split('_').pop()) : 0;
                   const activeRouteObj = (isExpanded && routeGroup.groupedLines[activeSubIndex]) ? routeGroup.groupedLines[activeSubIndex] : routeGroup;
                   
-                  const itin = buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), searchTime);
+                  const itin = buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), new Date());
                   const fmt = (d) => d.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
                   
                   return (
@@ -696,11 +696,9 @@ function App() {
                         <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
                           {itin ? itin.totalMin : routeGroup.totalTime} dk
                         </span>
-                        {itin && (
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', whiteSpace: 'nowrap' }}>
-                            <Clock size={12} /> {fmt(itin.departAt)} → {fmt(itin.arriveAt)}
-                          </span>
-                        )}
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', whiteSpace: 'nowrap' }}>
+                          Tahmini
+                        </span>
                       </div>
                     </div>
 
