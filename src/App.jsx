@@ -699,10 +699,12 @@ function App() {
                               </div>
                             )}
 
-                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                               {routeGroup.groupedLines.map((r, i) => (
-                                 r.isTransfer ? (
-                                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                <React.Fragment key={i}>
+                                  {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: '0 2px' }}>veya</span>}
+                                  {r.isTransfer ? (
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                                       <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
                                       {r.transferWalkDistance > 0 && (
                                         <>
@@ -714,10 +716,11 @@ function App() {
                                       )}
                                       <ArrowRight size={14} color="var(--border-color)" />
                                       <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
-                                   </div>
-                                 ) : (
-                                   <span key={i} className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
-                                 )
+                                    </div>
+                                  ) : (
+                                    <span className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
+                                  )}
+                                </React.Fragment>
                               ))}
                             </div>
 
