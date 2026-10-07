@@ -1,6 +1,3 @@
-// Edirne Koordinatlı Durak Veritabanı
-import { allStopsDB, etusLines } from './db.js';
-
 // Haversine Formula (Mesafe hesaplama)
 const getDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // km
@@ -14,7 +11,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 // Yakındaki tüm durakları bulur (maxRadiusKm çapında)
-export const findNearbyStops = (lat, lon, maxRadiusKm = 0.8) => {
+export const findNearbyStops = (allStopsDB, lat, lon, maxRadiusKm = 0.8) => {
   const nearby = [];
   Object.values(allStopsDB).forEach(stop => {
     if (stop.lat && stop.lon) {
@@ -30,6 +27,7 @@ export const findNearbyStops = (lat, lon, maxRadiusKm = 0.8) => {
 // İki koordinat arası alternatifleri ile birlikte akıllı rota hesaplayan motor
 export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   if (!fromLat || !fromLon || !toLat || !toLon) return null;
+  const { allStopsDB, etusLines } = await import('./db.js');
 
   const slicePath = (path, startStop, endStop) => {
     if (!path || path.length === 0) return [];
@@ -59,8 +57,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
 
   // Arama çapını aşırı büyütüp saçma rotalar üretmesini engellemek için max 1.0 km (veya mesafenin yarısı) alıyoruz.
   const maxSearchRadius = Math.max(0.4, Math.min(1.0, totalDistKm * 0.7));
-  const startStops = findNearbyStops(fromLat, fromLon, maxSearchRadius);
-  const endStops = findNearbyStops(toLat, toLon, maxSearchRadius);
+  const startStops = findNearbyStops(allStopsDB, fromLat, fromLon, maxSearchRadius);
+  const endStops = findNearbyStops(allStopsDB, toLat, toLon, maxSearchRadius);
 
   if (startStops.length === 0 || endStops.length === 0) return null;
 

@@ -427,7 +427,21 @@ function App() {
       return;
     }
 
-    const result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
+    const currentHour = new Date().getHours();
+    const isNightTime = currentHour >= 0 && currentHour < 6;
+
+    let result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
+    
+    if (isNightTime && result && result.routes) {
+      alert("Dikkat: Saat 00:00 ile 06:00 arasında Edirne'de otobüs seferleri aktif değildir. Sadece yürüme rotaları gösterilecektir.");
+      result.routes = result.routes.filter(r => r.isWalkOnly);
+      if (result.routes.length === 0) {
+        alert("Hedefiniz yürümek için çok uzak (1 saatin üzerinde) ve şu an otobüs seferi yok.");
+        setSearchResults(null);
+        return;
+      }
+    }
+
     setSearchResults(result);
     setSelectedRouteIndex(0);
     setSearchTime(new Date());
