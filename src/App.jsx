@@ -654,6 +654,12 @@ function App() {
                 });
                 groupedRoutes.push(...groupMap.values());
                 
+                const fmtWalk = (km) => {
+                  if (!km) return '0m';
+                  const m = Math.round(km * 1000);
+                  return m >= 1000 ? (m / 1000).toFixed(1) + 'km' : m + 'm';
+                };
+
                 return groupedRoutes.map((routeGroup) => {
                   const idx = routeGroup.originalIdx;
                   const isSelected = selectedRouteIndex === idx;
@@ -679,18 +685,50 @@ function App() {
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: isSelected && isExpanded ? '14px' : '10px' }}>
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                        {routeGroup.groupedLines.map((r, i) => (
-                           r.isTransfer ? (
-                             <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
-                                <ArrowRight size={14} color="var(--text-muted)" />
-                                <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
-                             </div>
-                           ) : (
-                             <span key={i} className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
-                           )
-                        ))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', fontSize: '0.85rem', fontWeight: 600 }}>
+                        {routeGroup.isWalkOnly ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#10b981' }}>
+                            <Footprints size={16} /> <span>Sadece Yürüme ({fmtWalk(routeGroup.walkDistanceStart)})</span>
+                          </div>
+                        ) : (
+                          <>
+                            {routeGroup.walkDistanceStart > 0 && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b' }}>
+                                <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceStart)})</span>
+                                <ArrowRight size={14} color="var(--border-color)" style={{ marginLeft: '2px' }} />
+                              </div>
+                            )}
+
+                            <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {routeGroup.groupedLines.map((r, i) => (
+                                 r.isTransfer ? (
+                                   <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
+                                      {r.transferWalkDistance > 0 && (
+                                        <>
+                                          <ArrowRight size={14} color="var(--border-color)" />
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: '#64748b' }}>
+                                            <Footprints size={13} /> <span>({fmtWalk(r.transferWalkDistance)})</span>
+                                          </div>
+                                        </>
+                                      )}
+                                      <ArrowRight size={14} color="var(--border-color)" />
+                                      <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
+                                   </div>
+                                 ) : (
+                                   <span key={i} className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
+                                 )
+                              ))}
+                            </div>
+
+                            {routeGroup.walkDistanceEnd > 0 && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#64748b' }}>
+                                <ArrowRight size={14} color="var(--border-color)" />
+                                <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceEnd)})</span>
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', marginLeft: '12px' }}>
                         <span style={{ fontWeight: '700', fontSize: '1.1rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
