@@ -103,19 +103,11 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
     <div className="itin" onClick={(e) => e.stopPropagation()}>
       {/* Özet */}
       <div className="itin-summary">
-        <div className="itin-times">
-          <div>
-            <span className="itin-time-label">Çıkış</span>
-            <span className="itin-time-big">{fmtTime(itin.departAt)}</span>
-          </div>
-          <ArrowRight size={18} color="var(--text-dim)" />
-          <div>
-            <span className="itin-time-label">Varış</span>
-            <span className="itin-time-big">{fmtTime(itin.arriveAt)}</span>
-          </div>
+        <div className="itin-times" style={{ display: 'flex', alignItems: 'center' }}>
           <div className="itin-total">
             <span>{itin.totalMin}</span> dk
           </div>
+          <div className="itin-time-label" style={{ marginLeft: '12px', fontSize: '1.2rem', color: 'var(--text-main)' }}>Tahmini Yolculuk</div>
         </div>
 
         <div className="itin-bar" aria-label="Süre dağılımı">
@@ -144,7 +136,7 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
         <li className="itin-row itin-node itin-clickable" onClick={focus(fromCoord)}>
           <div className="itin-rail"><span className="itin-dot" style={{ background: '#10b981' }}><Navigation size={12} color="#fff" /></span></div>
           <div className="itin-content">
-            <div className="itin-head"><b>{fromName || 'Başlangıç'}</b><time>{fmtTime(itin.departAt)}</time></div>
+            <div className="itin-head"><b>{fromName || 'Başlangıç'}</b></div>
             <span className="itin-sub">Yola çıkış noktası</span>
           </div>
         </li>
@@ -173,7 +165,6 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
               <div className="itin-content">
                 <div className="itin-head">
                   <b>{leg.fromStop?.name} {i === 0 ? 'Durağı' : '(Aktarma)'}</b>
-                  <time>{fmtTime(leg.boardAt)}</time>
                 </div>
                 {i > 0 && (
                   <div className="itin-transfer">
@@ -209,7 +200,7 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
         <li className="itin-row itin-node itin-clickable" onClick={focus(lastLeg.toStop)}>
           <div className="itin-rail"><span className="itin-dot itin-dot-ring" style={{ borderColor: lastLeg.color }}><MapPin size={12} color={lastLeg.color} /></span></div>
           <div className="itin-content">
-            <div className="itin-head"><b>{lastLeg.toStop?.name} Durağı</b><time>{fmtTime(lastLeg.alightAt)}</time></div>
+            <div className="itin-head"><b>{lastLeg.toStop?.name} Durağı</b></div>
             <span className="itin-sub">Otobüsten in</span>
           </div>
         </li>
@@ -230,7 +221,7 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
         <li className="itin-row itin-node itin-clickable" onClick={focus(toCoord)}>
           <div className="itin-rail"><span className="itin-dot" style={{ background: '#ef4444' }}><Flag size={12} color="#fff" /></span></div>
           <div className="itin-content">
-            <div className="itin-head"><b>{toName || 'Varış'}</b><time>{fmtTime(itin.arriveAt)}</time></div>
+            <div className="itin-head"><b>{toName || 'Varış'}</b></div>
             <span className="itin-sub">Varış noktası</span>
           </div>
         </li>
