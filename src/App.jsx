@@ -428,24 +428,40 @@ function App() {
             <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Edirne Ulaşım</h1>
           </div>
           
-          <select 
-            value={fareType}
-            onChange={(e) => setFareType(e.target.value)}
-            style={{
-              padding: '6px 8px',
-              borderRadius: '8px',
-              background: 'var(--surface-hover)',
-              color: 'var(--text-main)',
-              border: '1px solid var(--border-color)',
-              outline: 'none',
-              cursor: 'pointer',
-              fontSize: '0.85rem',
-              fontWeight: '600'
-            }}
-          >
-            <option value="tam">Tam Tarife</option>
-            <option value="ogrenci">Öğrenci</option>
-          </select>
+          <div style={{ display: 'flex', background: 'var(--surface-hover)', borderRadius: '8px', padding: '3px', border: '1px solid var(--border-color)' }}>
+            <button 
+              onClick={() => setFareType('tam')}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                background: fareType === 'tam' ? 'var(--primary)' : 'transparent',
+                color: fareType === 'tam' ? '#fff' : 'var(--text-muted)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: fareType === 'tam' ? '700' : '500',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Tam
+            </button>
+            <button 
+              onClick={() => setFareType('ogrenci')}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                background: fareType === 'ogrenci' ? 'var(--primary)' : 'transparent',
+                color: fareType === 'ogrenci' ? '#fff' : 'var(--text-muted)',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                fontWeight: fareType === 'ogrenci' ? '700' : '500',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              Öğrenci
+            </button>
+          </div>
         </header>
 
         <SearchBox
