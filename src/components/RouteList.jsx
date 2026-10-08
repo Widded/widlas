@@ -17,7 +17,8 @@ export default function RouteList({
   fromLocation,
   toLocation,
   focusOnMap,
-  getWalk
+  getWalk,
+  fareType
 }) {
   if (!hasSearched || !searchResults) return null;
 
@@ -128,6 +129,9 @@ export default function RouteList({
                       </span>
                       <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px', whiteSpace: 'nowrap' }}>
                         Tahmini
+                      </span>
+                      <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600', marginTop: '6px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {routeGroup.isWalkOnly ? "Ücretsiz" : (fareType === 'ogrenci' ? '16.50 ₺' : '23.00 ₺')}
                       </span>
                     </div>
                   </div>

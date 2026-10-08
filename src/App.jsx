@@ -49,6 +49,7 @@ function App() {
   const [expandedRouteId, setExpandedRouteId] = useState(null);
   const [activeSubRouteId, setActiveSubRouteId] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [fareType, setFareType] = useState('tam');
 
   const [walkingPathStart, setWalkingPathStart] = useState([]);
   const [walkingPathEnd, setWalkingPathEnd] = useState([]);
@@ -419,11 +420,32 @@ function App() {
 
       {/* Sidebar / Main Content Area */}
       <div className="desktop-sidebar">
-        <header className="app-header animate-in">
-          <div className="icon-glow">
-            <BusFront size={28} color="#fff" />
+        <header className="app-header animate-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div className="icon-glow">
+              <BusFront size={28} color="#fff" />
+            </div>
+            <h1 style={{ margin: 0, fontSize: '1.4rem' }}>Edirne Ulaşım</h1>
           </div>
-          <h1>Edirne Ulaşım</h1>
+          
+          <select 
+            value={fareType}
+            onChange={(e) => setFareType(e.target.value)}
+            style={{
+              padding: '6px 8px',
+              borderRadius: '8px',
+              background: 'var(--surface-hover)',
+              color: 'var(--text-main)',
+              border: '1px solid var(--border-color)',
+              outline: 'none',
+              cursor: 'pointer',
+              fontSize: '0.85rem',
+              fontWeight: '600'
+            }}
+          >
+            <option value="tam">Tam Tarife</option>
+            <option value="ogrenci">Öğrenci</option>
+          </select>
         </header>
 
         <SearchBox
@@ -459,6 +481,7 @@ function App() {
         toLocation={toLocation}
         focusOnMap={focusOnMap}
         getWalk={getWalk}
+        fareType={fareType}
       />
       
       </div> {/* End of desktop-sidebar */}
