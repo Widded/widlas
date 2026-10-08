@@ -97,6 +97,31 @@ function App() {
        return;
     }
     
+    if (active.isWalkOnly) {
+      if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
+         const fetchWalk = async (lat1, lon1, lat2, lon2, setter) => {
+           try {
+             const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${lon1},${lat1};${lon2},${lat2}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+             const res = await fetch(url);
+             const data = await res.json();
+             if (data.routes && data.routes[0]) {
+                setter(data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]));
+             } else {
+                setter([[lat1, lon1], [lat2, lon2]]);
+             }
+           } catch (e) {
+             setter([[lat1, lon1], [lat2, lon2]]);
+           }
+         };
+         fetchWalk(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon, setWalkingPathStart);
+         setWalkingPathEnd([]);
+      } else {
+         setWalkingPathStart([[fromLocation.lat, fromLocation.lon], [toLocation.lat, toLocation.lon]]);
+         setWalkingPathEnd([]);
+      }
+      return;
+    }
+
     // Eğer Mapbox token varsa sokaklardan yürüme rotası çizdir
     if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
        const fetchWalk = async (lat1, lon1, lat2, lon2, setter) => {

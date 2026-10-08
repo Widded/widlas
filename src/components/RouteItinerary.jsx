@@ -154,7 +154,7 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
           </div>
         </li>
 
-        {/* Durağa yürüme */}
+        {/* Yürüme */}
         <li className="itin-row itin-seg">
           <div className="itin-rail"><span className="itin-line itin-line-walk" /></div>
           <div className="itin-content itin-walk">
@@ -213,26 +213,29 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
           </React.Fragment>
         ))}
 
-        {/* İniş */}
-        <li className="itin-row itin-node itin-clickable" onClick={focus(lastLeg.toStop)}>
-          <div className="itin-rail"><span className="itin-dot itin-dot-ring" style={{ borderColor: lastLeg.color }}><MapPin size={12} color={lastLeg.color} /></span></div>
-          <div className="itin-content">
-            <div className="itin-head"><b>{lastLeg.toStop?.name} Durağı</b></div>
-            <span className="itin-sub">Otobüsten in</span>
-          </div>
-        </li>
+        {/* İniş ve Hedefe Yürüme (Sadece otobüs varsa) */}
+        {!itin.isWalkOnly && lastLeg && (
+          <>
+            <li className="itin-row itin-node itin-clickable" onClick={focus(lastLeg.toStop)}>
+              <div className="itin-rail"><span className="itin-dot itin-dot-ring" style={{ borderColor: lastLeg.color }}><MapPin size={12} color={lastLeg.color} /></span></div>
+              <div className="itin-content">
+                <div className="itin-head"><b>{lastLeg.toStop?.name} Durağı</b></div>
+                <span className="itin-sub">Otobüsten in</span>
+              </div>
+            </li>
 
-        {/* Hedefe yürüme */}
-        <li className="itin-row itin-seg">
-          <div className="itin-rail"><span className="itin-line itin-line-walk" /></div>
-          <div className="itin-content itin-walk">
-            <Footprints size={16} />
-            <span>
-              <b>{fmtDist(itin.walk.endM)}</b> yürü · ~{itin.endWalkMin} dk
-              {!itin.walk.endExact && <em> (kuş uçuşu)</em>}
-            </span>
-          </div>
-        </li>
+            <li className="itin-row itin-seg">
+              <div className="itin-rail"><span className="itin-line itin-line-walk" /></div>
+              <div className="itin-content itin-walk">
+                <Footprints size={16} />
+                <span>
+                  <b>{fmtDist(itin.walk.endM)}</b> yürü · ~{itin.endWalkMin} dk
+                  {!itin.walk.endExact && <em> (kuş uçuşu)</em>}
+                </span>
+              </div>
+            </li>
+          </>
+        )}
 
         {/* Varış */}
         <li className="itin-row itin-node itin-clickable" onClick={focus(toCoord)}>
