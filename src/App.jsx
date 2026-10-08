@@ -340,6 +340,9 @@ function App() {
   };
 
   const handleMapClick = useCallback(async (lat, lng) => {
+    // If not searching for a route, map clicks shouldn't auto-fill departure/arrival
+    if (activeMainTab !== 'search' && !mapSelectionMode) return;
+
     // Haritadan tıklanan noktanın adresini tersine bul (Mapbox Reverse Geocoding)
     let placeName = "Haritadan Seçilen Konum";
     if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
@@ -382,7 +385,7 @@ function App() {
     }
     // Seçilen yeri merkeze al
     setMapCenter([lat, lng]);
-  }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat]);
+  }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat, activeMainTab]);
 
   const handleSearch = async () => {
     if (!fromLocation.lat || !toLocation.lat) {
