@@ -134,11 +134,17 @@ body {
     padding-top: 16px;
   }
 
+  /* Maximize space for search suggestions */
+  .app-container.search-active .app-header,
+  .app-container.search-active .tabs-wrapper {
+    display: none !important;
+  }
+
   /* Homepage styling for sidebar (Centered, No background block) */
   .app-container.layout-center .desktop-sidebar {
     background: transparent;
     padding: 24px 0 0 0;
-    flex: none; /* Allows centering */
+    justify-content: flex-start;
   }
 
   /* Visual drag handle ONLY when map is visible */

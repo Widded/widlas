@@ -519,7 +519,7 @@ function App() {
             </button>
           </div>
         </header>
-        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+        <div className="tabs-wrapper" style={{ padding: '0 20px', marginBottom: '16px' }}>
           <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border-color)' }}>
             <button 
               onClick={() => { setActiveMainTab('search'); setActiveLineCode(null); }}
