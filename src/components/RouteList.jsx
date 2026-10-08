@@ -157,10 +157,24 @@ export default function RouteList({
 
                   {!isExpanded && (
                     <div className="route-compact" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
+                      {!routeGroup.isWalkOnly && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{routeGroup.startStop?.name}</span>
+                          <ArrowRight size={12} opacity={0.6} />
+                          {routeGroup.isTransfer && (
+                             <>
+                               <span style={{ fontWeight: 600, color: '#f59e0b' }}>{routeGroup.transferStop?.name}</span>
+                               <ArrowRight size={12} opacity={0.6} />
+                             </>
+                          )}
+                          <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{routeGroup.endStop?.name}</span>
+                        </div>
+                      )}
+
                       {isSelected && (
                           <button 
                             className="btn-primary" 
-                            style={{ padding: '8px 16px', fontSize: '0.85rem', alignSelf: 'flex-start', borderRadius: '8px', width: '100%', textAlign: 'center' }}
+                            style={{ padding: '8px 16px', fontSize: '0.85rem', alignSelf: 'flex-start', borderRadius: '8px', width: '100%', textAlign: 'center', marginTop: '4px' }}
                             onClick={(e) => { e.stopPropagation(); setExpandedRouteId(routeGroup.groupId); }}
                           >
                             Detayları Göster
