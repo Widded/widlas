@@ -39,7 +39,7 @@ export default function RouteList({
             const groupMap = new Map();
             searchResults.routes.forEach((route, idx) => {
               const key = route.isTransfer 
-                ? `transfer_${route.startStop.name}_${route.transferStop.name}_${route.endStop.name}`
+                ? `transfer_${route.line1}_${route.startStop.name}_${route.transferStop.name}_${route.endStop.name}`
                 : `direct_${route.startStop.name}_${route.endStop.name}`;
               if (!groupMap.has(key)) {
                 groupMap.set(key, {
@@ -100,28 +100,37 @@ export default function RouteList({
                           )}
 
                           <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            {routeGroup.groupedLines.map((r, i) => (
-                              <React.Fragment key={i}>
-                                {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 4px', fontWeight: 400 }}>/</span>}
-                                {r.isTransfer ? (
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                    <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
-                                    {r.transferWalkDistance > 0 && (
-                                      <>
-                                        <ArrowRight size={14} color="var(--text-muted)" />
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--text-muted)' }}>
-                                          <Footprints size={13} /> <span>({fmtWalk(r.transferWalkDistance)})</span>
-                                        </div>
-                                      </>
-                                    )}
+                            {routeGroup.isTransfer ? (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexWrap: 'wrap' }}>
+                                <span className="bus-badge" style={{ background: routeGroup.color }}>{routeGroup.line1}</span>
+                                {routeGroup.transferWalkDistance > 0 && (
+                                  <>
                                     <ArrowRight size={14} color="var(--text-muted)" />
-                                    <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
-                                  </div>
-                                ) : (
-                                  <span className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--text-muted)' }}>
+                                      <Footprints size={13} /> <span>({fmtWalk(routeGroup.transferWalkDistance)})</span>
+                                    </div>
+                                  </>
                                 )}
-                              </React.Fragment>
-                            ))}
+                                <ArrowRight size={14} color="var(--text-muted)" />
+                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexWrap: 'wrap' }}>
+                                  {routeGroup.groupedLines.map((r, i) => (
+                                    <React.Fragment key={'t_' + i}>
+                                      {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 2px' }}>/</span>}
+                                      <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
+                                    </React.Fragment>
+                                  ))}
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                {routeGroup.groupedLines.map((r, i) => (
+                                  <React.Fragment key={'d_' + i}>
+                                    {i > 0 && <span style={{ color: 'var(--text-muted)', fontSize: '1rem', margin: '0 2px' }}>/</span>}
+                                    <span className="bus-badge" style={{ background: r.color || 'var(--primary)' }}>{r.name}</span>
+                                  </React.Fragment>
+                                ))}
+                              </div>
+                            )}
                           </div>
 
                           {routeGroup.walkDistanceEnd > 0 && (
