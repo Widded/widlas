@@ -83,7 +83,7 @@ function MapClickHandler({ onMapClick }) {
 const MapArea = React.memo(function MapArea({
   mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
   fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd,
-  activeLineData, isSplitLayout
+  activeLineData, isSplitLayout, activeLineDirIdx
 }) {
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
