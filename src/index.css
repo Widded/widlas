@@ -67,18 +67,7 @@ body {
     overflow: hidden;
   }
 
-  .mobile-hidden {
-    position: absolute !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    z-index: -100 !important;
-    height: 10px !important;
-    width: 10px !important;
-    overflow: hidden !important;
-  }
-
-  .desktop-map-area:not(:has(.mobile-hidden)) {
+  .desktop-map-area {
     height: 45vh;
     min-height: unset;
     width: 100%;
@@ -94,28 +83,24 @@ body {
     height: 100%;
   }
 
+  /* Bottom Sheet effect */
   .desktop-sidebar {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
     background: var(--bg-color);
-    padding: 16px 0 0 0;
+    padding: 24px 0 0 0;
     z-index: 10;
     position: relative;
-  }
-
-  /* Bottom Sheet effect when map is visible */
-  .app-container.layout-split .desktop-sidebar {
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
     box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
     margin-top: -24px;
-    padding-top: 24px;
   }
 
   /* Visual drag handle */
-  .app-container.layout-split .desktop-sidebar::before {
+  .desktop-sidebar::before {
     content: '';
     position: absolute;
     top: 12px;

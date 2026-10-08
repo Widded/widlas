@@ -108,7 +108,7 @@ const MapArea = React.memo(function MapArea({
 
   return (
     <div className="desktop-map-area">
-      <div className={`map-container-wrapper animate-in ${!isSplitLayout ? 'mobile-hidden' : ''}`} style={{ animationDelay: '100ms' }}>
+      <div className="map-container-wrapper animate-in" style={{ animationDelay: '100ms' }}>
         <MapContainer
           center={safeMapCenter}
           zoom={mapZoom}
