@@ -381,15 +381,24 @@ function App() {
     
     if (isNightTime && result && result.routes) {
       alert("Dikkat: Saat 00:00 ile 06:00 arasında Edirne'de otobüs seferleri aktif değildir. Gösterilen rotalar bilgi ve test amaçlıdır.");
-      // TEST İÇİN GEÇİCİ OLARAK FİLTRE KALDIRILDI:
-      // result.routes = result.routes.filter(r => r.isWalkOnly);
-      // if (result.routes.length === 0) { ... }
     }
 
     setSearchResults(result);
     setSelectedRouteIndex(0);
     setHasSearched(true);
   };
+
+  // Otomatik arama tetikleyicisi (Haritadan veya listeden seçim yapıldığında)
+  useEffect(() => {
+    if (hasSearched && fromLocation.lat && toLocation.lat) {
+      const autoSearch = async () => {
+        let result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
+        setSearchResults(result);
+        setSelectedRouteIndex(0);
+      };
+      autoSearch();
+    }
+  }, [fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon, hasSearched]);
 
   // Tarifteki bir adıma tıklanınca haritayı oraya yakınlaştır
   const focusOnMap = (lat, lon) => {

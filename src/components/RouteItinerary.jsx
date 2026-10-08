@@ -99,172 +99,185 @@ function LegStops({ leg }) {
   );
 }
 
+import './RouteItinerary.css';
+
 export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCoord, onFocus }) {
   if (!itin) return null;
   const focus = (p) => (e) => {
     e.stopPropagation();
     if (p && Number.isFinite(p.lat) && Number.isFinite(p.lon)) onFocus(p.lat, p.lon);
   };
-  const totalSegMin = itin.segments.reduce((s, x) => s + x.min, 0) || 1;
   const lastLeg = itin.legs[itin.legs.length - 1];
 
   return (
-    <div className="itin" onClick={(e) => e.stopPropagation()}>
-      {/* Özet */}
-      <div className="itin-summary">
-        <div className="itin-times" style={{ display: 'flex', alignItems: 'center' }}>
-          <div className="itin-total">
-            <span>{itin.totalMin}</span> dk
-          </div>
-          <div className="itin-time-label" style={{ marginLeft: '12px', fontSize: '1.2rem', color: 'var(--text-main)' }}>Tahmini Yolculuk</div>
+    <div className="route-detail-container" onClick={(e) => e.stopPropagation()}>
+      
+      {/* 1. Header / Summary Card */}
+      <div className="detail-header-card">
+        <div className="detail-time-block">
+          <div className="detail-time-big">{itin.totalMin} <span className="detail-time-unit">dk</span></div>
+          <div className="detail-time-label">Tahmini Toplam Süre</div>
         </div>
-
-        <div className="itin-bar" aria-label="Süre dağılımı">
-          {itin.segments.filter(s => s.min > 0).map((s, i) => (
-            <div
-              key={i}
-              className={`itin-bar-seg itin-bar-${s.kind}`}
-              style={{ flexGrow: s.min / totalSegMin, background: s.kind === 'bus' ? s.color : undefined }}
-              title={`${s.kind === 'walk' ? 'Yürüme' : s.kind === 'wait' ? 'Aktarma bekleme' : 'Otobüs'}: ${s.min} dk`}
-            >
-              {s.min / totalSegMin > 0.12 && <span>{s.min}′</span>}
-            </div>
-          ))}
-        </div>
-
-        <div className="itin-chips">
-          <span className="itin-chip"><Footprints size={13} /> {fmtDist(itin.totalWalkM)} yürüme</span>
+        
+        <div className="detail-badges">
+          <div className="detail-badge"><Footprints size={14} /> <span>{fmtDist(itin.totalWalkM)} yürüme</span></div>
           {!itin.isWalkOnly && (
             <>
-              <span className="itin-chip"><BusFront size={13} /> {itin.totalStops} durak</span>
-              <span className="itin-chip"><Repeat size={13} /> {itin.transfers === 0 ? 'Aktarmasız' : `${itin.transfers} aktarma`}</span>
+              <div className="detail-badge"><BusFront size={14} /> <span>{itin.totalStops} durak</span></div>
+              <div className="detail-badge"><Repeat size={14} /> <span>{itin.transfers === 0 ? 'Aktarmasız' : `${itin.transfers} aktarma`}</span></div>
             </>
           )}
         </div>
       </div>
 
-      {/* Adım adım tarif */}
-      <ol className="itin-timeline">
-        {/* Başlangıç */}
-        <li className="itin-row itin-node itin-clickable" onClick={focus(fromCoord)}>
-          <div className="itin-rail"><span className="itin-dot" style={{ background: '#10b981' }}><Navigation size={12} color="#fff" /></span></div>
-          <div className="itin-content">
-            <div className="itin-head"><b>{fromName || 'Başlangıç'}</b></div>
-            <span className="itin-sub">Yola çıkış noktası</span>
+      {/* 2. Timeline */}
+      <div className="detail-timeline">
+        {/* Start Point */}
+        <div className="timeline-node clickable" onClick={focus(fromCoord)}>
+          <div className="node-icon bg-emerald"><Navigation size={14} color="#fff" /></div>
+          <div className="node-content">
+            <div className="node-title">{fromName || 'Başlangıç Noktası'}</div>
+            <div className="node-subtitle">Yolculuğun başlıyor</div>
           </div>
-        </li>
+        </div>
 
-        {/* Yürüme */}
-        <li className="itin-row itin-seg">
-          <div className="itin-rail"><span className="itin-line itin-line-walk" /></div>
-          <div className="itin-content itin-walk">
-            <Footprints size={16} />
-            <span>
-              <b>{fmtDist(itin.walk.startM)}</b> yürü · ~{itin.startWalkMin} dk
-              {!itin.walk.startExact && <em> (kuş uçuşu)</em>}
-            </span>
+        {/* Walk to First Stop (if not walk only) */}
+        {!itin.isWalkOnly && itin.startWalkMin > 0 && (
+          <div className="timeline-segment walk-segment">
+             <div className="segment-line dashed"></div>
+             <div className="segment-content">
+               <span className="segment-text"><Footprints size={14}/> {fmtDist(itin.walk.startM)} ({itin.startWalkMin} dk) yürü</span>
+             </div>
           </div>
-        </li>
+        )}
+        
+        {/* Walk Only Route */}
+        {itin.isWalkOnly && (
+          <div className="timeline-segment walk-segment">
+             <div className="segment-line dashed"></div>
+             <div className="segment-content">
+               <span className="segment-text"><Footprints size={14}/> {fmtDist(itin.totalWalkM)} ({itin.totalMin} dk) yürü</span>
+             </div>
+          </div>
+        )}
 
-        {itin.legs.map((leg, i) => (
-          <React.Fragment key={leg.line + '_' + i}>
-            {/* Biniş / aktarma durağı */}
-            <li className="itin-row itin-node itin-clickable" onClick={focus(leg.fromStop)}>
-              <div className="itin-rail">
-                <span className="itin-dot itin-dot-ring" style={{ borderColor: i === 0 ? leg.color : '#f59e0b' }}>
-                  {i === 0 ? <BusFront size={12} color={leg.color} /> : <Repeat size={12} color="#f59e0b" />}
-                </span>
+        {/* Bus Legs */}
+        {!itin.isWalkOnly && itin.legs.map((leg, i) => (
+          <React.Fragment key={'leg_' + i}>
+            {/* Stop Node */}
+            <div className="timeline-node clickable" onClick={focus(leg.fromStop)}>
+              <div className="node-icon" style={{ backgroundColor: leg.color }}>
+                {i === 0 ? <BusFront size={14} color="#fff" /> : <Repeat size={14} color="#fff" />}
               </div>
-              <div className="itin-content">
-                <div className="itin-head">
-                  <b>{leg.fromStop?.name} {i === 0 ? 'Durağı' : '(Aktarma)'}</b>
-                </div>
-                {i > 0 && (
-                  <div className="itin-transfer">
-                    {itin.route?.transferWalkDistance > 0 ? (
-                      <span><b>{itin.legs[i - 1].line}</b> hattından in, yürüyerek <b>({fmtDist(itin.route.transferWalkDistance)})</b> diğer durağa geç.</span>
+              <div className="node-content">
+                <div className="node-title">{leg.fromStop?.name}</div>
+                <div className="node-subtitle">{i === 0 ? 'Otobüse Biniş Durağı' : 'Aktarma Durağı'}</div>
+              </div>
+            </div>
+
+            {/* Wait / Transfer Instruction */}
+            {i > 0 && (
+              <div className="timeline-segment wait-segment">
+                 <div className="segment-line dotted" style={{ borderColor: leg.color }}></div>
+                 <div className="segment-content transfer-instruction">
+                   {itin.route?.transferWalkDistance > 0 ? (
+                      <div className="transfer-box">
+                        <Footprints size={14} />
+                        <span><b>{itin.legs[i - 1].line}</b> hattından in, yürüyerek geç <b>({fmtDist(itin.route.transferWalkDistance)})</b></span>
+                      </div>
                     ) : (
-                      <span><b>{itin.legs[i - 1].line}</b> hattından in, <b>aynı duraktan</b> diğer otobüse geç.</span>
+                      <div className="transfer-box">
+                        <Hourglass size={14} />
+                        <span><b>{itin.legs[i - 1].line}</b> hattından in, <b>aynı durakta</b> bekle</span>
+                      </div>
                     )}
-                    <span className="itin-wait"><Hourglass size={13} /> Tahmini bekleme ~{itin.waitMin} dk</span>
-                  </div>
-                )}
-                <div className="itin-board" style={{ '--leg-color': leg.color }}>
-                  <span className="bus-badge" style={{ background: leg.color }}>{leg.line}</span>
-                  <div className="itin-board-text">
-                    <span><b>{terminalOf(leg.headSign)}</b> yönüne giden otobüse bin</span>
-                    <span className="itin-sub">Ön tabelada “{terminalOf(leg.headSign)}” yazmalı · Güzergah: {leg.headSign}</span>
-                  </div>
-                </div>
+                 </div>
               </div>
-            </li>
+            )}
 
-            {/* Otobüs yolculuğu */}
-            <li className="itin-row itin-seg">
-              <div className="itin-rail"><span className="itin-line" style={{ background: leg.color }} /></div>
-              <div className="itin-content">
-                <div className="itin-ride">
-                  <BusFront size={16} color={leg.color} />
-                  <span><b>{leg.stopCount} durak</b> git · ~{leg.minutes} dk</span>
-                </div>
-                <LegStops leg={leg} />
-              </div>
-            </li>
+            {/* Boarding Info Box */}
+            <div className="timeline-segment info-segment">
+               <div className="segment-line solid" style={{ borderColor: leg.color }}></div>
+               <div className="segment-content">
+                  <div className="bus-instruction-card" style={{ borderLeft: `4px solid ${leg.color}` }}>
+                     <div className="bus-badge-big" style={{ backgroundColor: leg.color }}>{leg.line}</div>
+                     <div className="bus-details">
+                        <div className="bus-dest"><b>{terminalOf(leg.headSign)}</b> Yönü</div>
+                        <div className="bus-subtext">Ön tabelada “{terminalOf(leg.headSign)}” yazar</div>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Ride Segment */}
+            <div className="timeline-segment ride-segment">
+               <div className="segment-line solid thick" style={{ borderColor: leg.color }}></div>
+               <div className="segment-content">
+                 <LegStops leg={leg} />
+               </div>
+            </div>
           </React.Fragment>
         ))}
 
-        {/* İniş ve Hedefe Yürüme (Sadece otobüs varsa) */}
+        {/* End Stop Node */}
         {!itin.isWalkOnly && lastLeg && (
-          <>
-            <li className="itin-row itin-node itin-clickable" onClick={focus(lastLeg.toStop)}>
-              <div className="itin-rail"><span className="itin-dot itin-dot-ring" style={{ borderColor: lastLeg.color }}><MapPin size={12} color={lastLeg.color} /></span></div>
-              <div className="itin-content">
-                <div className="itin-head"><b>{lastLeg.toStop?.name} Durağı</b></div>
-                <span className="itin-sub">Otobüsten in</span>
-              </div>
-            </li>
-
-            <li className="itin-row itin-seg">
-              <div className="itin-rail"><span className="itin-line itin-line-walk" /></div>
-              <div className="itin-content itin-walk">
-                <Footprints size={16} />
-                <span>
-                  <b>{fmtDist(itin.walk.endM)}</b> yürü · ~{itin.endWalkMin} dk
-                  {!itin.walk.endExact && <em> (kuş uçuşu)</em>}
-                </span>
-              </div>
-            </li>
-          </>
+          <div className="timeline-node clickable" onClick={focus(lastLeg.toStop)}>
+             <div className="node-icon bg-slate"><MapPin size={14} color="#fff" /></div>
+             <div className="node-content">
+               <div className="node-title">{lastLeg.toStop?.name}</div>
+               <div className="node-subtitle">Otobüsten İniş</div>
+             </div>
+          </div>
         )}
 
-        {/* Varış */}
-        <li className="itin-row itin-node itin-clickable" onClick={focus(toCoord)}>
-          <div className="itin-rail"><span className="itin-dot" style={{ background: '#ef4444' }}><Flag size={12} color="#fff" /></span></div>
-          <div className="itin-content">
-            <div className="itin-head"><b>{toName || 'Varış'}</b></div>
-            <span className="itin-sub">Varış noktası</span>
+        {/* Walk to Destination */}
+        {!itin.isWalkOnly && itin.endWalkMin > 0 && (
+          <div className="timeline-segment walk-segment">
+             <div className="segment-line dashed"></div>
+             <div className="segment-content">
+               <span className="segment-text"><Footprints size={14}/> {fmtDist(itin.walk.endM)} ({itin.endWalkMin} dk) yürü</span>
+             </div>
           </div>
-        </li>
-      </ol>
+        )}
 
+        {/* Destination Node */}
+        <div className="timeline-node clickable" onClick={focus(toCoord)}>
+          <div className="node-icon bg-red"><Flag size={14} color="#fff" /></div>
+          <div className="node-content">
+            <div className="node-title">{toName || 'Varış Noktası'}</div>
+            <div className="node-subtitle">Yolculuğun sonu</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fares */}
       {!itin.isWalkOnly && (
-        <div className="itin-fares" style={{ margin: '16px 0', padding: '12px', background: 'var(--surface-hover)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '0.85rem' }}>
-          <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-main)' }}>Tahmini Biniş Ücreti (2026)</div>
-          <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <li><b>Öğrenci (Kent Kart):</b> {itin.transfers > 0 ? '42,75 TL (Aktarma dahil)' : '28,50 TL'}</li>
-            <li><b>Tam (Kent Kart):</b> {itin.transfers > 0 ? '63,00 TL (Aktarma dahil)' : '42,00 TL'}</li>
-            <li><b>Temassız:</b> {itin.transfers > 0 ? '79,50 TL (Aktarma dahil)' : '53,00 TL'}</li>
-          </ul>
+        <div className="fares-premium-card">
+          <div className="fares-header">Tahmini Bilet Ücreti (2026)</div>
+          <div className="fares-grid">
+             <div className="fare-item">
+               <div className="fare-type">Öğrenci (Kent Kart)</div>
+               <div className="fare-price">{itin.transfers > 0 ? '42.75 ₺' : '28.50 ₺'}</div>
+             </div>
+             <div className="fare-item">
+               <div className="fare-type">Tam (Kent Kart)</div>
+               <div className="fare-price">{itin.transfers > 0 ? '63.00 ₺' : '42.00 ₺'}</div>
+             </div>
+             <div className="fare-item">
+               <div className="fare-type">Temassız Kart</div>
+               <div className="fare-price">{itin.transfers > 0 ? '79.50 ₺' : '53.00 ₺'}</div>
+             </div>
+          </div>
+          {itin.transfers > 0 && <div className="fares-note">* 45 dakika içi aktarma indirimi dahil edilmiştir.</div>}
         </div>
       )}
 
-      <p className="itin-note">
-        <Info size={14} />
-        <span>
-          Saatler tahminidir: otobüste durak başına ~1 dk, yürümede ~5 km/s, aktarmada bekleme süresi varsayılır.
-          İlk otobüsü bekleme süresi dahil değildir. Haritada görmek için bir adıma dokun.
-        </span>
-      </p>
+      {/* Note */}
+      <div className="detail-note">
+        <Info size={20} />
+        <span>Süreler tahminidir (durak başı ~1 dk, yürüyüş ~5 km/s). İlk otobüsü bekleme süresi dahil değildir. Haritada görmek için bir adıma dokun.</span>
+      </div>
+
     </div>
   );
 }
