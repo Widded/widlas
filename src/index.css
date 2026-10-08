@@ -58,6 +58,15 @@ body {
 }
 
 @media (max-width: 1023px) {
+  .app-container {
+    padding: 0;
+    max-width: 100%;
+    height: 100vh;
+    height: 100dvh; /* For mobile browsers with dynamic UI */
+    gap: 0;
+    overflow: hidden;
+  }
+
   .mobile-hidden {
     position: absolute !important;
     visibility: hidden !important;
@@ -70,18 +79,52 @@ body {
   }
 
   .desktop-map-area:not(:has(.mobile-hidden)) {
-    height: 35vh;
-    min-height: 250px;
+    height: 45vh;
+    min-height: unset;
     width: 100%;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    margin-bottom: 16px;
-    border: 1px solid var(--border-color);
+    border-radius: 0;
+    margin-bottom: 0;
+    border: none;
+    z-index: 1;
+    position: relative;
   }
   
   .map-container-wrapper {
     width: 100%;
     height: 100%;
+  }
+
+  .desktop-sidebar {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-y: hidden;
+    background: var(--bg-color);
+    padding: 16px 0 0 0;
+    z-index: 10;
+    position: relative;
+  }
+
+  /* Bottom Sheet effect when map is visible */
+  .app-container.layout-split .desktop-sidebar {
+    border-top-left-radius: 28px;
+    border-top-right-radius: 28px;
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+    margin-top: -24px;
+    padding-top: 24px;
+  }
+
+  /* Visual drag handle */
+  .app-container.layout-split .desktop-sidebar::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 5px;
+    background: var(--border-focus);
+    border-radius: 10px;
   }
 }
 
@@ -144,14 +187,18 @@ body {
     grid-column: 2;
     grid-row: 1;
     height: 100%;
-    overflow-y: auto;
+    overflow-y: hidden; /* To let inner sidebar-scroll handle the scrolling */
     background: var(--bg-color);
     box-shadow: -4px 0 24px rgba(0,0,0,0.08);
     z-index: 10;
-    padding: 24px;
+    padding: 24px 0 0 0;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 0;
+  }
+
+  .app-container.layout-center .app-header {
+    padding: 8px 0;
   }
 }
 
@@ -160,7 +207,7 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 8px 0;
+  padding: 8px 20px;
 }
 
 .icon-glow {
