@@ -82,9 +82,9 @@ export default function RouteList({
                       ) : (
                         <>
                           {routeGroup.walkDistanceStart > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-dim)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-muted)' }}>
                               <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceStart)})</span>
-                              <ArrowRight size={14} color="var(--text-dim)" style={{ marginLeft: '2px' }} />
+                              <ArrowRight size={14} color="var(--text-muted)" style={{ marginLeft: '2px' }} />
                             </div>
                           )}
 
@@ -97,13 +97,13 @@ export default function RouteList({
                                     <span className="bus-badge" style={{ background: r.color }}>{r.line1}</span>
                                     {r.transferWalkDistance > 0 && (
                                       <>
-                                        <ArrowRight size={14} color="var(--text-dim)" />
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--text-dim)' }}>
+                                        <ArrowRight size={14} color="var(--text-muted)" />
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '2px', color: 'var(--text-muted)' }}>
                                           <Footprints size={13} /> <span>({fmtWalk(r.transferWalkDistance)})</span>
                                         </div>
                                       </>
                                     )}
-                                    <ArrowRight size={14} color="var(--text-dim)" />
+                                    <ArrowRight size={14} color="var(--text-muted)" />
                                     <span className="bus-badge" style={{ background: r.color2 }}>{r.line2}</span>
                                   </div>
                                 ) : (
@@ -114,8 +114,8 @@ export default function RouteList({
                           </div>
 
                           {routeGroup.walkDistanceEnd > 0 && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-dim)' }}>
-                              <ArrowRight size={14} color="var(--text-dim)" />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: 'var(--text-muted)' }}>
+                              <ArrowRight size={14} color="var(--text-muted)" />
                               <Footprints size={14} /> <span>({fmtWalk(routeGroup.walkDistanceEnd)})</span>
                             </div>
                           )}
