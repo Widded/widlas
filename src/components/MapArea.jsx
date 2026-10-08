@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { allStopsDB } from '../data/db';
 
 const createCustomIcon = (svgString, color) => {
   return L.divIcon({
@@ -81,7 +82,8 @@ function MapClickHandler({ onMapClick }) {
 
 const MapArea = React.memo(function MapArea({
   mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
-  fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd
+  fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd,
+  activeLineData
 }) {
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
@@ -188,6 +190,37 @@ const MapArea = React.memo(function MapArea({
               })}
             </>
           )}
+
+          {activeLineData && activeLineData.directions?.[0] && (
+             <>
+               {/* Draw the main route line with a glowing effect */}
+               <Polyline 
+                 positions={activeLineData.directions[0].path} 
+                 pathOptions={{ color: activeLineData.color, weight: 6, opacity: 0.8 }} 
+               />
+               <Polyline 
+                 positions={activeLineData.directions[0].path} 
+                 pathOptions={{ color: '#ffffff', weight: 2, opacity: 0.5 }} 
+               />
+
+               {/* Draw glowing stops */}
+               {activeLineData.directions[0].stopIds.map((sid, i) => {
+                 const stop = allStopsDB[sid];
+                 if (!stop) return null;
+                 return (
+                   <CircleMarker 
+                     key={`line_stop_${sid}_${i}`} 
+                     center={[stop.lat, stop.lon]} 
+                     radius={5} 
+                     pathOptions={{ color: '#fff', fillColor: activeLineData.color, fillOpacity: 1, weight: 2 }}
+                   >
+                     <Popup><b>{stop.name}</b></Popup>
+                   </CircleMarker>
+                 )
+               })}
+             </>
+          )}
+
         </MapContainer>
       </div>
     </div>

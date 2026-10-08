@@ -17,7 +17,9 @@ import {
 import MapArea from './components/MapArea';
 import SearchBox from './components/SearchBox';
 import RouteList from './components/RouteList';
+import LineExplorer from './components/LineExplorer';
 import { calculateSmartRoute } from './data/routes';
+import { etusLines } from './data/db';
 import './index.css';
 
 // Yol çizgisinin (polyline) toplam uzunluğu, metre
@@ -50,6 +52,9 @@ function App() {
   const [activeSubRouteId, setActiveSubRouteId] = useState(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [fareType, setFareType] = useState('tam');
+
+  const [activeMainTab, setActiveMainTab] = useState('search'); // 'search' or 'lines'
+  const [activeLineCode, setActiveLineCode] = useState(null);
 
   const [walkingPathStart, setWalkingPathStart] = useState([]);
   const [walkingPathEnd, setWalkingPathEnd] = useState([]);
@@ -427,7 +432,10 @@ function App() {
 
   const activeRoute = searchResults?.routes?.[selectedRouteIndex] || searchResults;
 
-  const isSplitLayout = hasSearched || mapSelectionMode;
+  // Hatlar sekmesinde aktif olan hat verisi
+  const activeLineData = (activeMainTab === 'lines' && activeLineCode) ? etusLines[activeLineCode] : null;
+
+  const isSplitLayout = (activeMainTab === 'search' && hasSearched) || mapSelectionMode || (activeMainTab === 'lines');
 
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
@@ -450,6 +458,7 @@ function App() {
         activeRoute={activeRoute}
         walkingPathStart={walkingPathStart}
         walkingPathEnd={walkingPathEnd}
+        activeLineData={activeLineData}
       />
 
       {/* Sidebar / Main Content Area */}
@@ -497,43 +506,75 @@ function App() {
             </button>
           </div>
         </header>
+        <div style={{ padding: '0 20px', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', background: 'var(--surface)', borderRadius: '12px', padding: '4px', border: '1px solid var(--border-color)' }}>
+            <button 
+              onClick={() => { setActiveMainTab('search'); setActiveLineCode(null); }}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeMainTab === 'search' ? 'var(--primary)' : 'transparent', color: activeMainTab === 'search' ? '#fff' : 'var(--text-muted)', fontWeight: activeMainTab === 'search' ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+            >
+              <Search size={16} /> Rota Bul
+            </button>
+            <button 
+              onClick={() => setActiveMainTab('lines')}
+              style={{ flex: 1, padding: '10px', borderRadius: '8px', border: 'none', background: activeMainTab === 'lines' ? 'var(--primary)' : 'transparent', color: activeMainTab === 'lines' ? '#fff' : 'var(--text-muted)', fontWeight: activeMainTab === 'lines' ? 700 : 500, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '6px' }}
+            >
+              <MapIcon size={16} /> Tüm Hatlar
+            </button>
+          </div>
+        </div>
 
-        <SearchBox
-          fromLocation={fromLocation}
-          toLocation={toLocation}
-          activeInput={activeInput}
-          setActiveInput={setActiveInput}
-          mapSelectionMode={mapSelectionMode}
-          setMapSelectionMode={setMapSelectionMode}
-          fromSuggestions={fromSuggestions}
-          toSuggestions={toSuggestions}
-          handleInputChange={handleInputChange}
-          selectSuggestion={selectSuggestion}
-          getUserLocation={getUserLocation}
-          handleSearch={handleSearch}
-          hasSearched={hasSearched}
-          localPlaces={localPlaces}
-          isSplitLayout={isSplitLayout}
-          swapLocations={swapLocations}
-        />
+        <div className="sidebar-scroll" style={{ flex: 1, overflowY: 'auto', padding: '0 20px 20px 20px' }}>
+          {activeMainTab === 'search' ? (
+            <>
+              <SearchBox
+                fromLocation={fromLocation}
+                toLocation={toLocation}
+                activeInput={activeInput}
+                setActiveInput={setActiveInput}
+                mapSelectionMode={mapSelectionMode}
+                setMapSelectionMode={setMapSelectionMode}
+                fromSuggestions={fromSuggestions}
+                toSuggestions={toSuggestions}
+                handleInputChange={handleInputChange}
+                selectSuggestion={selectSuggestion}
+                getUserLocation={getUserLocation}
+                handleSearch={handleSearch}
+                hasSearched={hasSearched}
+                localPlaces={localPlaces}
+                isSplitLayout={isSplitLayout}
+                swapLocations={swapLocations}
+              />
 
-      <RouteList
-        searchResults={searchResults}
-        selectedRouteIndex={selectedRouteIndex}
-        setSelectedRouteIndex={setSelectedRouteIndex}
-        expandedRouteId={expandedRouteId}
-        setExpandedRouteId={setExpandedRouteId}
-        activeSubRouteId={activeSubRouteId}
-        setActiveSubRouteId={setActiveSubRouteId}
-        hasSearched={hasSearched}
-        setHasSearched={setHasSearched}
-        fromLocation={fromLocation}
-        toLocation={toLocation}
-        focusOnMap={focusOnMap}
-        getWalk={getWalk}
-        fareType={fareType}
-      />
-      
+              <RouteList
+                searchResults={searchResults}
+                selectedRouteIndex={selectedRouteIndex}
+                setSelectedRouteIndex={setSelectedRouteIndex}
+                expandedRouteId={expandedRouteId}
+                setExpandedRouteId={setExpandedRouteId}
+                activeSubRouteId={activeSubRouteId}
+                setActiveSubRouteId={setActiveSubRouteId}
+                hasSearched={hasSearched}
+                setHasSearched={setHasSearched}
+                fromLocation={fromLocation}
+                toLocation={toLocation}
+                focusOnMap={focusOnMap}
+                getWalk={getWalk}
+                fareType={fareType}
+              />
+            </>
+          ) : (
+            <LineExplorer 
+               activeLineCode={activeLineCode}
+               setActiveLineCode={(code) => {
+                 setActiveLineCode(code);
+                 if (code && etusLines[code]?.directions?.[0]?.path?.[0]) {
+                   setMapCenter(etusLines[code].directions[0].path[0]);
+                   setMapZoom(13);
+                 }
+               }}
+            />
+          )}
+        </div>
       </div> {/* End of desktop-sidebar */}
 
       {mapSelectionMode && (
