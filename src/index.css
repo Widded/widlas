@@ -76,6 +76,13 @@ body {
     border: none;
     z-index: 1;
     position: relative;
+    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+  }
+
+  .app-container.search-active .desktop-map-area {
+    height: 0;
+    opacity: 0;
+    pointer-events: none;
   }
   
   .map-container-wrapper {
@@ -97,6 +104,14 @@ body {
     border-top-right-radius: 28px;
     box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
     margin-top: -24px;
+    transition: margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s;
+  }
+
+  .app-container.search-active .desktop-sidebar {
+    margin-top: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    padding-top: 16px;
   }
 
   /* Visual drag handle */
@@ -110,6 +125,11 @@ body {
     height: 5px;
     background: var(--border-focus);
     border-radius: 10px;
+    transition: opacity 0.3s;
+  }
+
+  .app-container.search-active .desktop-sidebar::before {
+    opacity: 0;
   }
 }
 

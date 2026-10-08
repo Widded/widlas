@@ -455,7 +455,7 @@ function App() {
   const isValidCoord = (coord) => Array.isArray(coord) && coord.length >= 2 && Number.isFinite(coord[0]) && Number.isFinite(coord[1]);
 
   return (
-    <div className={`app-container ${isSplitLayout ? 'layout-split' : 'layout-center'}`}>
+    <div className={`app-container ${isSplitLayout ? 'layout-split' : 'layout-center'} ${activeInput ? 'search-active' : ''}`}>
       
       {/* Map Area - Always visible on desktop, conditionally styled on mobile */}
       <MapArea 
