@@ -459,6 +459,7 @@ function App() {
         walkingPathStart={walkingPathStart}
         walkingPathEnd={walkingPathEnd}
         activeLineData={activeLineData}
+        isSplitLayout={isSplitLayout}
       />
 
       {/* Sidebar / Main Content Area */}

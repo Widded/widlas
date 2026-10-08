@@ -83,7 +83,7 @@ function MapClickHandler({ onMapClick }) {
 const MapArea = React.memo(function MapArea({
   mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
   fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd,
-  activeLineData
+  activeLineData, isSplitLayout
 }) {
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
@@ -108,7 +108,7 @@ const MapArea = React.memo(function MapArea({
 
   return (
     <div className="desktop-map-area">
-      <div className={`map-container-wrapper animate-in ${!hasSearched && !mapSelectionMode ? 'mobile-hidden' : ''}`} style={{ animationDelay: '100ms' }}>
+      <div className={`map-container-wrapper animate-in ${!isSplitLayout ? 'mobile-hidden' : ''}`} style={{ animationDelay: '100ms' }}>
         <MapContainer
           center={safeMapCenter}
           zoom={mapZoom}
@@ -121,7 +121,7 @@ const MapArea = React.memo(function MapArea({
             attribution='&copy; Google Maps'
           />
           <MapUpdater center={safeMapCenter} zoom={mapZoom} />
-          <MapResizeHandler isVisible={hasSearched || mapSelectionMode} />
+          <MapResizeHandler isVisible={isSplitLayout} />
           <MapClickHandler onMapClick={onMapClick} />
 
           {isValidCoord([fromLocation.lat, fromLocation.lon]) && (
