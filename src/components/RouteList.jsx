@@ -31,64 +31,40 @@ export default function RouteList({
       {searchResults.routes && searchResults.routes.length > 0 ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {(() => {
-            // Rotaları aynı hatları gruplayarak göster
             const groupedRoutes = [];
-            searchResults.routes.forEach((r, idx) => {
-              const groupId = r.startStop?.name + r.endStop?.name + (r.transferStop?.name || '') + (r.isWalkOnly ? 'walk' : '');
-              let existing = groupedRoutes.find(g => g.groupId === groupId);
-              if (!existing) {
-                existing = {
-                  groupId,
-                  idxList: [],
-                  groupedLines: [],
-                  startStop: r.startStop,
-                  endStop: r.endStop,
-                  transferStop: r.transferStop,
-                  walkStartMins: r.walkStartMins,
-                  walkEndMins: r.walkEndMins,
-                  walkDistanceStart: r.walkDistanceStart,
-                  walkDistanceEnd: r.walkDistanceEnd,
-                  totalTime: r.totalTime,
-                  isTransfer: r.isTransfer,
-                  isWalkOnly: r.isWalkOnly,
-                  legs: r.legs
-                };
-                groupedRoutes.push(existing);
-              }
-              existing.idxList.push(idx);
-              if (r.isWalkOnly) {
-                existing.groupedLines.push({ name: 'Sadece Yürüme', isWalkOnly: true });
-              } else if (r.isTransfer) {
-                existing.groupedLines.push({ 
-                  line1: r.routes[0].name, color: r.color, 
-                  line2: r.routes[1].name, color2: r.color2, 
-                  isTransfer: true,
-                  transferWalkDistance: r.transferWalkDistance
+            const groupMap = new Map();
+            searchResults.routes.forEach((route, idx) => {
+              const key = route.isTransfer 
+                ? `transfer_${route.startStop.name}_${route.transferStop.name}_${route.endStop.name}`
+                : `direct_${route.startStop.name}_${route.endStop.name}`;
+              if (!groupMap.has(key)) {
+                groupMap.set(key, {
+                  ...route,
+                  groupId: key,
+                  originalIdx: idx,
+                  groupedLines: [route]
                 });
               } else {
-                existing.groupedLines.push({ name: r.routes[0].name, color: r.color });
+                groupMap.get(key).groupedLines.push(route);
               }
             });
+            groupedRoutes.push(...groupMap.values());
 
             return groupedRoutes.map((routeGroup) => {
-              const baseIdx = routeGroup.idxList[0];
-              const isSelected = routeGroup.idxList.includes(selectedRouteIndex);
+              const idx = routeGroup.originalIdx;
+              const isSelected = selectedRouteIndex === idx;
               const isExpanded = expandedRouteId === routeGroup.groupId;
               
-              let activeSubIndex = 0;
-              if (isSelected && activeSubRouteId && activeSubRouteId.startsWith(routeGroup.groupId)) {
-                activeSubIndex = parseInt(activeSubRouteId.split('_')[1]);
-              }
-              const actualRouteIndex = routeGroup.idxList[activeSubIndex] || routeGroup.idxList[0];
+              const activeSubIndex = activeSubRouteId?.startsWith(routeGroup.groupId) ? parseInt(activeSubRouteId.split('_').pop()) : 0;
+              const activeRouteObj = (isExpanded && routeGroup.groupedLines[activeSubIndex]) ? routeGroup.groupedLines[activeSubIndex] : routeGroup;
               
-              // Only call selected route indexing if it's currently selected
-              const itin = isSelected && isExpanded ? searchResults.itineraries?.[actualRouteIndex] : null;
+              const itin = isSelected && isExpanded ? buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), new Date()) : null;
 
               return (
                 <div 
                   key={routeGroup.groupId} 
                   className={`route-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => { setSelectedRouteIndex(baseIdx); if (!isSelected) setExpandedRouteId(null); }}
+                  onClick={() => { setSelectedRouteIndex(idx); if (!isSelected) setExpandedRouteId(null); }}
                   style={{
                     borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
                     backgroundColor: isSelected ? 'var(--surface-hover)' : 'var(--surface)',
