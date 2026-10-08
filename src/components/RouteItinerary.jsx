@@ -59,7 +59,8 @@ export function buildItinerary(route, walk, departAt) {
     isWalkOnly,
     legs,
     segments,
-    walk
+    walk,
+    route
   };
 }
 
@@ -180,7 +181,11 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
                 </div>
                 {i > 0 && (
                   <div className="itin-transfer">
-                    <span><b>{itin.legs[i - 1].line}</b> hattından in, <b>aynı duraktan</b> diğer otobüse geç.</span>
+                    {itin.route?.transferWalkDistance > 0 ? (
+                      <span><b>{itin.legs[i - 1].line}</b> hattından in, yürüyerek <b>({fmtDist(itin.route.transferWalkDistance)})</b> diğer durağa geç.</span>
+                    ) : (
+                      <span><b>{itin.legs[i - 1].line}</b> hattından in, <b>aynı duraktan</b> diğer otobüse geç.</span>
+                    )}
                     <span className="itin-wait"><Hourglass size={13} /> Tahmini bekleme ~{itin.waitMin} dk</span>
                   </div>
                 )}

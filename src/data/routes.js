@@ -252,6 +252,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         routeGeometry2: slicePath(dir2.path, actualTransferStop, match.eStop),
                         walkDistanceStart: sStop.distanceKm,
                         walkDistanceEnd: match.walkEnd,
+                        transferWalkDistance: transferWalkDist,
                         passedStops: passedStops,
                         passedStopCoords: passedStopCoords,
                         walkStartMins: walkStart,
