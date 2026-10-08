@@ -60,6 +60,13 @@ export default function RouteList({
               const activeRouteObj = (isExpanded && routeGroup.groupedLines[activeSubIndex]) ? routeGroup.groupedLines[activeSubIndex] : routeGroup;
               
               const itin = isSelected && isExpanded ? buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), new Date()) : null;
+              
+              const getFareText = () => {
+                if (routeGroup.isWalkOnly) return "Ücretsiz";
+                const baseFare = fareType === 'ogrenci' ? 28.50 : 42.00;
+                const totalFare = routeGroup.isTransfer ? (baseFare + (baseFare / 2)) : baseFare;
+                return totalFare.toFixed(2) + ' ₺';
+              };
 
               return (
                 <div 
@@ -131,7 +138,7 @@ export default function RouteList({
                         Tahmini
                       </span>
                       <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: '600', marginTop: '6px', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        {routeGroup.isWalkOnly ? "Ücretsiz" : (fareType === 'ogrenci' ? '16.50 ₺' : '23.00 ₺')}
+                        {getFareText()}
                       </span>
                     </div>
                   </div>
