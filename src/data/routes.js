@@ -86,7 +86,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
             let stopCount = idxB - idxA;
             let passedStopIds = dir.stopIds.slice(idxA + 1, idxB);
 
-            const estimatedBusTime = stopCount * 1.5; // Ortalama her durak 1.5 dk
+            const estimatedBusTime = stopCount * 1.0; // Ortalama her durak 1 dk
             // Şehir içi yürüme mesafesi kuş uçuşundan ortalama %40 daha uzundur.
             const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12); // km başı ~12 dk yürüme
             const walkEnd = Math.ceil(eStop.distanceKm * 1.4 * 12);
@@ -203,8 +203,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                     let passedStopIds2 = dir2.stopIds.slice(idxT + 1, match.idxB);
 
                     const leg1Stops = tIdx - idxA;
-                    const leg1Time = leg1Stops * 1.5;
-                    const leg2Time = leg2Stops * 1.5;
+                    const leg1Time = leg1Stops * 1.0;
+                    const leg2Time = leg2Stops * 1.0;
                     
                     const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
                     const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
