@@ -55,6 +55,7 @@ function App() {
 
   const [activeMainTab, setActiveMainTab] = useState('search'); // 'search' or 'lines'
   const [activeLineCode, setActiveLineCode] = useState(null);
+  const [activeLineDirIdx, setActiveLineDirIdx] = useState(0);
 
   const [walkingPathStart, setWalkingPathStart] = useState([]);
   const [walkingPathEnd, setWalkingPathEnd] = useState([]);
@@ -153,6 +154,16 @@ function App() {
        setWalkingPathEnd([[active.endStop.lat, active.endStop.lon], [toLocation.lat, toLocation.lon]]);
     }
   }, [searchResults, selectedRouteIndex, fromLocation, toLocation]);
+
+  // Hat yönü değiştiğinde haritayı o yönün başlangıcına odakla
+  useEffect(() => {
+    if (activeMainTab === 'lines' && activeLineCode) {
+      const lineData = etusLines[activeLineCode];
+      if (lineData && lineData.directions?.[activeLineDirIdx]?.path?.[0]) {
+        setMapCenter(lineData.directions[activeLineDirIdx].path[0]);
+      }
+    }
+  }, [activeLineDirIdx, activeLineCode, activeMainTab]);
 
   const getUserLocation = () => {
     if (navigator.geolocation) {
@@ -459,6 +470,7 @@ function App() {
         walkingPathStart={walkingPathStart}
         walkingPathEnd={walkingPathEnd}
         activeLineData={activeLineData}
+        activeLineDirIdx={activeLineDirIdx}
         isSplitLayout={isSplitLayout}
       />
 
@@ -566,8 +578,11 @@ function App() {
           ) : (
             <LineExplorer 
                activeLineCode={activeLineCode}
+               activeLineDirIdx={activeLineDirIdx}
+               setActiveLineDirIdx={setActiveLineDirIdx}
                setActiveLineCode={(code) => {
                  setActiveLineCode(code);
+                 setActiveLineDirIdx(0);
                  if (code && etusLines[code]?.directions?.[0]?.path?.[0]) {
                    setMapCenter(etusLines[code].directions[0].path[0]);
                    setMapZoom(13);

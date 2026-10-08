@@ -191,35 +191,38 @@ const MapArea = React.memo(function MapArea({
             </>
           )}
 
-          {activeLineData && activeLineData.directions?.[0] && (
-             <>
-               {/* Draw the main route line with a glowing effect */}
-               <Polyline 
-                 positions={activeLineData.directions[0].path} 
-                 pathOptions={{ color: activeLineData.color, weight: 6, opacity: 0.8 }} 
-               />
-               <Polyline 
-                 positions={activeLineData.directions[0].path} 
-                 pathOptions={{ color: '#ffffff', weight: 2, opacity: 0.5 }} 
-               />
+          {activeLineData && activeLineData.directions?.[activeLineDirIdx] && (() => {
+             const dirData = activeLineData.directions[activeLineDirIdx];
+             return (
+               <>
+                 {/* Draw the main route line with a glowing effect */}
+                 <Polyline 
+                   positions={dirData.path} 
+                   pathOptions={{ color: activeLineData.color, weight: 6, opacity: 0.8 }} 
+                 />
+                 <Polyline 
+                   positions={dirData.path} 
+                   pathOptions={{ color: '#ffffff', weight: 2, opacity: 0.5 }} 
+                 />
 
-               {/* Draw glowing stops */}
-               {activeLineData.directions[0].stopIds.map((sid, i) => {
-                 const stop = allStopsDB[sid];
-                 if (!stop) return null;
-                 return (
-                   <CircleMarker 
-                     key={`line_stop_${sid}_${i}`} 
-                     center={[stop.lat, stop.lon]} 
-                     radius={5} 
-                     pathOptions={{ color: '#fff', fillColor: activeLineData.color, fillOpacity: 1, weight: 2 }}
-                   >
-                     <Popup><b>{stop.name}</b></Popup>
-                   </CircleMarker>
-                 )
-               })}
-             </>
-          )}
+                 {/* Draw glowing stops */}
+                 {dirData.stopIds.map((sid, i) => {
+                   const stop = allStopsDB[sid];
+                   if (!stop) return null;
+                   return (
+                     <CircleMarker 
+                       key={`line_stop_${sid}_${i}`} 
+                       center={[stop.lat, stop.lon]} 
+                       radius={5} 
+                       pathOptions={{ color: '#fff', fillColor: activeLineData.color, fillOpacity: 1, weight: 2 }}
+                     >
+                       <Popup><b>{stop.name}</b></Popup>
+                     </CircleMarker>
+                   )
+                 })}
+               </>
+             )
+          })()}
 
         </MapContainer>
       </div>
