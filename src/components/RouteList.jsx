@@ -2,7 +2,10 @@ import React from 'react';
 import { Footprints, ArrowRight, BusFront } from 'lucide-react';
 import RouteItinerary, { terminalOf, buildItinerary } from './RouteItinerary';
 
-const fmtWalk = (m) => m > 1000 ? (m / 1000).toFixed(1) + 'km' : Math.round(m) + 'm';
+const fmtWalk = (km) => {
+  const m = km * 1000;
+  return m > 1000 ? (m / 1000).toFixed(1) + 'km' : Math.round(m) + 'm';
+};
 
 export default function RouteList({
   searchResults,
