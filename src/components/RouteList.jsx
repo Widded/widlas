@@ -39,8 +39,8 @@ export default function RouteList({
             const groupMap = new Map();
             searchResults.routes.forEach((route, idx) => {
               const key = route.isTransfer 
-                ? `transfer_${route.line1}_${route.startStop.name}_${route.transferStop.name}_${route.endStop.name}`
-                : `direct_${route.startStop.name}_${route.endStop.name}`;
+                ? `transfer_${route.line1}_${route.startStop?.name}_${route.transferStop?.name}_${route.endStop?.name}`
+                : `direct_${route.startStop?.name || 'walk'}_${route.endStop?.name || 'walk'}`;
               if (!groupMap.has(key)) {
                 groupMap.set(key, {
                   ...route,
@@ -156,21 +156,40 @@ export default function RouteList({
                   </div>
 
                   {!isExpanded && (
-                    <div className="route-compact">
-                      <span><Footprints size={13} style={{ verticalAlign: '-2px' }} /> <b>{routeGroup.walkStartMins} dk</b> yürü (Biniş: <b>{routeGroup.startStop?.name}</b>)</span>
-                      {routeGroup.isTransfer && <span>Aktarma: <b>{routeGroup.transferStop?.name}</b></span>}
-                      <span>İniş: <b>{routeGroup.endStop?.name}</b> (<Footprints size={13} style={{ verticalAlign: '-2px' }} /> <b>{routeGroup.walkEndMins} dk</b> yürü)</span>
-                      {routeGroup.legs?.[0] && <span>Yön: <b>{terminalOf(routeGroup.legs[0].headSign)}</b></span>}
+                    <div className="route-compact" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {!routeGroup.isWalkOnly && (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', flexShrink: 0 }}></div>
+                            <span style={{ flex: 1 }}><b>{routeGroup.startStop?.name}</b> (Biniş)</span>
+                            {routeGroup.walkStartMins > 0 && <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>{routeGroup.walkStartMins} dk yürü</span>}
+                          </div>
+
+                          {routeGroup.isTransfer && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }}></div>
+                              <span style={{ flex: 1 }}><b>{routeGroup.transferStop?.name}</b> (Aktarma)</span>
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', flexShrink: 0 }}></div>
+                            <span style={{ flex: 1 }}><b>{routeGroup.endStop?.name}</b> (İniş)</span>
+                            {routeGroup.walkEndMins > 0 && <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>{routeGroup.walkEndMins} dk yürü</span>}
+                          </div>
+                        </>
+                      )}
+
                       {isSelected && (
                           <button 
                             className="btn-primary" 
-                            style={{ padding: '6px 12px', fontSize: '0.85rem', marginTop: '8px', alignSelf: 'flex-start', borderRadius: '6px' }}
+                            style={{ padding: '6px 14px', fontSize: '0.85rem', marginTop: '4px', alignSelf: 'flex-start', borderRadius: '6px' }}
                             onClick={(e) => { e.stopPropagation(); setExpandedRouteId(routeGroup.groupId); }}
                           >
                             Detayları Göster
                           </button>
                       )}
-                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600 }}>Seçmek için dokun</span>}
+                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600, marginTop: '2px', fontSize: '0.8rem' }}>Tüm detaylar için dokun</span>}
                     </div>
                   )}
                   
