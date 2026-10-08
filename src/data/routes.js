@@ -191,17 +191,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
             for (const line2Code of (actualTransferStop.routes || [])) {
               if (line1Code === line2Code) continue;
 
-              // MANTIKSAL FİLTRE 1: Eğer aktarma yapacağımız 2. hat ZATEN başlangıç durağımızdan geçiyorsa,
-              // gidip başka otobüsle onu ileride yakalamanın bir mantığı yoktur. Direkt baştan o hata binilmelidir.
-              if (sStop.routes && sStop.routes.includes(line2Code)) continue;
-
               const endMatches = linesToEnd[line2Code];
               if (!endMatches) continue;
-
-              // MANTIKSAL FİLTRE 2: Eğer bindiğimiz 1. hat ZATEN hedef durağa gidiyorsa,
-              // ortalarda inip başka bir otobüse aktarma yapmanın mantığı yoktur.
-              const goesDirect = endMatches.some(m => m.eStop.routes && m.eStop.routes.includes(line1Code));
-              if (goesDirect) continue;
 
               for (const match of endMatches) {
                  const dir2 = etusLines[line2Code].directions[match.dirIdx];
@@ -217,7 +208,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                     
                     const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
                     const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
-                    const transferWaitTime = 10 + transferWalkTime;
+                    // AKTARMA CEZASI: Aktarmaları listende daha aşağı itmek için sabit 15 dk bekleme süresi cezası veriyoruz.
+                    const transferWaitTime = 15 + transferWalkTime;
 
                     const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12);
                     const walkEnd = Math.ceil(match.walkEnd * 1.4 * 12);
