@@ -156,40 +156,17 @@ export default function RouteList({
                   </div>
 
                   {!isExpanded && (
-                    <div className="route-compact" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      {!routeGroup.isWalkOnly && (
-                        <>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', flexShrink: 0 }}></div>
-                            <span style={{ flex: 1 }}><b>{routeGroup.startStop?.name}</b> (Biniş)</span>
-                            {routeGroup.walkStartMins > 0 && <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>{routeGroup.walkStartMins} dk yürü</span>}
-                          </div>
-
-                          {routeGroup.isTransfer && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#f59e0b', flexShrink: 0 }}></div>
-                              <span style={{ flex: 1 }}><b>{routeGroup.transferStop?.name}</b> (Aktarma)</span>
-                            </div>
-                          )}
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', flexShrink: 0 }}></div>
-                            <span style={{ flex: 1 }}><b>{routeGroup.endStop?.name}</b> (İniş)</span>
-                            {routeGroup.walkEndMins > 0 && <span style={{ opacity: 0.8, fontSize: '0.8rem' }}>{routeGroup.walkEndMins} dk yürü</span>}
-                          </div>
-                        </>
-                      )}
-
+                    <div className="route-compact" style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '12px' }}>
                       {isSelected && (
                           <button 
                             className="btn-primary" 
-                            style={{ padding: '6px 14px', fontSize: '0.85rem', marginTop: '4px', alignSelf: 'flex-start', borderRadius: '6px' }}
+                            style={{ padding: '8px 16px', fontSize: '0.85rem', alignSelf: 'flex-start', borderRadius: '8px', width: '100%', textAlign: 'center' }}
                             onClick={(e) => { e.stopPropagation(); setExpandedRouteId(routeGroup.groupId); }}
                           >
                             Detayları Göster
                           </button>
                       )}
-                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600, marginTop: '2px', fontSize: '0.8rem' }}>Tüm detaylar için dokun</span>}
+                      {!isSelected && <span style={{ color: 'var(--primary)', fontWeight: 600, fontSize: '0.8rem', marginTop: '2px' }}>Seçmek için dokun</span>}
                     </div>
                   )}
                   
