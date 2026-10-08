@@ -65,11 +65,16 @@ body {
     height: 100dvh; /* For mobile browsers with dynamic UI */
     gap: 0;
     overflow: hidden;
+    background: var(--bg-color);
+  }
+
+  /* Beautiful Homepage Background */
+  .app-container.layout-center {
+    background: radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.20), transparent 60%), var(--bg-color);
+    justify-content: center;
   }
 
   .desktop-map-area {
-    height: 45vh;
-    min-height: unset;
     width: 100%;
     border-radius: 0;
     margin-bottom: 0;
@@ -79,42 +84,64 @@ body {
     transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
   }
 
+  /* Map is visible when split layout is active and NOT actively typing */
+  .app-container.layout-split:not(.search-active) .desktop-map-area {
+    height: 45vh;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Map is hidden on homepage OR when actively typing */
+  .app-container.layout-center .desktop-map-area,
   .app-container.search-active .desktop-map-area {
     height: 0;
     opacity: 0;
     pointer-events: none;
   }
-  
+
   .map-container-wrapper {
     width: 100%;
     height: 100%;
   }
 
-  /* Bottom Sheet effect */
+  /* Sidebar Base Styles */
   .desktop-sidebar {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
-    background: var(--bg-color);
     padding: 24px 0 0 0;
     z-index: 10;
     position: relative;
+    transition: margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s, background 0.4s;
+  }
+
+  /* Bottom Sheet effect only when map is visible */
+  .app-container.layout-split:not(.search-active) .desktop-sidebar {
+    background: var(--bg-color);
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
     box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
     margin-top: -24px;
-    transition: margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s;
   }
 
+  /* Expand sheet when searching */
   .app-container.search-active .desktop-sidebar {
+    background: var(--bg-color);
     margin-top: 0;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
     padding-top: 16px;
   }
 
-  /* Visual drag handle */
+  /* Homepage styling for sidebar (Centered, No background block) */
+  .app-container.layout-center .desktop-sidebar {
+    background: transparent;
+    padding: 24px 0 0 0;
+    flex: none; /* Allows centering */
+  }
+
+  /* Visual drag handle ONLY when map is visible */
   .desktop-sidebar::before {
     content: '';
     position: absolute;
@@ -126,10 +153,11 @@ body {
     background: var(--border-focus);
     border-radius: 10px;
     transition: opacity 0.3s;
+    opacity: 0;
   }
 
-  .app-container.search-active .desktop-sidebar::before {
-    opacity: 0;
+  .app-container.layout-split:not(.search-active) .desktop-sidebar::before {
+    opacity: 1;
   }
 }
 
