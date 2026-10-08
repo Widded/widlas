@@ -251,9 +251,9 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
         <div className="itin-fares" style={{ margin: '16px 0', padding: '12px', background: 'var(--surface-hover)', border: '1px solid var(--border-color)', borderRadius: '8px', fontSize: '0.85rem' }}>
           <div style={{ fontWeight: '600', marginBottom: '8px', color: 'var(--text-main)' }}>Tahmini Biniş Ücreti (2026)</div>
           <ul style={{ margin: 0, paddingLeft: '20px', color: 'var(--text-muted)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-            <li><b>Öğrenci (Kent Kart):</b> 28,50 TL</li>
-            <li><b>Tam (Kent Kart):</b> 42,00 TL</li>
-            <li><b>Temassız Kredi/Banka Kartı:</b> 53,00 TL</li>
+            <li><b>Öğrenci (Kent Kart):</b> {itin.transfers > 0 ? '42,75 TL (Aktarma dahil)' : '28,50 TL'}</li>
+            <li><b>Tam (Kent Kart):</b> {itin.transfers > 0 ? '63,00 TL (Aktarma dahil)' : '42,00 TL'}</li>
+            <li><b>Temassız:</b> {itin.transfers > 0 ? '79,50 TL (Aktarma dahil)' : '53,00 TL'}</li>
           </ul>
         </div>
       )}
@@ -261,8 +261,8 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
       <p className="itin-note">
         <Info size={14} />
         <span>
-          Saatler tahminidir: otobüste durak başına ~1,5 dk, yürümede ~5 km/s, aktarmada {itin.waitMin || 12} dk bekleme varsayılır.
-          İlk otobüsü bekleme süresi dahil değildir (sefer saati verisi yok). Haritada görmek için bir adıma dokun.
+          Saatler tahminidir: otobüste durak başına ~1 dk, yürümede ~5 km/s, aktarmada bekleme süresi varsayılır.
+          İlk otobüsü bekleme süresi dahil değildir. Haritada görmek için bir adıma dokun.
         </span>
       </p>
     </div>
