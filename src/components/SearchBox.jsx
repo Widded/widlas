@@ -133,6 +133,15 @@ export default function SearchBox({
                   <ArrowUpDown size={18} />
                 </button>
               </div>
+
+              <div className="quick-actions" style={{ marginTop: '16px', paddingBottom: '8px' }}>
+                 <button className="action-pill" onClick={() => { getUserLocation(); setActiveInput(null); }}>
+                   <LocateFixed size={16} color="var(--primary)" /> Konumum
+                 </button>
+                 <button className="action-pill" onClick={() => { setMapSelectionMode(activeInput); setActiveInput(null); }}>
+                   <MapIcon size={16} color="var(--primary)" /> Haritadan Seç
+                 </button>
+              </div>
             </div>
           ) : (
             <>
@@ -182,15 +191,6 @@ export default function SearchBox({
           {/* Mobile Suggestions List (Not Sticky) */}
           {!isDesktop && activeInput && (
             <div className="suggestions-list animate-in fade-in slide-in-from-top-2" style={{ padding: '24px 16px' }}>
-              <div className="quick-actions" style={{ marginBottom: '24px' }}>
-                 <button className="action-pill" onClick={() => { getUserLocation(); setActiveInput(null); }}>
-                   <LocateFixed size={16} color="var(--primary)" /> Konumum
-                 </button>
-                 <button className="action-pill" onClick={() => { setMapSelectionMode(activeInput); setActiveInput(null); }}>
-                   <MapIcon size={16} color="var(--primary)" /> Haritadan Seç
-                 </button>
-              </div>
-              
               {renderSuggestions(true)}
             </div>
           )}
