@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   BusFront,
   MapPin,
@@ -323,7 +323,7 @@ function App() {
     setActiveInput(null);
   };
 
-  const handleMapClick = async (lat, lng) => {
+  const handleMapClick = useCallback(async (lat, lng) => {
     // Haritadan tıklanan noktanın adresini tersine bul (Mapbox Reverse Geocoding)
     let placeName = "Haritadan Seçilen Konum";
     if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
@@ -366,7 +366,7 @@ function App() {
     }
     // Seçilen yeri merkeze al
     setMapCenter([lat, lng]);
-  };
+  }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat]);
 
   const handleSearch = async () => {
     if (!fromLocation.lat || !toLocation.lat) {

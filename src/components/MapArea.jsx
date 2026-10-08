@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -79,7 +79,7 @@ function MapClickHandler({ onMapClick }) {
   return null;
 }
 
-export default function MapArea({
+const MapArea = React.memo(function MapArea({
   mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
   fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd
 }) {
@@ -89,8 +89,20 @@ export default function MapArea({
 
   const isValidCoord = (coord) => Array.isArray(coord) && coord.length >= 2 && Number.isFinite(coord[0]) && Number.isFinite(coord[1]);
 
-  const geom1 = activeRoute?.routeGeometry1 || activeRoute?.routeGeometry;
-  const geom2 = activeRoute?.routeGeometry2 || [];
+  const validGeom1 = useMemo(() => {
+    const g = activeRoute?.routeGeometry1 || activeRoute?.routeGeometry || [];
+    return g.filter(isValidCoord);
+  }, [activeRoute?.id]);
+
+  const validGeom2 = useMemo(() => {
+    const g = activeRoute?.routeGeometry2 || [];
+    return g.filter(isValidCoord);
+  }, [activeRoute?.id]);
+
+  const validMainGeom = useMemo(() => {
+    const g = activeRoute?.routeGeometry || [];
+    return g.filter(isValidCoord);
+  }, [activeRoute?.id]);
 
   return (
     <div className="desktop-map-area">
@@ -100,6 +112,7 @@ export default function MapArea({
           zoom={mapZoom}
           style={{ width: '100%', height: '100%' }}
           scrollWheelZoom={true}
+          preferCanvas={true}
         >
           <TileLayer
             url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
@@ -143,22 +156,22 @@ export default function MapArea({
               
               {activeRoute.isTransfer ? (
                 <>
-                  {geom1 && geom1.filter(isValidCoord).length > 0 && (
-                    <Polyline key={`geom1_${activeRoute.id}`} positions={geom1.filter(isValidCoord)} pathOptions={{ color: activeRoute.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
+                  {validGeom1.length > 0 && (
+                    <Polyline key={`geom1_${activeRoute.id}`} positions={validGeom1} pathOptions={{ color: activeRoute.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
                   )}
                   {isValidCoord([activeRoute.transferStop?.lat, activeRoute.transferStop?.lon]) && (
                     <Marker key={`tstop_${activeRoute.id}`} position={[activeRoute.transferStop.lat, activeRoute.transferStop.lon]} icon={customIcons.transfer}>
                       <Popup><b>Aktarma Durağı:</b><br/>{activeRoute.transferStop.name}</Popup>
                     </Marker>
                   )}
-                  {geom2 && geom2.filter(isValidCoord).length > 0 && (
-                    <Polyline key={`geom2_${activeRoute.id}`} positions={geom2.filter(isValidCoord)} pathOptions={{ color: activeRoute.color2 || '#ef4444', weight: 5, opacity: 0.9 }} />
+                  {validGeom2.length > 0 && (
+                    <Polyline key={`geom2_${activeRoute.id}`} positions={validGeom2} pathOptions={{ color: activeRoute.color2 || '#ef4444', weight: 5, opacity: 0.9 }} />
                   )}
                 </>
               ) : (
                 <>
-                  {activeRoute.routeGeometry && activeRoute.routeGeometry.filter(isValidCoord).length > 0 && (
-                    <Polyline key={`geom_${activeRoute.id}`} positions={activeRoute.routeGeometry.filter(isValidCoord)} pathOptions={{ color: activeRoute.color || activeRoute.routes?.[0]?.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
+                  {validMainGeom.length > 0 && (
+                    <Polyline key={`geom_${activeRoute.id}`} positions={validMainGeom} pathOptions={{ color: activeRoute.color || activeRoute.routes?.[0]?.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
                   )}
                 </>
               )}
@@ -179,4 +192,6 @@ export default function MapArea({
       </div>
     </div>
   );
-}
+});
+
+export default MapArea;
