@@ -105,7 +105,8 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
   if (!itin) return null;
   const focus = (p) => (e) => {
     e.stopPropagation();
-    if (p && Number.isFinite(p.lat) && Number.isFinite(p.lon)) onFocus(p.lat, p.lon);
+    if (p === 'navigation') onFocus('navigation');
+    else if (p && Number.isFinite(p.lat) && Number.isFinite(p.lon)) onFocus(p.lat, p.lon);
   };
   const lastLeg = itin.legs[itin.legs.length - 1];
 
@@ -143,10 +144,11 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
 
         {/* Walk to First Stop (if not walk only) */}
         {!itin.isWalkOnly && itin.startWalkMin > 0 && (
-          <div className="timeline-segment walk-segment">
+          <div className="timeline-segment walk-segment clickable" onClick={focus('navigation')}>
              <div className="segment-line dashed"></div>
-             <div className="segment-content">
+             <div className="segment-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                <span className="segment-text"><Footprints size={14}/> {fmtDist(itin.walk.startM)} ({itin.startWalkMin} dk) yürü</span>
+               <span style={{ fontSize: '0.7rem', background: 'var(--primary-light)', color: 'var(--primary)', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>🧭 Durağa Git</span>
              </div>
           </div>
         )}

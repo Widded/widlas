@@ -443,9 +443,19 @@ function App() {
 
   // Tarifteki bir adıma tıklanınca haritayı oraya yakınlaştır
   const focusOnMap = (lat, lon) => {
-    setMapCenter([lat, lon]);
-    setMapZoom(17);
-    setIsFollowing(false); // Kullanıcı detaya tıklarsa takibi bırak
+    if (lat === 'navigation') {
+      if (isWatching && liveLocation) {
+        setMapCenter([liveLocation.lat, liveLocation.lon]);
+        setMapZoom(18);
+        setIsFollowing(true);
+      } else {
+        alert("Navigasyon için lütfen önce arama kutusundaki hedefin (GPS) butonuna basarak canlı takibi etkinleştirin.");
+      }
+    } else {
+      setMapCenter([lat, lon]);
+      setMapZoom(17);
+      setIsFollowing(false); // Kullanıcı normal detaya tıklarsa takibi bırak
+    }
     if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
