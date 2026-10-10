@@ -169,6 +169,7 @@ function App() {
     }
   }, [activeLineDirIdx, activeLineCode, activeMainTab]);
 
+  const getUserLocation = () => {
     // If they were already tracking, center them again
     if (isWatching && liveLocation) {
       setFromLocation({
