@@ -6,6 +6,24 @@ export default function useLiveLocation() {
   const [isFollowing, setIsFollowing] = useState(false); // Should the map follow the user?
   const watchIdRef = useRef(null);
 
+  const handleOrientation = (event) => {
+    let compassHeading = null;
+    if (event.webkitCompassHeading) {
+      // iOS
+      compassHeading = event.webkitCompassHeading;
+    } else if (event.absolute && event.alpha !== null) {
+      // Android
+      compassHeading = 360 - event.alpha;
+    }
+    
+    if (compassHeading !== null) {
+      setLiveLocation(prev => {
+        if (!prev) return prev;
+        return { ...prev, heading: compassHeading };
+      });
+    }
+  };
+
   const startWatching = () => {
     if (!navigator.geolocation) {
       alert("Tarayıcınız konum özelliğini desteklemiyor.");
@@ -20,13 +38,13 @@ export default function useLiveLocation() {
 
     watchIdRef.current = navigator.geolocation.watchPosition(
       (position) => {
-        setLiveLocation({
+        setLiveLocation(prev => ({
           lat: position.coords.latitude,
           lon: position.coords.longitude,
-          heading: position.coords.heading, // Can be null if device doesn't support compass/movement
+          heading: (prev && prev.heading !== null && position.coords.heading === null) ? prev.heading : position.coords.heading,
           accuracy: position.coords.accuracy,
           speed: position.coords.speed
-        });
+        }));
       },
       (error) => {
         console.error("GPS hatası:", error);
@@ -43,6 +61,22 @@ export default function useLiveLocation() {
         timeout: 10000
       }
     );
+
+    // Compass watch (DeviceOrientation)
+    if (window.DeviceOrientationEvent) {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted') {
+              window.addEventListener('deviceorientation', handleOrientation);
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientationabsolute', handleOrientation);
+        window.addEventListener('deviceorientation', handleOrientation);
+      }
+    }
   };
 
   const stopWatching = () => {
@@ -52,6 +86,8 @@ export default function useLiveLocation() {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
+    window.removeEventListener('deviceorientationabsolute', handleOrientation);
+    window.removeEventListener('deviceorientation', handleOrientation);
   };
 
   const toggleWatching = () => {
@@ -68,6 +104,8 @@ export default function useLiveLocation() {
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
       }
+      window.removeEventListener('deviceorientationabsolute', handleOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
     };
   }, []);
 
