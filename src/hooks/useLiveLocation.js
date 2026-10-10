@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 
 export default function useLiveLocation() {
   const [liveLocation, setLiveLocation] = useState(null);
   const [isWatching, setIsWatching] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false); // Should the map follow the user?
   const watchIdRef = useRef(null);
+  const isWatchingRef = useRef(false);
+  const orientationAttachedRef = useRef(false);
 
-  const handleOrientation = (event) => {
+  const handleOrientation = useCallback((event) => {
     let compassHeading = null;
     if (event.webkitCompassHeading) {
       // iOS
@@ -22,14 +24,44 @@ export default function useLiveLocation() {
         return { ...prev, heading: compassHeading };
       });
     }
-  };
+  }, []);
 
-  const startWatching = () => {
+  const detachOrientation = useCallback(() => {
+    if (orientationAttachedRef.current) {
+      window.removeEventListener('deviceorientationabsolute', handleOrientation);
+      window.removeEventListener('deviceorientation', handleOrientation);
+      orientationAttachedRef.current = false;
+    }
+  }, [handleOrientation]);
+
+  const attachOrientation = useCallback(() => {
+    if (orientationAttachedRef.current || !isWatchingRef.current) return;
+
+    if (window.DeviceOrientationEvent) {
+      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission()
+          .then(permissionState => {
+            if (permissionState === 'granted' && isWatchingRef.current) {
+              window.addEventListener('deviceorientation', handleOrientation);
+              orientationAttachedRef.current = true;
+            }
+          })
+          .catch(console.error);
+      } else {
+        window.addEventListener('deviceorientationabsolute', handleOrientation);
+        window.addEventListener('deviceorientation', handleOrientation);
+        orientationAttachedRef.current = true;
+      }
+    }
+  }, [handleOrientation]);
+
+  const startWatching = useCallback(() => {
     if (!navigator.geolocation) {
       alert("Tarayıcınız konum özelliğini desteklemiyor.");
       return;
     }
 
+    isWatchingRef.current = true;
     setIsWatching(true);
     setIsFollowing(true); // Auto-follow when turned on
 
@@ -48,12 +80,14 @@ export default function useLiveLocation() {
       },
       (error) => {
         console.error("GPS hatası:", error);
+        isWatchingRef.current = false;
         setIsWatching(false);
         setIsFollowing(false);
         if (watchIdRef.current !== null) {
           navigator.geolocation.clearWatch(watchIdRef.current);
           watchIdRef.current = null;
         }
+        detachOrientation();
       },
       {
         enableHighAccuracy: true,
@@ -62,52 +96,39 @@ export default function useLiveLocation() {
       }
     );
 
-    // Compass watch (DeviceOrientation)
-    if (window.DeviceOrientationEvent) {
-      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation);
-            }
-          })
-          .catch(console.error);
-      } else {
-        window.addEventListener('deviceorientationabsolute', handleOrientation);
-        window.addEventListener('deviceorientation', handleOrientation);
-      }
-    }
-  };
+    attachOrientation();
+  }, [attachOrientation, detachOrientation]);
 
-  const stopWatching = () => {
+  const stopWatching = useCallback(() => {
+    isWatchingRef.current = false;
     setIsWatching(false);
     setIsFollowing(false);
     if (watchIdRef.current !== null) {
       navigator.geolocation.clearWatch(watchIdRef.current);
       watchIdRef.current = null;
     }
-    window.removeEventListener('deviceorientationabsolute', handleOrientation);
-    window.removeEventListener('deviceorientation', handleOrientation);
-  };
+    detachOrientation();
+  }, [detachOrientation]);
 
-  const toggleWatching = () => {
-    if (isWatching) {
+  const toggleWatching = useCallback(() => {
+    if (isWatchingRef.current) {
       stopWatching();
     } else {
       startWatching();
     }
-  };
+  }, [startWatching, stopWatching]);
 
   // Clean up on unmount
   useEffect(() => {
     return () => {
+      isWatchingRef.current = false;
       if (watchIdRef.current !== null) {
         navigator.geolocation.clearWatch(watchIdRef.current);
+        watchIdRef.current = null;
       }
-      window.removeEventListener('deviceorientationabsolute', handleOrientation);
-      window.removeEventListener('deviceorientation', handleOrientation);
+      detachOrientation();
     };
-  }, []);
+  }, [detachOrientation]);
 
   return {
     liveLocation,

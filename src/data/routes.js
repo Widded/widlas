@@ -1,3 +1,5 @@
+import { allStopsDB, etusLines } from './db.js';
+
 // Haversine Formula (Mesafe hesaplama)
 const getDistance = (lat1, lon1, lat2, lon2) => {
   const R = 6371; // km
@@ -11,9 +13,10 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 };
 
 // Yakındaki tüm durakları bulur (maxRadiusKm çapında)
-export const findNearbyStops = (allStopsDB, lat, lon, maxRadiusKm = 0.8) => {
+export const findNearbyStops = (stopsDB, lat, lon, maxRadiusKm = 0.8) => {
   const nearby = [];
-  Object.values(allStopsDB).forEach(stop => {
+  const db = stopsDB || allStopsDB;
+  Object.values(db).forEach(stop => {
     if (stop.lat && stop.lon) {
       const distance = getDistance(lat, lon, stop.lat, stop.lon);
       if (distance <= maxRadiusKm) {
@@ -27,7 +30,6 @@ export const findNearbyStops = (allStopsDB, lat, lon, maxRadiusKm = 0.8) => {
 // İki koordinat arası alternatifleri ile birlikte akıllı rota hesaplayan motor
 export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   if (!fromLat || !fromLon || !toLat || !toLon) return null;
-  const { allStopsDB, etusLines } = await import('./db.js');
 
   const slicePath = (path, startStop, endStop) => {
     if (!path || path.length === 0) return [];
@@ -162,6 +164,23 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     }
   }
 
+  // Transfer durakları için yakın durak arama önbelleği (O(n²) tekrarını önler)
+  const stopList = Object.values(allStopsDB);
+  const transferNeighborsCache = new Map();
+  const getTransferNeighbors = (stop) => {
+    if (transferNeighborsCache.has(stop.id)) {
+      return transferNeighborsCache.get(stop.id);
+    }
+    const result = [stop];
+    for (const s of stopList) {
+      if (s.id !== stop.id && s.lat && s.lon && getDistance(stop.lat, stop.lon, s.lat, s.lon) <= 0.25) {
+        result.push(s);
+      }
+    }
+    transferNeighborsCache.set(stop.id, result);
+    return result;
+  };
+
   // Başlangıç duraklarından yola çık ve aktarma duraklarını kontrol et
   for (const sStop of startStops) {
     for (const line1Code of (sStop.routes || [])) {
@@ -178,21 +197,23 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
           const tStop = allStopsDB[tStopId];
           if (!tStop) continue;
 
-          // YENİ OPTİMİZASYON: Sadece en iyi kombinasyonu tutan Map yapısı kullanıldı.
-          // Bu sayede 250m taraması OOM yapmadan geri getirildi!
-          const nearbyTransferStops = [tStop];
-          for (const s of Object.values(allStopsDB)) {
-             if (s.id !== tStop.id && getDistance(tStop.lat, tStop.lon, s.lat, s.lon) <= 0.25) {
-                nearbyTransferStops.push(s);
-             }
-          }
+          const nearbyTransferStops = getTransferNeighbors(tStop);
 
           for (const actualTransferStop of nearbyTransferStops) {
             for (const line2Code of (actualTransferStop.routes || [])) {
               if (line1Code === line2Code) continue;
 
+              // MANTIKSAL FİLTRE 1: Eğer aktarma yapacağımız 2. hat ZATEN başlangıç durağımızdan geçiyorsa,
+              // gidip başka otobüsle onu ileride yakalamanın bir mantığı yoktur. Direkt baştan o hata binilmelidir.
+              if (sStop.routes && sStop.routes.includes(line2Code)) continue;
+
               const endMatches = linesToEnd[line2Code];
               if (!endMatches) continue;
+
+              // MANTIKSAL FİLTRE 2: Eğer bindiğimiz 1. hat ZATEN hedef durağa gidiyorsa,
+              // ortalarda inip başka bir otobüse aktarma yapmanın mantığı yoktur.
+              const goesDirect = endMatches.some(m => m.eStop.routes && m.eStop.routes.includes(line1Code));
+              if (goesDirect) continue;
 
               for (const match of endMatches) {
                  const dir2 = etusLines[line2Code].directions[match.dirIdx];
@@ -208,8 +229,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                     
                     const transferWalkDist = getDistance(tStop.lat, tStop.lon, actualTransferStop.lat, actualTransferStop.lon);
                     const transferWalkTime = Math.ceil(transferWalkDist * 1.4 * 12);
-                    // AKTARMA CEZASI: Aktarmaları listende daha aşağı itmek için sabit 15 dk bekleme süresi cezası veriyoruz.
-                    const transferWaitTime = 15 + transferWalkTime;
+                    const transferWaitTime = 10 + transferWalkTime;
 
                     const walkStart = Math.ceil(sStop.distanceKm * 1.4 * 12);
                     const walkEnd = Math.ceil(match.walkEnd * 1.4 * 12);

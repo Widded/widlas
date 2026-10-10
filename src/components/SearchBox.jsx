@@ -1,6 +1,16 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Search, Map as MapIcon, ArrowUpDown, LocateFixed, ArrowLeft, MapPin, BusFront, X } from 'lucide-react';
 
+export const QUICK_PLACES = [
+  { icon: '🚌', shortName: 'Otogar', name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 },
+  { icon: '🛍️', shortName: 'Erasta AVM', name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 },
+  { icon: '🛒', shortName: 'Margi Outlet', name: 'Margi Outlet', lat: 41.6620, lon: 26.5813 },
+  { icon: '🎓', shortName: 'Trakya Üni.', name: 'Trakya Üni. Tıp Fakültesi Hastanesi', lat: 41.6389, lon: 26.6150 },
+  { icon: '🕌', shortName: 'Selimiye', name: 'Edirne Şehir Merkezi (Heykel)', lat: 41.6771, lon: 26.5550 },
+  { icon: '🏛️', shortName: 'Saraçlar Cad.', name: 'Saraçlar Caddesi', lat: 41.6735, lon: 26.5537 },
+  { icon: '🌳', shortName: 'Karaağaç', name: 'Meriç Köprüsü (Karaağaç Yolu)', lat: 41.6634, lon: 26.5521 }
+];
+
 export default function SearchBox({
   fromLocation,
   toLocation,
@@ -17,7 +27,8 @@ export default function SearchBox({
   hasSearched,
   localPlaces,
   isSplitLayout,
-  swapLocations
+  swapLocations,
+  onQuickSelect
 }) {
   const fromInputRef = useRef(null);
   const toInputRef = useRef(null);
@@ -171,17 +182,37 @@ export default function SearchBox({
                     </button>
                   </div>
 
-                  <div className="quick-actions" style={{ marginTop: '20px' }}>
-                    <button className="action-pill" onClick={getUserLocation}>
+                  <div className="quick-actions" style={{ marginTop: '16px' }}>
+                    <button className="action-pill" onClick={getUserLocation} title="Mevcut GPS Konumunu Kullan">
                       <LocateFixed size={16} color="var(--primary)" /> Konumum
                     </button>
-                    <button className="action-pill" onClick={() => setMapSelectionMode(fromLocation.lat ? 'to' : 'from')}>
+                    <button className="action-pill" onClick={() => setMapSelectionMode(fromLocation.lat ? 'to' : 'from')} title="Harita üzerinden dokunarak seç">
                       <MapIcon size={16} color="var(--primary)" /> Haritadan Seç
                     </button>
                   </div>
 
-                  <button className="btn-primary" style={{ marginTop: '20px' }} onClick={() => { handleSearch(); setActiveInput(null); }}>
-                    Rotayı Güncelle
+                  {/* Popüler Hızlı Noktalar Çipleri */}
+                  <div className="quick-destinations-section">
+                    <div className="quick-destinations-title">Hızlı Hedefler</div>
+                    <div className="quick-destinations-scroll">
+                      {QUICK_PLACES.map((place) => (
+                        <button
+                          key={place.name}
+                          type="button"
+                          className="destination-chip"
+                          onClick={() => {
+                            if (onQuickSelect) onQuickSelect(place);
+                          }}
+                        >
+                          <span>{place.icon}</span>
+                          <span>{place.shortName}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button className="btn-primary" style={{ marginTop: '16px' }} onClick={() => { handleSearch(); setActiveInput(null); }}>
+                    {hasSearched ? 'Rotayı Güncelle' : 'Rotayı Bul'}
                   </button>
                 </>
               )}

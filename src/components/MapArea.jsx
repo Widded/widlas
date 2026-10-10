@@ -72,10 +72,24 @@ function MapResizeHandler({ isVisible }) {
   return null;
 }
 
-function MapClickHandler({ onMapClick }) {
+function LiveLocationFollower({ liveLocation, isFollowing }) {
+  const map = useMap();
+  useEffect(() => {
+    if (isFollowing && liveLocation && Number.isFinite(liveLocation.lat) && Number.isFinite(liveLocation.lon)) {
+      map.panTo([liveLocation.lat, liveLocation.lon], { animate: true, duration: 1.0 });
+    }
+  }, [liveLocation?.lat, liveLocation?.lon, isFollowing, map]);
+  return null;
+}
+
+function MapClickHandler({ onMapClick, setIsFollowing }) {
   useMapEvents({
     click(e) {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+      if (setIsFollowing) setIsFollowing(false);
+      if (onMapClick) onMapClick(e.latlng.lat, e.latlng.lng);
+    },
+    dragstart() {
+      if (setIsFollowing) setIsFollowing(false);
     }
   });
   return null;
@@ -141,15 +155,16 @@ const MapArea = React.memo(function MapArea({
             url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
             attribution='&copy; Google Maps'
           />
-          {/* Use MapUpdater only if we are not following the user live. If following, the MapArea handles it via liveLocation. */}
+          {/* Use MapUpdater only if we are not following the user live. */}
           {!isFollowing && <MapUpdater center={safeMapCenter} zoom={mapZoom} />}
+          <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
           
           <MapResizeHandler isVisible={isSplitLayout} />
           
-          <MapClickHandler onMapClick={(lat, lng) => {
-             if(setIsFollowing) setIsFollowing(false);
-             if(onMapClick) onMapClick(lat, lng);
-          }} />
+          <MapClickHandler 
+            onMapClick={onMapClick} 
+            setIsFollowing={setIsFollowing} 
+          />
 
           {isValidCoord([fromLocation.lat, fromLocation.lon]) && (
             <Marker position={[fromLocation.lat, fromLocation.lon]} icon={customIcons.start}>
@@ -277,8 +292,8 @@ const MapArea = React.memo(function MapArea({
             title="Beni Takip Et"
             style={{
               position: 'absolute',
-              bottom: '24px',
-              right: '24px',
+              top: '16px',
+              right: '16px',
               zIndex: 1000,
               background: 'var(--surface)',
               border: isFollowing ? '2px solid var(--primary)' : '1px solid var(--border-color)',

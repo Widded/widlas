@@ -66,12 +66,13 @@ body {
     gap: 0;
     overflow: hidden;
     background: var(--bg-color);
+    position: relative;
   }
 
   /* Beautiful Homepage Background */
   .app-container.layout-center {
     background: radial-gradient(circle at 50% -10%, rgba(59, 130, 246, 0.20), transparent 60%), var(--bg-color);
-    justify-content: center;
+    justify-content: flex-start;
   }
 
   .desktop-map-area {
@@ -81,14 +82,28 @@ body {
     border: none;
     z-index: 1;
     position: relative;
-    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s;
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
   }
 
-  /* Map is visible when split layout is active and NOT actively typing */
+  /* Split Layout Map Height based on Bottom Sheet State */
   .app-container.layout-split:not(.search-active) .desktop-map-area {
-    height: 45vh;
     opacity: 1;
     pointer-events: auto;
+  }
+
+  /* Default Half State */
+  .app-container.layout-split.sheet-half:not(.search-active) .desktop-map-area {
+    height: 44dvh;
+  }
+
+  /* Peek State (Map dominates screen) */
+  .app-container.layout-split.sheet-peek:not(.search-active) .desktop-map-area {
+    height: calc(100dvh - 170px);
+  }
+
+  /* Full State (List dominates screen) */
+  .app-container.layout-split.sheet-full:not(.search-active) .desktop-map-area {
+    height: 14dvh;
   }
 
   /* Map is hidden on homepage OR when actively typing */
@@ -99,30 +114,59 @@ body {
     pointer-events: none;
   }
 
+  /* Full-screen map when picking a point on mobile */
+  .app-container.map-picking .desktop-map-area {
+    height: 100dvh !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 100;
+  }
+
+  .app-container.map-picking .desktop-sidebar {
+    display: none !important;
+  }
+
   .map-container-wrapper {
     width: 100%;
     height: 100%;
   }
 
-  /* Sidebar Base Styles */
+  /* Sidebar Base Styles on Mobile */
   .desktop-sidebar {
     flex: 1;
     display: flex;
     flex-direction: column;
     overflow-y: hidden;
-    padding: 24px 0 0 0;
+    padding: 0;
     z-index: 10;
     position: relative;
-    transition: margin-top 0.4s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.4s, background 0.4s;
+    transition: height 0.35s cubic-bezier(0.16, 1, 0.3, 1), margin-top 0.35s cubic-bezier(0.16, 1, 0.3, 1), border-radius 0.3s, background 0.3s;
   }
 
-  /* Bottom Sheet effect only when map is visible */
+  /* Bottom Sheet effect when map is visible */
   .app-container.layout-split:not(.search-active) .desktop-sidebar {
     background: var(--bg-color);
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
-    box-shadow: 0 -8px 30px rgba(0,0,0,0.5);
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.6);
     margin-top: -24px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .app-container.layout-split.sheet-half:not(.search-active) .desktop-sidebar {
+    height: calc(56dvh + 24px);
+    flex: none;
+  }
+
+  .app-container.layout-split.sheet-peek:not(.search-active) .desktop-sidebar {
+    height: 170px;
+    flex: none;
+  }
+
+  .app-container.layout-split.sheet-full:not(.search-active) .desktop-sidebar {
+    height: calc(86dvh + 24px);
+    flex: none;
   }
 
   /* Expand sheet when searching */
@@ -131,7 +175,8 @@ body {
     margin-top: 0;
     border-top-left-radius: 0;
     border-top-right-radius: 0;
-    padding-top: 16px;
+    padding-top: max(16px, env(safe-area-inset-top));
+    height: 100dvh;
   }
 
   /* Maximize space for search suggestions */
@@ -140,30 +185,11 @@ body {
     display: none !important;
   }
 
-  /* Homepage styling for sidebar (Centered, No background block) */
+  /* Homepage styling for sidebar */
   .app-container.layout-center .desktop-sidebar {
     background: transparent;
-    padding: 24px 0 0 0;
+    padding: max(16px, env(safe-area-inset-top)) 0 0 0;
     justify-content: flex-start;
-  }
-
-  /* Visual drag handle ONLY when map is visible */
-  .desktop-sidebar::before {
-    content: '';
-    position: absolute;
-    top: 12px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 48px;
-    height: 5px;
-    background: var(--border-focus);
-    border-radius: 10px;
-    transition: opacity 0.3s;
-    opacity: 0;
-  }
-
-  .app-container.layout-split:not(.search-active) .desktop-sidebar::before {
-    opacity: 1;
   }
 }
 
@@ -246,7 +272,218 @@ body {
   display: flex;
   align-items: center;
   gap: 16px;
-  padding: 8px 20px;
+  padding: max(12px, env(safe-area-inset-top)) 20px 10px 20px;
+}
+
+/* Real Interactive Sheet Drag Handle */
+.sheet-drag-handle-bar {
+  display: none;
+}
+
+@media (max-width: 1023px) {
+  .app-container.layout-split:not(.search-active) .sheet-drag-handle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 12px 0 10px 0;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .sheet-drag-pill {
+    width: 48px;
+    height: 5px;
+    background: var(--border-focus);
+    border-radius: 10px;
+    transition: background 0.2s, transform 0.2s;
+  }
+
+  .sheet-drag-handle-bar:active .sheet-drag-pill {
+    background: var(--primary);
+    transform: scaleX(1.15);
+  }
+}
+
+/* Full-Screen Map Picker Banner */
+.map-picker-banner {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  right: 16px;
+  background: rgba(24, 24, 27, 0.94);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 1000;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+}
+
+.map-picker-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.map-picker-text strong {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  font-weight: 700;
+}
+
+.map-picker-text span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.map-picker-cancel-btn {
+  background: var(--surface-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.map-picker-cancel-btn:hover {
+  background: var(--border-focus);
+}
+
+/* Quick Destinations Chips (Homepage) */
+.quick-destinations-section {
+  margin-top: 16px;
+}
+
+.quick-destinations-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.quick-destinations-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.quick-destinations-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.destination-chip {
+  background: var(--surface-hover);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 8px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.destination-chip:hover, .destination-chip:active {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+/* Journey Summary Bar (Results View) */
+.journey-summary-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+  margin-bottom: 16px;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.journey-summary-bar:hover {
+  background: var(--surface-hover);
+  border-color: var(--primary-light);
+}
+
+.journey-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.journey-node {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+}
+
+.journey-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.journey-dot.start {
+  background: var(--primary);
+}
+
+.journey-dot.end {
+  background: #ef4444;
+}
+
+.journey-edit-btn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.journey-edit-btn:hover {
+  background: var(--primary-light);
 }
 
 .icon-glow {

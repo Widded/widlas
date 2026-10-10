@@ -1,6 +1,7 @@
 import React from 'react';
 import { Footprints, ArrowRight, BusFront } from 'lucide-react';
 import RouteItinerary, { terminalOf, buildItinerary } from './RouteItinerary';
+import { calculateFare, formatFare } from '../data/fares';
 
 const fmtWalk = (km) => {
   const m = km * 1000;
@@ -21,13 +22,39 @@ export default function RouteList({
   toLocation,
   focusOnMap,
   getWalk,
-  fareType
+  fareType,
+  setSheetState
 }) {
   if (!hasSearched || !searchResults) return null;
 
   return (
-    <div className="animate-in" style={{ animationDelay: '150ms', marginTop: '16px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+    <div className="animate-in" style={{ animationDelay: '150ms', marginTop: '12px' }}>
+      {/* Rota Özeti Çubuğu (Tıklayınca aramayı düzenler) */}
+      <div 
+        className="journey-summary-bar" 
+        onClick={() => setHasSearched(false)} 
+        title="Aramayı düzenlemek için dokun"
+      >
+        <div className="journey-path">
+          <div className="journey-node">
+            <span className="journey-dot start" />
+            <span>{fromLocation.name || 'Konumunuz'}</span>
+          </div>
+          <ArrowRight size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
+          <div className="journey-node">
+            <span className="journey-dot end" />
+            <span>{toLocation.name || 'Hedef'}</span>
+          </div>
+        </div>
+        <button 
+          className="journey-edit-btn" 
+          onClick={(e) => { e.stopPropagation(); setHasSearched(false); }}
+        >
+          Değiştir
+        </button>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
         <h2 style={{ fontSize: '1.15rem', fontWeight: '800' }}>Önerilen Rotalar</h2>
         <button className="action-pill" onClick={() => setHasSearched(false)}>Yeni Arama</button>
       </div>
@@ -67,9 +94,8 @@ export default function RouteList({
               
               const getFareText = () => {
                 if (routeGroup.isWalkOnly) return "Ücretsiz";
-                const baseFare = fareType === 'ogrenci' ? 28.50 : 42.00;
-                const totalFare = routeGroup.isTransfer ? (baseFare + (baseFare / 2)) : baseFare;
-                return totalFare.toFixed(2) + ' ₺';
+                const totalFare = calculateFare(fareType, routeGroup.isTransfer);
+                return formatFare(totalFare);
               };
 
               return (
@@ -186,7 +212,11 @@ export default function RouteList({
                           <button 
                             className="btn-primary" 
                             style={{ padding: '8px 16px', fontSize: '0.85rem', alignSelf: 'flex-start', borderRadius: '8px', width: '100%', textAlign: 'center', marginTop: '4px' }}
-                            onClick={(e) => { e.stopPropagation(); setExpandedRouteId(routeGroup.groupId); }}
+                            onClick={(e) => { 
+                              e.stopPropagation(); 
+                              setExpandedRouteId(routeGroup.groupId); 
+                              if (setSheetState) setSheetState('full');
+                            }}
                           >
                             Detayları Göster
                           </button>

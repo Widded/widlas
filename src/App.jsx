@@ -19,7 +19,7 @@ import SearchBox from './components/SearchBox';
 import RouteList from './components/RouteList';
 import LineExplorer from './components/LineExplorer';
 import { calculateSmartRoute } from './data/routes';
-import { etusLines } from './data/db';
+import { etusLines, allStopsDB } from './data/db';
 import useLiveLocation from './hooks/useLiveLocation';
 import './index.css';
 
@@ -71,6 +71,45 @@ function App() {
   const [mapCenter, setMapCenter] = useState([41.6771, 26.5557]); // Varsayılan Edirne Merkez
   const [mapZoom, setMapZoom] = useState(13);
 
+  const [sheetState, setSheetState] = useState('half'); // 'peek' | 'half' | 'full'
+  const touchStartYRef = useRef(null);
+
+  const handleSheetTouchStart = (e) => {
+    touchStartYRef.current = e.touches[0].clientY;
+  };
+
+  const handleSheetTouchEnd = (e) => {
+    if (touchStartYRef.current === null) return;
+    const diff = touchStartYRef.current - e.changedTouches[0].clientY;
+    touchStartYRef.current = null;
+    
+    // Swipe UP (diff > 35) -> Expand sheet
+    if (diff > 35) {
+      if (sheetState === 'peek') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('full');
+    }
+    // Swipe DOWN (diff < -35) -> Collapse sheet
+    else if (diff < -35) {
+      if (sheetState === 'full') setSheetState('half');
+      else if (sheetState === 'half') setSheetState('peek');
+    }
+  };
+
+  const toggleSheetState = () => {
+    setSheetState(prev => (prev === 'half' ? 'full' : prev === 'full' ? 'peek' : 'half'));
+  };
+
+  const handleQuickSelect = (place) => {
+    setToLocation(place);
+    setSheetState('half');
+    if (fromLocation.lat) {
+      setHasSearched(true);
+    } else {
+      getUserLocation();
+      setHasSearched(true);
+    }
+  };
+
   const wrapperRef = useRef(null);
   const typingTimeoutRef = useRef(null);
 
@@ -107,56 +146,36 @@ function App() {
        return;
     }
     
-    if (active.isWalkOnly) {
-      if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
-         const fetchWalk = async (lat1, lon1, lat2, lon2, setter) => {
-           try {
-             const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${lon1},${lat1};${lon2},${lat2}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
-             const res = await fetch(url);
-             const data = await res.json();
-             if (data.routes && data.routes[0]) {
-                setter(data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]));
-             } else {
-                setter([[lat1, lon1], [lat2, lon2]]);
-             }
-           } catch (e) {
-             setter([[lat1, lon1], [lat2, lon2]]);
-           }
-         };
-         fetchWalk(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon, setWalkingPathStart);
-         setWalkingPathEnd([]);
-      } else {
-         setWalkingPathStart([[fromLocation.lat, fromLocation.lon], [toLocation.lat, toLocation.lon]]);
-         setWalkingPathEnd([]);
+    const hasMapbox = MAPBOX_TOKEN && !MAPBOX_TOKEN.includes("XXXXX");
+
+    const fetchWalk = async (lat1, lon1, lat2, lon2, setter) => {
+      if (!hasMapbox) {
+        setter([[lat1, lon1], [lat2, lon2]]);
+        return;
       }
+      try {
+        const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${lon1},${lat1};${lon2},${lat2}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.routes && data.routes[0]) {
+          const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
+          setter(coords);
+        } else {
+          setter([[lat1, lon1], [lat2, lon2]]);
+        }
+      } catch (e) {
+        setter([[lat1, lon1], [lat2, lon2]]);
+      }
+    };
+
+    if (active.isWalkOnly) {
+      fetchWalk(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon, setWalkingPathStart);
+      setWalkingPathEnd([]);
       return;
     }
 
-    // Eğer Mapbox token varsa sokaklardan yürüme rotası çizdir
-    if (MAPBOX_TOKEN && MAPBOX_TOKEN.includes("XXXXX") === false) {
-       const fetchWalk = async (lat1, lon1, lat2, lon2, setter) => {
-         try {
-           const url = `https://api.mapbox.com/directions/v5/mapbox/walking/${lon1},${lat1};${lon2},${lat2}?geometries=geojson&access_token=${MAPBOX_TOKEN}`;
-           const res = await fetch(url);
-           const data = await res.json();
-           if (data.routes && data.routes[0]) {
-              const coords = data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]);
-              setter(coords);
-           } else {
-              setter([[lat1, lon1], [lat2, lon2]]); // API bulamazsa düz çizgi (kuş uçuşu)
-           }
-         } catch (e) {
-           setter([[lat1, lon1], [lat2, lon2]]);
-         }
-       };
-
-       fetchWalk(fromLocation.lat, fromLocation.lon, active.startStop.lat, active.startStop.lon, setWalkingPathStart);
-       fetchWalk(active.endStop.lat, active.endStop.lon, toLocation.lat, toLocation.lon, setWalkingPathEnd);
-    } else {
-       // Token yoksa düz çizgi
-       setWalkingPathStart([[fromLocation.lat, fromLocation.lon], [active.startStop.lat, active.startStop.lon]]);
-       setWalkingPathEnd([[active.endStop.lat, active.endStop.lon], [toLocation.lat, toLocation.lon]]);
-    }
+    fetchWalk(fromLocation.lat, fromLocation.lon, active.startStop.lat, active.startStop.lon, setWalkingPathStart);
+    fetchWalk(active.endStop.lat, active.endStop.lon, toLocation.lat, toLocation.lon, setWalkingPathEnd);
   }, [searchResults, selectedRouteIndex, fromLocation, toLocation]);
 
   // Hat yönü değiştiğinde haritayı o yönün başlangıcına odakla
@@ -250,9 +269,8 @@ function App() {
         normalizeTr(p.name).includes(normQuery)
       ).map(p => ({ ...p, type: 'local' }));
 
-      // 2. Ardından Tüm Duraklar veritabanında (db.js) ara (Dinamik import)
+      // 2. Ardından Tüm Duraklar veritabanında (db.js) ara
       //    Koordinatı bilinmeyen duraklar listelenmez
-      const { allStopsDB } = await import('./data/db.js');
       const dbMatches = Object.values(allStopsDB)
         .filter(stop => stop.lat && stop.lon && stop.searchIndex.includes(normQuery))
         .map(stop => ({
@@ -350,14 +368,24 @@ function App() {
   };
 
   const selectSuggestion = (type, place) => {
+    let nextFrom = fromLocation;
+    let nextTo = toLocation;
     if (type === 'from') {
+      nextFrom = place;
       setFromLocation(place);
       setFromSuggestions([]);
     } else {
+      nextTo = place;
       setToLocation(place);
       setToSuggestions([]);
     }
     setActiveInput(null);
+
+    // Otomatik Arama: Başlangıç ve hedef hazırsa anında ara
+    if (nextFrom.lat && nextTo.lat) {
+      setHasSearched(true);
+      setSheetState('half');
+    }
   };
 
   const handleMapClick = useCallback(async (lat, lng) => {
@@ -384,15 +412,31 @@ function App() {
     if (mapSelectionMode === 'from') {
       setFromLocation(newLoc);
       setMapSelectionMode(null);
+      if (toLocation.lat) {
+        setHasSearched(true);
+        setSheetState('half');
+      }
     } else if (mapSelectionMode === 'to') {
       setToLocation(newLoc);
       setMapSelectionMode(null);
+      if (fromLocation.lat) {
+        setHasSearched(true);
+        setSheetState('half');
+      }
     } else if (activeInput === 'from') {
       setFromLocation(newLoc);
       setActiveInput(null);
+      if (toLocation.lat) {
+        setHasSearched(true);
+        setSheetState('half');
+      }
     } else if (activeInput === 'to') {
       setToLocation(newLoc);
       setActiveInput(null);
+      if (fromLocation.lat) {
+        setHasSearched(true);
+        setSheetState('half');
+      }
     } else {
       // Herhangi bir kutu seçili değilse akıllı atama yap
       if (!fromLocation.lat) {
@@ -403,11 +447,15 @@ function App() {
         // İkisi de doluysa hedefi değiştir
         setToLocation(newLoc);
       }
+      // Mobilde haritaya tıklandığında haritayı inceleyebilmek için paneli küçült
+      if (window.innerWidth < 1024 && hasSearched && !activeInput) {
+        setSheetState('peek');
+      }
     }
     // Seçilen yeri merkeze al
     setMapCenter([lat, lng]);
     setIsFollowing(false); // Kullanıcı haritaya tıklarsa takibi bırak
-  }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat, activeMainTab]);
+  }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat, activeMainTab, hasSearched]);
 
   const handleSearch = async () => {
     if (!fromLocation.lat || !toLocation.lat) {
@@ -427,6 +475,7 @@ function App() {
     setSearchResults(result);
     setSelectedRouteIndex(0);
     setHasSearched(true);
+    setSheetState('half');
   };
 
   // Otomatik arama tetikleyicisi (Haritadan veya listeden seçim yapıldığında)
@@ -456,7 +505,10 @@ function App() {
       setMapZoom(17);
       setIsFollowing(false); // Kullanıcı normal detaya tıklarsa takibi bırak
     }
-    if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (window.innerWidth < 1024) {
+      setSheetState('peek');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   // Yürüme mesafeleri: Mapbox yaya rotası geldiyse gerçek sokak mesafesi, yoksa kuş uçuşu
@@ -491,7 +543,7 @@ function App() {
   const isValidCoord = (coord) => Array.isArray(coord) && coord.length >= 2 && Number.isFinite(coord[0]) && Number.isFinite(coord[1]);
 
   return (
-    <div className={`app-container ${isSplitLayout ? 'layout-split' : 'layout-center'} ${activeInput ? 'search-active' : ''}`}>
+    <div className={`app-container ${isSplitLayout ? `layout-split sheet-${sheetState}` : 'layout-center'} ${activeInput ? 'search-active' : ''} ${mapSelectionMode ? 'map-picking' : ''}`}>
       
       {/* Map Area - Always visible on desktop, conditionally styled on mobile */}
       <MapArea 
@@ -517,6 +569,17 @@ function App() {
 
       {/* Sidebar / Main Content Area */}
       <div className="desktop-sidebar">
+        {/* Mobile Interactive Sheet Drag Handle */}
+        <div 
+          className="sheet-drag-handle-bar"
+          onTouchStart={handleSheetTouchStart}
+          onTouchEnd={handleSheetTouchEnd}
+          onClick={toggleSheetState}
+          title="Paneli kaydır veya dokun"
+        >
+          <div className="sheet-drag-pill" />
+        </div>
+
         <header className="app-header animate-in" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <div className="icon-glow">
@@ -597,6 +660,7 @@ function App() {
                 localPlaces={localPlaces}
                 isSplitLayout={isSplitLayout}
                 swapLocations={swapLocations}
+                onQuickSelect={handleQuickSelect}
               />
 
               <RouteList
@@ -614,6 +678,7 @@ function App() {
                 focusOnMap={focusOnMap}
                 getWalk={getWalk}
                 fareType={fareType}
+                setSheetState={setSheetState}
               />
             </>
           ) : (
@@ -635,8 +700,17 @@ function App() {
       </div> {/* End of desktop-sidebar */}
 
       {mapSelectionMode && (
-        <div className="toast-msg" onClick={() => setMapSelectionMode(null)}>
-          Haritadan {mapSelectionMode === 'from' ? 'başlangıç' : 'varış'} noktası seç (İptal)
+        <div className="map-picker-banner animate-in">
+          <div className="map-picker-info">
+            <MapPin size={22} color="var(--primary)" />
+            <div className="map-picker-text">
+              <strong>{mapSelectionMode === 'from' ? 'Başlangıç Noktası Seç' : 'Varış Noktası Seç'}</strong>
+              <span>Haritada istediğin noktaya dokun</span>
+            </div>
+          </div>
+          <button className="map-picker-cancel-btn" onClick={() => setMapSelectionMode(null)}>
+            Vazgeç
+          </button>
         </div>
       )}
 

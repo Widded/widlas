@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { BusFront, Footprints, MapPin, Flag, ArrowRight, Repeat, ChevronDown, ChevronUp, Info, BellRing, Hourglass, Navigation } from 'lucide-react';
+import { FARES, calculateFare, formatFare } from '../data/fares';
 
 const WALK_M_PER_MIN = 80; // ~4.8 km/s yürüme hızı
 
@@ -258,16 +259,16 @@ export default function RouteItinerary({ itin, fromName, toName, fromCoord, toCo
           <div className="fares-header">Tahmini Bilet Ücreti (2026)</div>
           <div className="fares-grid">
              <div className="fare-item">
-               <div className="fare-type">Öğrenci (Kent Kart)</div>
-               <div className="fare-price">{itin.transfers > 0 ? '42.75 ₺' : '28.50 ₺'}</div>
+               <div className="fare-type">{FARES.ogrenci.label}</div>
+               <div className="fare-price">{formatFare(calculateFare('ogrenci', itin.transfers > 0))}</div>
              </div>
              <div className="fare-item">
-               <div className="fare-type">Tam (Kent Kart)</div>
-               <div className="fare-price">{itin.transfers > 0 ? '63.00 ₺' : '42.00 ₺'}</div>
+               <div className="fare-type">{FARES.tam.label}</div>
+               <div className="fare-price">{formatFare(calculateFare('tam', itin.transfers > 0))}</div>
              </div>
              <div className="fare-item">
-               <div className="fare-type">Temassız Kart</div>
-               <div className="fare-price">{itin.transfers > 0 ? '79.50 ₺' : '53.00 ₺'}</div>
+               <div className="fare-type">{FARES.temassiz.label}</div>
+               <div className="fare-price">{formatFare(calculateFare('temassiz', itin.transfers > 0))}</div>
              </div>
           </div>
           {itin.transfers > 0 && <div className="fares-note">* 45 dakika içi aktarma indirimi dahil edilmiştir.</div>}
