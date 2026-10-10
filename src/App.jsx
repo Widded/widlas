@@ -20,6 +20,7 @@ import RouteList from './components/RouteList';
 import LineExplorer from './components/LineExplorer';
 import { calculateSmartRoute } from './data/routes';
 import { etusLines } from './data/db';
+import useLiveLocation from './hooks/useLiveLocation';
 import './index.css';
 
 // Yol çizgisinin (polyline) toplam uzunluğu, metre
@@ -64,6 +65,9 @@ function App() {
   const [toSuggestions, setToSuggestions] = useState([]);
   const [activeInput, setActiveInput] = useState(null);
   const [mapSelectionMode, setMapSelectionMode] = useState(null);
+  
+  const { liveLocation, isWatching, isFollowing, setIsFollowing, toggleWatching } = useLiveLocation();
+  
   const [mapCenter, setMapCenter] = useState([41.6771, 26.5557]); // Varsayılan Edirne Merkez
   const [mapZoom, setMapZoom] = useState(13);
 
@@ -165,14 +169,30 @@ function App() {
     }
   }, [activeLineDirIdx, activeLineCode, activeMainTab]);
 
-  const getUserLocation = () => {
-    if (navigator.geolocation) {
+    // If they were already tracking, center them again
+    if (isWatching && liveLocation) {
+      setFromLocation({
+        name: 'Konumunuz (Canlı)',
+        lat: liveLocation.lat,
+        lon: liveLocation.lon
+      });
+      setMapCenter([liveLocation.lat, liveLocation.lon]);
+      setMapZoom(16);
+      setIsFollowing(true);
+      setActiveInput(null);
+      return;
+    }
+
+    // Otherwise, start watching and get initial fix
+    toggleWatching();
+    
+    if (navigator.geolocation && !isWatching) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const newLat = position.coords.latitude;
           const newLon = position.coords.longitude;
           setFromLocation({
-            name: 'Konumunuz (GPS)',
+            name: 'Konumunuz (Canlı)',
             lat: newLat,
             lon: newLon
           });
@@ -385,6 +405,7 @@ function App() {
     }
     // Seçilen yeri merkeze al
     setMapCenter([lat, lng]);
+    setIsFollowing(false); // Kullanıcı haritaya tıklarsa takibi bırak
   }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat, activeMainTab]);
 
   const handleSearch = async () => {
@@ -423,6 +444,7 @@ function App() {
   const focusOnMap = (lat, lon) => {
     setMapCenter([lat, lon]);
     setMapZoom(17);
+    setIsFollowing(false); // Kullanıcı detaya tıklarsa takibi bırak
     if (window.innerWidth < 1024) window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -475,6 +497,11 @@ function App() {
         activeLineData={activeLineData}
         activeLineDirIdx={activeLineDirIdx}
         isSplitLayout={isSplitLayout}
+        liveLocation={liveLocation}
+        isFollowing={isFollowing}
+        setIsFollowing={setIsFollowing}
+        isWatching={isWatching}
+        toggleWatching={toggleWatching}
       />
 
       {/* Sidebar / Main Content Area */}

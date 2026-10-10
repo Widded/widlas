@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { Navigation } from 'lucide-react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { allStopsDB } from '../data/db';
@@ -83,7 +84,8 @@ function MapClickHandler({ onMapClick }) {
 const MapArea = React.memo(function MapArea({
   mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
   fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd,
-  activeLineData, isSplitLayout, activeLineDirIdx
+  activeLineData, isSplitLayout, activeLineDirIdx,
+  liveLocation, isFollowing, setIsFollowing, isWatching, toggleWatching
 }) {
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
@@ -106,6 +108,24 @@ const MapArea = React.memo(function MapArea({
     return g.filter(isValidCoord);
   }, [activeRoute?.id]);
 
+  const mapRef = React.useRef(null);
+
+  const userLiveIcon = useMemo(() => {
+    if (!liveLocation) return null;
+    const rotateStyle = liveLocation.heading !== null && !isNaN(liveLocation.heading) ? `transform: rotate(${liveLocation.heading}deg);` : '';
+    return L.divIcon({
+      className: 'live-location-container',
+      html: `
+        <div class="live-location-ring"></div>
+        <div class="live-location-dot" style="${rotateStyle}">
+          ${liveLocation.heading !== null && !isNaN(liveLocation.heading) ? '<div class="live-location-arrow"></div>' : ''}
+        </div>
+      `,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12]
+    });
+  }, [liveLocation?.heading]);
+
   return (
     <div className="desktop-map-area">
       <div className="map-container-wrapper animate-in" style={{ animationDelay: '100ms' }}>
@@ -115,14 +135,21 @@ const MapArea = React.memo(function MapArea({
           style={{ width: '100%', height: '100%' }}
           scrollWheelZoom={true}
           preferCanvas={true}
+          ref={mapRef}
         >
           <TileLayer
             url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
             attribution='&copy; Google Maps'
           />
-          <MapUpdater center={safeMapCenter} zoom={mapZoom} />
+          {/* Use MapUpdater only if we are not following the user live. If following, the MapArea handles it via liveLocation. */}
+          {!isFollowing && <MapUpdater center={safeMapCenter} zoom={mapZoom} />}
+          
           <MapResizeHandler isVisible={isSplitLayout} />
-          <MapClickHandler onMapClick={onMapClick} />
+          
+          <MapClickHandler onMapClick={(lat, lng) => {
+             if(setIsFollowing) setIsFollowing(false);
+             if(onMapClick) onMapClick(lat, lng);
+          }} />
 
           {isValidCoord([fromLocation.lat, fromLocation.lon]) && (
             <Marker position={[fromLocation.lat, fromLocation.lon]} icon={customIcons.start}>
@@ -224,7 +251,51 @@ const MapArea = React.memo(function MapArea({
              )
           })()}
 
+          {liveLocation && isValidCoord([liveLocation.lat, liveLocation.lon]) && (
+            <Marker position={[liveLocation.lat, liveLocation.lon]} icon={userLiveIcon} zIndexOffset={1000}>
+               <Popup>
+                 <b>Şu Anki Konumunuz</b>
+                 <br />
+                 Hata Payı: ~{Math.round(liveLocation.accuracy)}m
+               </Popup>
+            </Marker>
+          )}
+
         </MapContainer>
+        
+        {/* Canlı Takip Butonu (Compass) */}
+        {isWatching && (
+          <button 
+            className={`follow-me-btn ${isFollowing ? 'following' : ''}`}
+            onClick={(e) => { 
+              e.preventDefault(); 
+              setIsFollowing(true); 
+              if (mapRef.current && liveLocation) {
+                mapRef.current.flyTo([liveLocation.lat, liveLocation.lon], 16);
+              }
+            }}
+            title="Beni Takip Et"
+            style={{
+              position: 'absolute',
+              bottom: '24px',
+              right: '24px',
+              zIndex: 1000,
+              background: 'var(--surface)',
+              border: isFollowing ? '2px solid var(--primary)' : '1px solid var(--border-color)',
+              borderRadius: '50%',
+              width: '48px',
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+          >
+            <Navigation size={22} fill={isFollowing ? 'var(--primary)' : 'transparent'} color={isFollowing ? 'var(--primary)' : 'var(--text-main)'} />
+          </button>
+        )}
       </div>
     </div>
   );
