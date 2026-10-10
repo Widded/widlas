@@ -472,7 +472,7 @@ function App() {
   // Hatlar sekmesinde aktif olan hat verisi
   const activeLineData = (activeMainTab === 'lines' && activeLineCode) ? etusLines[activeLineCode] : null;
 
-  const isSplitLayout = (activeMainTab === 'search' && hasSearched) || mapSelectionMode || (activeMainTab === 'lines');
+  const isSplitLayout = (activeMainTab === 'search' && hasSearched) || mapSelectionMode || (activeMainTab === 'lines') || isWatching;
 
   const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
     ? mapCenter 
