@@ -62,7 +62,8 @@ export default function RouteList({
               const activeSubIndex = activeSubRouteId?.startsWith(routeGroup.groupId) ? parseInt(activeSubRouteId.split('_').pop()) : 0;
               const activeRouteObj = (isExpanded && routeGroup.groupedLines[activeSubIndex]) ? routeGroup.groupedLines[activeSubIndex] : routeGroup;
               
-              const itin = isSelected && isExpanded ? buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), new Date()) : null;
+              // Her zaman itin'i hesapla ki süre atlaması (jump) olmasın
+              const itin = buildItinerary(activeRouteObj, getWalk(activeRouteObj, isSelected), new Date());
               
               const getFareText = () => {
                 if (routeGroup.isWalkOnly) return "Ücretsiz";
@@ -163,7 +164,17 @@ export default function RouteList({
                           <ArrowRight size={12} opacity={0.6} />
                           {routeGroup.isTransfer && (
                              <>
-                               <span style={{ fontWeight: 600, color: '#f59e0b' }}>{routeGroup.transferStop?.name}</span>
+                               {routeGroup.legs?.[0]?.toStop?.name !== routeGroup.transferStop?.name ? (
+                                 <>
+                                   <span style={{ fontWeight: 600, color: 'var(--text-main)' }}>{routeGroup.legs?.[0]?.toStop?.name}</span>
+                                   <ArrowRight size={12} opacity={0.6} />
+                                   <Footprints size={12} opacity={0.6} />
+                                   <ArrowRight size={12} opacity={0.6} />
+                                   <span style={{ fontWeight: 600, color: '#f59e0b' }}>{routeGroup.transferStop?.name}</span>
+                                 </>
+                               ) : (
+                                 <span style={{ fontWeight: 600, color: '#f59e0b' }}>{routeGroup.transferStop?.name}</span>
+                               )}
                                <ArrowRight size={12} opacity={0.6} />
                              </>
                           )}
