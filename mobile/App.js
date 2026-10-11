@@ -39,7 +39,10 @@ import {
   Map,
   Globe,
   Droplets,
-  Wind
+  Wind,
+  ChevronLeft,
+  ArrowUpDown,
+  SlidersHorizontal
 } from 'lucide-react-native';
 
 import { theme } from './src/theme';
@@ -277,6 +280,19 @@ function MainScreen() {
     setWalkingPathEnd([]);
   };
 
+  // Swap route origin and destination
+  const handleSwapRouteLocations = () => {
+    if (toLocation?.lat) {
+      const prevFrom = fromLocation?.lat
+        ? { ...fromLocation }
+        : (userLocation?.lat ? { ...userLocation } : { name: 'Mevcut Konum', lat: 41.6771, lon: 26.5557 });
+      const prevTo = { ...toLocation };
+      setFromLocation(prevTo);
+      setToLocation(prevFrom);
+      executeRouteSearch(prevTo, prevFrom);
+    }
+  };
+
   // Preset quick navigation targets
   const handleQuickPreset = (presetKey) => {
     if (presetKey === 'home') {
@@ -310,8 +326,8 @@ function MainScreen() {
   // Positioning floating widgets cleanly ABOVE the bottom navigation bar with 14px breathing room
   const floatingWidgetsBottom = bottomNavHeight + 14;
 
-  // Positioning top compass & layer buttons cleanly BELOW the search bar pill and chips
-  const topFloatingTop = topPadding + 114;
+  // Positioning top compass & layer buttons cleanly BELOW the active top header
+  const topFloatingTop = searchResults ? (topPadding + 130) : (topPadding + 114);
 
   return (
     <View style={styles.container}>
@@ -381,102 +397,172 @@ function MainScreen() {
             recenterTrigger={recenterTrigger}
           />
 
-      {/* 2. TOP PILL SEARCH BAR & HORIZONTAL PRESET CHIPS (Safe Area Protected) */}
-      <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
-        <View style={styles.searchPill}>
-          <TouchableOpacity
-            style={styles.searchPillInputArea}
-            onPress={() => {
-              setSearchTargetType('to');
-              setSearchModalVisible(true);
-            }}
-            activeOpacity={0.85}
-          >
-            <Search size={18} color="#3B82F6" />
-            <Text style={styles.searchPillPlaceholder}>Varış noktası veya hat ara...</Text>
-          </TouchableOpacity>
+      {/* 2. TOP HEADER: FLOATING ROUTE HEADER (WHEN ROUTING) OR SEARCH BAR (NORMAL) */}
+      {searchResults ? (
+        <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
+          <View style={styles.floatingRouteHeader}>
+            {/* Back to Clean Map Button */}
+            <TouchableOpacity
+              style={styles.floatingBackCircleBtn}
+              onPress={handleClearRoute}
+              activeOpacity={0.75}
+            >
+              <ChevronLeft size={22} color="#FFFFFF" />
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.searchMicBtn}
-            onPress={() => setVoiceModalVisible(true)}
-            activeOpacity={0.7}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-          >
-            <Mic size={17} color="#3B82F6" />
-          </TouchableOpacity>
+            {/* Floating Origin / Destination Card */}
+            <View style={styles.originDestCard}>
+              <View style={styles.originDestRowsCol}>
+                {/* Origin Row */}
+                <View style={styles.originDestSingleRow}>
+                  <View style={styles.originDotPill} />
+                  <View style={styles.originDestTextCol}>
+                    <Text style={styles.originDestMainTitle} numberOfLines={1}>
+                      {fromLocation?.name || 'Mevcut konum'}
+                    </Text>
+                    <Text style={styles.originDestSubTitle}>Mevcut konum</Text>
+                  </View>
+                </View>
+
+                {/* Divider Line */}
+                <View style={styles.originDestRowDivider} />
+
+                {/* Destination Row */}
+                <View style={styles.originDestSingleRow}>
+                  <MapPin size={12} color="#EF4444" style={{ marginRight: 6 }} />
+                  <View style={styles.originDestTextCol}>
+                    <Text style={styles.originDestMainTitle} numberOfLines={1}>
+                      {toLocation?.name || 'Varış noktası'}
+                    </Text>
+                    <Text style={styles.originDestSubTitle}>
+                      {toLocation?.category || 'Varış noktası'}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* Swap Origin / Destination Action Button */}
+              <TouchableOpacity
+                style={styles.swapActionBtn}
+                onPress={handleSwapRouteLocations}
+                activeOpacity={0.7}
+              >
+                <ArrowUpDown size={15} color="#38BDF8" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Floating Filter Button on Left over Map */}
+          <View style={styles.floatingFilterPillRow}>
+            <TouchableOpacity
+              style={styles.floatingFilterPillBtn}
+              onPress={() => {
+                // Filter action
+              }}
+              activeOpacity={0.8}
+            >
+              <SlidersHorizontal size={13} color="#CBD5E1" />
+              <Text style={styles.floatingFilterPillBtnText}>Filtrele</Text>
+            </TouchableOpacity>
+          </View>
         </View>
+      ) : (
+        <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
+          <View style={styles.searchPill}>
+            <TouchableOpacity
+              style={styles.searchPillInputArea}
+              onPress={() => {
+                setSearchTargetType('to');
+                setSearchModalVisible(true);
+              }}
+              activeOpacity={0.85}
+            >
+              <Search size={18} color="#3B82F6" />
+              <Text style={styles.searchPillPlaceholder}>Varış noktası veya hat ara...</Text>
+            </TouchableOpacity>
 
-        {/* Horizontal Scrollable Quick Destination Chips */}
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.quickChipsScroll}
-          style={styles.quickChipsWrapper}
-        >
-          {/* Ev */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => handleQuickPreset('home')}
-            activeOpacity={0.75}
-          >
-            <Home size={15} color="#3B82F6" />
-            <Text style={styles.quickChipText}>Ev</Text>
-            <Text style={styles.quickChipSub}>22 dk</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.searchMicBtn}
+              onPress={() => setVoiceModalVisible(true)}
+              activeOpacity={0.7}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Mic size={17} color="#3B82F6" />
+            </TouchableOpacity>
+          </View>
 
-          {/* İş */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => handleQuickPreset('work')}
-            activeOpacity={0.75}
+          {/* Horizontal Scrollable Quick Destination Chips */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.quickChipsScroll}
+            style={styles.quickChipsWrapper}
           >
-            <Briefcase size={15} color="#24C795" />
-            <Text style={styles.quickChipText}>İş</Text>
-            <Text style={styles.quickChipSub}>35 dk</Text>
-          </TouchableOpacity>
+            {/* Ev */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => handleQuickPreset('home')}
+              activeOpacity={0.75}
+            >
+              <Home size={15} color="#3B82F6" />
+              <Text style={styles.quickChipText}>Ev</Text>
+              <Text style={styles.quickChipSub}>22 dk</Text>
+            </TouchableOpacity>
 
-          {/* Trakya Üniversitesi */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => handleQuickPreset('uni')}
-            activeOpacity={0.75}
-          >
-            <GraduationCap size={15} color="#818CF8" />
-            <Text style={styles.quickChipText}>Trakya Üni</Text>
-            <Text style={styles.quickChipSub}>18 dk</Text>
-          </TouchableOpacity>
+            {/* İş */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => handleQuickPreset('work')}
+              activeOpacity={0.75}
+            >
+              <Briefcase size={15} color="#24C795" />
+              <Text style={styles.quickChipText}>İş</Text>
+              <Text style={styles.quickChipSub}>35 dk</Text>
+            </TouchableOpacity>
 
-          {/* Erasta AVM */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => executeRouteSearch(fromLocation, { name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 })}
-            activeOpacity={0.75}
-          >
-            <MapPin size={15} color="#F59E0B" />
-            <Text style={styles.quickChipText}>Erasta AVM</Text>
-          </TouchableOpacity>
+            {/* Trakya Üniversitesi */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => handleQuickPreset('uni')}
+              activeOpacity={0.75}
+            >
+              <GraduationCap size={15} color="#818CF8" />
+              <Text style={styles.quickChipText}>Trakya Üni</Text>
+              <Text style={styles.quickChipSub}>18 dk</Text>
+            </TouchableOpacity>
 
-          {/* Selimiye Camii */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => executeRouteSearch(fromLocation, { name: 'Selimiye Camii', lat: 41.6781, lon: 26.5594 })}
-            activeOpacity={0.75}
-          >
-            <MapPin size={15} color="#EC4899" />
-            <Text style={styles.quickChipText}>Selimiye</Text>
-          </TouchableOpacity>
+            {/* Erasta AVM */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => executeRouteSearch(fromLocation, { name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 })}
+              activeOpacity={0.75}
+            >
+              <MapPin size={15} color="#F59E0B" />
+              <Text style={styles.quickChipText}>Erasta AVM</Text>
+            </TouchableOpacity>
 
-          {/* Edirne Otogar */}
-          <TouchableOpacity
-            style={styles.quickChip}
-            onPress={() => executeRouteSearch(fromLocation, { name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 })}
-            activeOpacity={0.75}
-          >
-            <Bus size={15} color="#06B6D4" />
-            <Text style={styles.quickChipText}>Otogar</Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+            {/* Selimiye Camii */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => executeRouteSearch(fromLocation, { name: 'Selimiye Camii', lat: 41.6781, lon: 26.5594 })}
+              activeOpacity={0.75}
+            >
+              <MapPin size={15} color="#EC4899" />
+              <Text style={styles.quickChipText}>Selimiye</Text>
+            </TouchableOpacity>
+
+            {/* Edirne Otogar */}
+            <TouchableOpacity
+              style={styles.quickChip}
+              onPress={() => executeRouteSearch(fromLocation, { name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 })}
+              activeOpacity={0.75}
+            >
+              <Bus size={15} color="#06B6D4" />
+              <Text style={styles.quickChipText}>Otogar</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      )}
 
       {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers - Placed below search bar) */}
       <View style={[styles.topFloatingControls, { top: topFloatingTop }]}>
@@ -1073,8 +1159,114 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     zIndex: 90,
+  },
+  // Floating Route Header (Back btn + Origin-Dest card + Swap)
+  floatingRouteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  floatingBackCircleBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#121620',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  originDestCard: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#121620',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  originDestRowsCol: {
+    flex: 1,
+    paddingRight: 8,
+  },
+  originDestSingleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  originDotPill: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#38BDF8',
+    marginRight: 8,
+  },
+  originDestTextCol: {
+    flex: 1,
+  },
+  originDestMainTitle: {
+    fontSize: 13.5,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  originDestSubTitle: {
+    fontSize: 10.5,
+    color: '#94A3B8',
+    marginTop: 1,
+  },
+  originDestRowDivider: {
+    height: 1,
+    backgroundColor: '#1E2538',
+    marginVertical: 6,
+    marginLeft: 16,
+  },
+  swapActionBtn: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: '#161B24',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+  },
+  floatingFilterPillRow: {
+    marginTop: 10,
+    alignSelf: 'flex-start',
+  },
+  floatingFilterPillBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#121620',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 16,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  floatingFilterPillBtnText: {
+    fontSize: 12,
+    color: '#CBD5E1',
+    fontWeight: '600',
   },
   greetingRow: {
     flexDirection: 'row',

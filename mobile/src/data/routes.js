@@ -134,6 +134,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 color: lineData.color || '#4f46e5',
                 busTimeMins: Math.ceil(estimatedBusTime),
                 totalTime: Math.ceil(totalTime),
+                totalDistanceKm: Number(((sStop.distanceKm || 0) + (eStop.distanceKm || 0) + (stopCount * 0.45)).toFixed(1)),
                 startStop: sStop,
                 endStop: eStop,
                 routeGeometry: slicePath(dir.path, sStop, eStop),
@@ -290,6 +291,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         color2: etusLines[line2Code]?.color || '#f59e0b',
                         busTimeMins: Math.ceil(leg1Time + leg2Time + transferWaitTime),
                         totalTime: Math.ceil(totalTime),
+                        totalDistanceKm: Number(((sStop.distanceKm || 0) + (match.walkEnd || 0) + (transferWalkDist || 0) + ((leg1Stops + leg2Stops) * 0.45)).toFixed(1)),
                         startStop: sStop,
                         transferStop: actualTransferStop,
                         endStop: match.eStop,
@@ -343,22 +345,22 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   // Bütün rotaları birleştir
   const allRoutes = [...possibleRoutes, ...transferRoutes];
 
-  // SADECE YÜRÜME ROTASI (Kullanıcı Otobüsle gideceğinden daha kısa sürede yürüyebiliyorsa ekle)
-  // totalDistKm hesaplanmıştı. Yürüme süresi hesaplanır:
+  // SADECE YÜRÜME ROTASI (Doğrudan yürüme seçeneği)
   const directWalkMins = Math.ceil(totalDistKm * 1.4 * 12);
-  // Eğer 60 dakikadan (yaklaşık 4-5 km) kısaysa "Sadece Yürüme" rotası sunulabilir
-  if (directWalkMins <= 60) {
+  // 120 dakikaya (~8-9 km) kadar olan mesafelerde yürüme seçeneği de sunulur
+  if (directWalkMins <= 120) {
     allRoutes.push({
       id: 'walk_only',
-      name: 'Sadece Yürü',
+      name: 'Yürüyüş',
       isWalkOnly: true,
       description: 'Otobüs kullanmadan doğrudan hedefe yürüme',
-      color: '#10b981', // Yeşil renk
+      color: '#38BDF8',
       busTimeMins: 0,
       totalTime: directWalkMins,
+      totalDistanceKm: Number(totalDistKm.toFixed(1)),
       startStop: { name: 'Başlangıç Konumu', lat: fromLat, lon: fromLon },
       endStop: { name: 'Varış Konumu', lat: toLat, lon: toLon },
-      routeGeometry: [], // Sadece başlangıç ve son var
+      routeGeometry: [],
       walkDistanceStart: totalDistKm,
       walkDistanceEnd: 0,
       passedStops: [],
@@ -366,7 +368,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
       walkStartMins: directWalkMins,
       walkEndMins: 0,
       transferWaitMins: 0,
-      legs: [] // Bacak yok
+      legs: []
     });
   }
 

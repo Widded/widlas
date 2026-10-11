@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -7,26 +7,23 @@ import {
   StyleSheet,
   Platform,
   LayoutAnimation,
-  UIManager
+  UIManager,
+  Dimensions
 } from 'react-native';
 import {
-  X,
-  ArrowRight,
+  SlidersHorizontal,
+  Clock,
+  Repeat,
   Footprints,
+  Bus,
   ChevronRight,
   ChevronDown,
-  ChevronUp,
-  Bus,
-  MapPin,
-  Zap,
-  Repeat,
-  GraduationCap,
-  User,
-  Minimize2,
+  Navigation,
   Maximize2,
   RefreshCw,
-  Navigation,
-  Clock
+  ArrowRight,
+  MapPin,
+  X
 } from 'lucide-react-native';
 import { calculateFare, formatFare } from '../data/fares';
 
@@ -34,18 +31,23 @@ if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const fmtWalk = (km) => {
-  if (!km) return '0 m';
-  const m = km * 1000;
-  return m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`;
+const { height: SCREEN_HEIGHT } = Dimensions.get('window');
+
+const fmtDuration = (totalMinutes) => {
+  if (!totalMinutes) return '0 dk';
+  const m = Math.round(totalMinutes);
+  if (m >= 60) {
+    const hours = Math.floor(m / 60);
+    const rem = m % 60;
+    return rem > 0 ? `${hours} sa ${rem} dk` : `${hours} sa`;
+  }
+  return `${m} dk`;
 };
 
-const getEta = (totalMinutes) => {
-  const now = new Date();
-  const eta = new Date(now.getTime() + (totalMinutes || 15) * 60000);
-  const hh = String(eta.getHours()).padStart(2, '0');
-  const mm = String(eta.getMinutes()).padStart(2, '0');
-  return `${hh}:${mm}`;
+const fmtDist = (route) => {
+  if (!route) return '';
+  const km = route.totalDistanceKm || (route.isWalkOnly ? route.walkDistanceStart : (route.busTimeMins || 10) * 0.38) || 3.5;
+  return `${Number(km).toFixed(1).replace('.', ',')} km`;
 };
 
 export default function RouteResultSheet({
@@ -59,24 +61,36 @@ export default function RouteResultSheet({
   onOpenDetails,
   onClose
 }) {
+  const [filterType, setFilterType] = useState('fastest'); // 'fastest' | 'least_transfers'
   const [isMinimized, setIsMinimized] = useState(false);
-  const [showStopsLeg1, setShowStopsLeg1] = useState(false);
-  const [showStopsLeg2, setShowStopsLeg2] = useState(false);
 
   const toggleMinimize = () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setIsMinimized(prev => !prev);
   };
 
-  const toggleLeg1Stops = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowStopsLeg1(prev => !prev);
-  };
+  // Map routes with their original index so selection stays accurate
+  const indexedRoutes = useMemo(() => {
+    if (!routes || !Array.isArray(routes)) return [];
+    return routes.map((r, idx) => ({ ...r, _originalIdx: idx }));
+  }, [routes]);
 
-  const toggleLeg2Stops = () => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setShowStopsLeg2(prev => !prev);
-  };
+  // Sort routes according to filter
+  const sortedRoutes = useMemo(() => {
+    const list = [...indexedRoutes];
+    if (filterType === 'fastest') {
+      return list.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
+    }
+    if (filterType === 'least_transfers') {
+      return list.sort((a, b) => {
+        const transA = a.isWalkOnly ? 0 : a.isTransfer ? 1 : 0;
+        const transB = b.isWalkOnly ? 0 : b.isTransfer ? 1 : 0;
+        if (transA !== transB) return transA - transB;
+        return (a.totalTime || 0) - (b.totalTime || 0);
+      });
+    }
+    return list;
+  }, [indexedRoutes, filterType]);
 
   // 1. EMPTY STATE (No route found)
   if (!routes || routes.length === 0) {
@@ -93,8 +107,8 @@ export default function RouteResultSheet({
           <Text style={styles.emptyTitle}>Doğrudan Hat Bulunamadı</Text>
           <Text style={styles.emptySubtitle}>
             {toLocation?.name
-              ? `"${toLocation.name}" için mevcut ETUS güzergahlarında doğrudan sefer bulunamadı.`
-              : 'Seçilen noktalar arasında uygun hat tespit edilemedi.'}
+              ? `"${toLocation.name}" için mevcut ETUS güzergahlarında uygun sefer bulunamadı.`
+              : 'Seçilen noktalar arasında rota tespit edilemedi.'}
           </Text>
 
           <TouchableOpacity
@@ -111,33 +125,9 @@ export default function RouteResultSheet({
   }
 
   const currentRoute = routes[selectedIdx] || routes[0];
-  const fare = calculateFare(fareType, currentRoute.isTransfer);
-  const isDirect = !currentRoute.isTransfer && !currentRoute.isWalkOnly;
-  const isFastest = selectedIdx === 0;
+  const fare = calculateFare(fareType, currentRoute?.isTransfer);
 
-  const hasStartWalk = !currentRoute.isWalkOnly && ((currentRoute.walkDistanceStart || 0) > 0.04);
-  const hasEndWalk = !currentRoute.isWalkOnly && ((currentRoute.walkDistanceEnd || 0) > 0.04);
-
-  // Split intermediate stops for direct vs transfer
-  let leg1Stops = [];
-  let leg2Stops = [];
-  if (currentRoute.isTransfer) {
-    if (Array.isArray(currentRoute.passedStops)) {
-      const tIdx = currentRoute.passedStops.indexOf('>>>TRANSFER<<<');
-      if (tIdx !== -1) {
-        leg1Stops = currentRoute.passedStops.slice(0, tIdx);
-        leg2Stops = currentRoute.passedStops.slice(tIdx + 1);
-      } else {
-        leg1Stops = currentRoute.passedStops;
-      }
-    }
-  } else {
-    leg1Stops = Array.isArray(currentRoute.passedStops)
-      ? currentRoute.passedStops.filter(s => s !== '>>>TRANSFER<<<')
-      : [];
-  }
-
-  // 2. MINIMIZED FLOATING CAPSULE VIEW (For full map visibility)
+  // 2. MINIMIZED FLOATING CAPSULE VIEW (For full map inspection)
   if (isMinimized) {
     return (
       <View style={styles.minimizedWrapper}>
@@ -147,47 +137,31 @@ export default function RouteResultSheet({
           activeOpacity={0.85}
         >
           <View style={styles.minimizedRow}>
-            {/* Minimized Journey Chain */}
-            <View style={styles.miniChainRow}>
-              {hasStartWalk && (
-                <View style={styles.miniWalkPill}>
-                  <Footprints size={11} color="#38BDF8" />
-                  <Text style={styles.miniWalkText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
-                </View>
+            {/* Active route badge */}
+            <View style={[styles.miniBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
+              {currentRoute.isWalkOnly ? (
+                <Footprints size={13} color="#FFFFFF" />
+              ) : (
+                <Bus size={13} color="#FFFFFF" />
               )}
-              {hasStartWalk && <ChevronRight size={10} color="#64748B" />}
-
-              <View style={[styles.miniLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-                <Bus size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
-                <Text style={styles.miniLineBadgeText}>
-                  {currentRoute.isWalkOnly
-                    ? 'Yürüme'
-                    : currentRoute.isTransfer
-                      ? `${currentRoute.line1}+${currentRoute.line2}`
-                      : currentRoute.name || currentRoute.lineCode}
-                </Text>
-              </View>
-
-              {hasEndWalk && <ChevronRight size={10} color="#64748B" />}
-              {hasEndWalk && (
-                <View style={styles.miniWalkPill}>
-                  <Footprints size={11} color="#38BDF8" />
-                  <Text style={styles.miniWalkText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
-                </View>
-              )}
+              <Text style={styles.miniBadgeText}>
+                {currentRoute.isWalkOnly
+                  ? 'Yürüyüş'
+                  : currentRoute.isTransfer
+                    ? `${currentRoute.line1}+${currentRoute.line2}`
+                    : currentRoute.name || currentRoute.lineCode}
+              </Text>
             </View>
 
-            {/* Destination Info */}
             <View style={styles.minimizedInfo}>
               <Text style={styles.minimizedDest} numberOfLines={1}>
                 {toLocation?.name || 'Seçilen Hedef'}
               </Text>
               <Text style={styles.minimizedSub}>
-                {currentRoute.totalTime} dk • Varış ~{getEta(currentRoute.totalTime)} • {formatFare(fare)}
+                {fmtDuration(currentRoute.totalTime)} • {fmtDist(currentRoute)} • {formatFare(fare)}
               </Text>
             </View>
 
-            {/* Expand Action Button */}
             <View style={styles.miniExpandBtn}>
               <Maximize2 size={16} color="#38BDF8" />
             </View>
@@ -197,7 +171,7 @@ export default function RouteResultSheet({
     );
   }
 
-  // 3. FULL BOTTOM SHEET DRAWER (Customer-Centric OLED Dark Experience)
+  // 3. FULL "TÜM ROTALAR" LIST SHEET (Matches Reference Screenshot)
   return (
     <View style={styles.sheetContainer}>
       {/* Top Grabber Handle */}
@@ -210,395 +184,174 @@ export default function RouteResultSheet({
         <View style={styles.grabberBar} />
       </TouchableOpacity>
 
-      {/* Header: Destination Title & Quick Actions */}
-      <View style={styles.headerRow}>
-        <View style={styles.destinationCol}>
-          <View style={styles.destMetaRow}>
-            <MapPin size={13} color="#EF4444" />
-            <Text style={styles.destMetaLabel}>VARIŞ NOKTASI</Text>
-            {fromLocation?.name && (
-              <Text style={styles.fromLocationHint} numberOfLines={1}>
-                • {fromLocation.name}
-              </Text>
-            )}
+      {/* Header: "Tüm Rotalar" & Filter Pills */}
+      <View style={styles.sheetHeader}>
+        <View style={styles.headerTitleCol}>
+          <View style={styles.headerTitleRow}>
+            <SlidersHorizontal size={17} color="#94A3B8" style={{ marginRight: 7 }} />
+            <Text style={styles.headerMainTitle}>Tüm Rotalar</Text>
           </View>
-          <Text style={styles.destTitle} numberOfLines={1}>
-            {toLocation?.name || 'Seçilen Hedef'}
+          <Text style={styles.headerSubtitle}>
+            Konumuna giden {routes.length} farklı seçenek
           </Text>
         </View>
 
-        <View style={styles.headerActions}>
+        {/* Filter Pills: En hızlı / En az aktarma */}
+        <View style={styles.filterPillsGroup}>
           <TouchableOpacity
-            style={styles.circleActionBtn}
-            onPress={toggleMinimize}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={[styles.filterPill, filterType === 'fastest' && styles.filterPillActive]}
+            onPress={() => setFilterType('fastest')}
+            activeOpacity={0.75}
           >
-            <ChevronDown size={18} color="#94A3B8" />
+            <Clock size={12} color={filterType === 'fastest' ? '#38BDF8' : '#94A3B8'} />
+            <Text style={[styles.filterPillText, filterType === 'fastest' && styles.filterPillTextActive]}>
+              En hızlı
+            </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.circleActionBtn}
-            onPress={onClose}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            style={[styles.filterPill, filterType === 'least_transfers' && styles.filterPillActive]}
+            onPress={() => setFilterType('least_transfers')}
+            activeOpacity={0.75}
           >
-            <X size={16} color="#FFFFFF" />
+            <Repeat size={12} color={filterType === 'least_transfers' ? '#38BDF8' : '#94A3B8'} />
+            <Text style={[styles.filterPillText, filterType === 'least_transfers' && styles.filterPillTextActive]}>
+              En az aktarma
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Alternative Routes Selector Tabs (When multiple routes available) */}
-      {routes.length > 1 && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.routeTabsScroll}
-          style={styles.routeTabsWrapper}
-        >
-          {routes.map((r, idx) => {
-            const isTabActive = selectedIdx === idx;
-            const tabHasStartWalk = !r.isWalkOnly && ((r.walkDistanceStart || 0) > 0.04);
-            const tabHasEndWalk = !r.isWalkOnly && ((r.walkDistanceEnd || 0) > 0.04);
-            return (
-              <TouchableOpacity
-                key={idx}
-                style={[styles.routeTab, isTabActive && styles.routeTabActive]}
-                onPress={() => onSelectIdx(idx)}
-                activeOpacity={0.75}
-              >
-                {idx === 0 && (
-                  <Zap size={13} color={isTabActive ? '#38BDF8' : '#24C795'} />
-                )}
-                <Text style={[styles.routeTabTime, isTabActive && styles.routeTabTimeActive]}>
-                  {r.totalTime} dk
-                </Text>
-                <View style={[styles.routeTabDivider, isTabActive && styles.routeTabDividerActive]} />
-                <View style={styles.tabChainRow}>
-                  {tabHasStartWalk && (
-                    <Footprints size={11} color={isTabActive ? '#38BDF8' : '#64748B'} />
-                  )}
-                  <Text style={[styles.routeTabCode, isTabActive && styles.routeTabCodeActive]}>
-                    {r.isWalkOnly ? 'Yürüme' : r.isTransfer ? `${r.line1}+${r.line2}` : r.line1 || r.name}
-                  </Text>
-                  {tabHasEndWalk && (
-                    <Footprints size={11} color={isTabActive ? '#38BDF8' : '#64748B'} />
-                  )}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      )}
+      {/* Vertical List of Route Options */}
+      <ScrollView
+        style={styles.routesScroll}
+        contentContainerStyle={styles.routesScrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {sortedRoutes.map((r) => {
+          const isSelected = selectedIdx === r._originalIdx;
+          const hasStartWalk = !r.isWalkOnly && ((r.walkDistanceStart || 0) > 0.04);
+          const hasEndWalk = !r.isWalkOnly && ((r.walkDistanceEnd || 0) > 0.04);
 
-      {/* Hero Transit Card */}
-      <View style={styles.heroPassCard}>
-        {/* Pass Top Row: Badges, Tags and Duration */}
-        <View style={styles.passTopBar}>
-          <View style={styles.chainAndTagsCol}>
-            {/* Transit Flow Chain: [Walk] -> [Bus Line(s)] -> [Walk] */}
-            <View style={styles.flowChainContainer}>
-              {currentRoute.isWalkOnly ? (
-                <View style={styles.flowWalkPill}>
-                  <Footprints size={14} color="#38BDF8" />
-                  <Text style={styles.flowWalkText}>
-                    Yürüyüş ({fmtWalk(currentRoute.walkDistanceStart || currentRoute.totalDistance)})
-                  </Text>
+          return (
+            <TouchableOpacity
+              key={r.id || r._originalIdx}
+              style={[styles.routeCard, isSelected && styles.routeCardSelected]}
+              onPress={() => onSelectIdx(r._originalIdx)}
+              activeOpacity={0.85}
+            >
+              <View style={styles.cardMainRow}>
+                {/* Radio Button Indicator */}
+                <View style={[styles.radioOuter, isSelected && styles.radioOuterSelected]}>
+                  {isSelected && <View style={styles.radioInner} />}
                 </View>
-              ) : (
-                <>
-                  {hasStartWalk && (
-                    <>
-                      <View style={styles.flowWalkPill}>
-                        <Footprints size={13} color="#38BDF8" />
-                        <Text style={styles.flowWalkText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
+
+                {/* Left/Center Content: Badges Flow & Subtitle */}
+                <View style={styles.cardCenterCol}>
+                  {/* Journey Badges Flow */}
+                  <View style={styles.journeyBadgesRow}>
+                    {r.isWalkOnly ? (
+                      <View style={styles.walkHeaderRow}>
+                        <Footprints size={18} color="#38BDF8" style={{ marginRight: 6 }} />
+                        <Text style={styles.walkTitle}>Yürüyüş</Text>
                       </View>
-                      <ChevronRight size={13} color="#64748B" />
-                    </>
-                  )}
-
-                  {currentRoute.isTransfer ? (
-                    <View style={styles.flowTransferRow}>
-                      <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
-                        <Text style={styles.flowLineText}>{currentRoute.line1}</Text>
-                      </View>
-                      <ChevronRight size={12} color="#64748B" />
-                      <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color2 || '#8B5CF6' }]}>
-                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
-                        <Text style={styles.flowLineText}>{currentRoute.line2}</Text>
-                      </View>
-                    </View>
-                  ) : (
-                    <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-                      <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
-                      <Text style={styles.flowLineText}>{currentRoute.name || currentRoute.lineCode}</Text>
-                    </View>
-                  )}
-
-                  {hasEndWalk && (
-                    <>
-                      <ChevronRight size={13} color="#64748B" />
-                      <View style={styles.flowWalkPill}>
-                        <Footprints size={13} color="#38BDF8" />
-                        <Text style={styles.flowWalkText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
-                      </View>
-                    </>
-                  )}
-                </>
-              )}
-            </View>
-
-            {/* Badges / Status Tags */}
-            <View style={styles.tagsRow}>
-              {isFastest && (
-                <View style={styles.fastestTag}>
-                  <Zap size={11} color="#24C795" />
-                  <Text style={styles.fastestTagText}>EN HIZLI</Text>
-                </View>
-              )}
-              {isDirect && !isFastest && (
-                <View style={styles.directTag}>
-                  <Text style={styles.directTagText}>DİREKT</Text>
-                </View>
-              )}
-              {currentRoute.isTransfer && (
-                <View style={styles.transferTag}>
-                  <Repeat size={11} color="#F59E0B" />
-                  <Text style={styles.transferTagText}>AKTARMA</Text>
-                </View>
-              )}
-            </View>
-          </View>
-
-          {/* Time & ETA Cluster */}
-          <View style={styles.timeCluster}>
-            <View style={styles.durationRow}>
-              <Text style={styles.durationBig}>{currentRoute.totalTime}</Text>
-              <Text style={styles.durationUnit}>dk</Text>
-            </View>
-            <View style={styles.etaRow}>
-              <Clock size={11} color="#94A3B8" />
-              <Text style={styles.etaText}>Varış ~{getEta(currentRoute.totalTime)}</Text>
-            </View>
-          </View>
-        </View>
-
-        {/* Transit Timeline Flow (Visual Journey Path) */}
-        {!currentRoute.isWalkOnly ? (
-          <View style={styles.subwayTimelineBox}>
-            {/* 1. Origin Stop (Biniş Durağı) */}
-            <View style={styles.stationRow}>
-              <View style={[styles.stationDot, { backgroundColor: '#38BDF8' }]} />
-              <View style={styles.stationCol}>
-                <Text style={styles.stationRoleLabel}>BİNİŞ DURAĞI</Text>
-                <Text style={styles.stationName} numberOfLines={1}>
-                  {currentRoute.startStop?.name || 'İlk Durak'}
-                </Text>
-              </View>
-              {currentRoute.walkDistanceStart > 0 && (
-                <View style={styles.walkPillInline}>
-                  <Footprints size={11} color="#38BDF8" />
-                  <Text style={styles.walkPillText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
-                </View>
-              )}
-            </View>
-
-            {/* 2. Leg 1 Line Travel & Intermediate Stops */}
-            <View style={styles.connectorRow}>
-              <View style={[styles.connectorLine, { backgroundColor: currentRoute.color || '#3B82F6' }]} />
-              <View style={styles.legInfoCol}>
-                <Text style={styles.legLineName}>
-                  {currentRoute.isTransfer ? currentRoute.line1 : currentRoute.name} Hattı ile ~{currentRoute.busTimeMins || 12} dk
-                </Text>
-
-                {leg1Stops.length > 0 && (
-                  <TouchableOpacity
-                    style={styles.accordionToggle}
-                    onPress={toggleLeg1Stops}
-                    activeOpacity={0.7}
-                  >
-                    <Text style={styles.accordionToggleText}>
-                      {leg1Stops.length} Ara Durak {showStopsLeg1 ? '(Gizle)' : '(Göster)'}
-                    </Text>
-                    {showStopsLeg1 ? (
-                      <ChevronUp size={13} color="#94A3B8" />
                     ) : (
-                      <ChevronDown size={13} color="#94A3B8" />
-                    )}
-                  </TouchableOpacity>
-                )}
-              </View>
-            </View>
-
-            {/* Unfolded Intermediate Stops (Leg 1) */}
-            {showStopsLeg1 && leg1Stops.length > 0 && (
-              <View style={styles.stopsDropdown}>
-                {leg1Stops.map((stopName, sIdx) => (
-                  <View key={sIdx} style={styles.dropdownStopRow}>
-                    <View style={styles.dropdownStopDot} />
-                    <Text style={styles.dropdownStopName} numberOfLines={1}>
-                      {stopName}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            )}
-
-            {/* 3. Transfer Stop (If transfer route) */}
-            {currentRoute.isTransfer && currentRoute.transferStop && (
-              <>
-                <View style={styles.stationRow}>
-                  <View style={[styles.stationDot, { backgroundColor: '#F59E0B' }]} />
-                  <View style={styles.stationCol}>
-                    <Text style={[styles.stationRoleLabel, { color: '#F59E0B' }]}>AKTARMA NOKTASI</Text>
-                    <Text style={styles.stationName} numberOfLines={1}>
-                      {currentRoute.transferStop.name}
-                    </Text>
-                  </View>
-                  <View style={styles.transferBadgePill}>
-                    <Repeat size={11} color="#F59E0B" />
-                    <Text style={styles.transferBadgePillText}>Aktarma</Text>
-                  </View>
-                </View>
-
-                {/* Leg 2 Line Connector */}
-                <View style={styles.connectorRow}>
-                  <View style={[styles.connectorLine, { backgroundColor: currentRoute.color2 || '#8B5CF6' }]} />
-                  <View style={styles.legInfoCol}>
-                    <Text style={styles.legLineName}>
-                      {currentRoute.line2} Hattı ile ~{currentRoute.busTime2Mins || 10} dk
-                    </Text>
-
-                    {leg2Stops.length > 0 && (
-                      <TouchableOpacity
-                        style={styles.accordionToggle}
-                        onPress={toggleLeg2Stops}
-                        activeOpacity={0.7}
-                      >
-                        <Text style={styles.accordionToggleText}>
-                          {leg2Stops.length} Ara Durak {showStopsLeg2 ? '(Gizle)' : '(Göster)'}
-                        </Text>
-                        {showStopsLeg2 ? (
-                          <ChevronUp size={13} color="#94A3B8" />
-                        ) : (
-                          <ChevronDown size={13} color="#94A3B8" />
+                      <>
+                        {hasStartWalk && (
+                          <View style={styles.flowWalkInline}>
+                            <Footprints size={12} color="#38BDF8" />
+                          </View>
                         )}
-                      </TouchableOpacity>
+                        {hasStartWalk && <ArrowRight size={10} color="#64748B" />}
+
+                        {r.isTransfer ? (
+                          <View style={styles.flowTransferRow}>
+                            <View style={[styles.cardLineBadge, { backgroundColor: r.color || '#3B82F6' }]}>
+                              <Bus size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                              <Text style={styles.cardLineBadgeText}>{r.line1}</Text>
+                            </View>
+                            <ArrowRight size={11} color="#64748B" />
+                            <View style={[styles.cardLineBadge, { backgroundColor: r.color2 || '#8B5CF6' }]}>
+                              <Bus size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                              <Text style={styles.cardLineBadgeText}>{r.line2}</Text>
+                            </View>
+                          </View>
+                        ) : (
+                          <View style={[styles.cardLineBadge, { backgroundColor: r.color || '#3B82F6' }]}>
+                            <Bus size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                            <Text style={styles.cardLineBadgeText}>{r.name || r.lineCode}</Text>
+                          </View>
+                        )}
+
+                        {hasEndWalk && <ArrowRight size={10} color="#64748B" />}
+                        {hasEndWalk && (
+                          <View style={styles.flowWalkInline}>
+                            <Footprints size={12} color="#38BDF8" />
+                          </View>
+                        )}
+                      </>
                     )}
                   </View>
+
+                  {/* Subtitle / Transfer Meta */}
+                  <Text style={styles.cardSubtitle} numberOfLines={1}>
+                    {r.isWalkOnly
+                      ? 'Direkt rota'
+                      : r.isTransfer
+                        ? `1 aktarma • ${fmtDuration(r.totalTime)}`
+                        : `Aktarmasız • ${fmtDuration(r.totalTime)}`}
+                  </Text>
                 </View>
 
-                {/* Unfolded Intermediate Stops (Leg 2) */}
-                {showStopsLeg2 && leg2Stops.length > 0 && (
-                  <View style={styles.stopsDropdown}>
-                    {leg2Stops.map((stopName, sIdx) => (
-                      <View key={sIdx} style={styles.dropdownStopRow}>
-                        <View style={[styles.dropdownStopDot, { backgroundColor: '#8B5CF6' }]} />
-                        <Text style={styles.dropdownStopName} numberOfLines={1}>
-                          {stopName}
-                        </Text>
-                      </View>
-                    ))}
+                {/* Right Column: Time & Distance */}
+                <View style={styles.cardRightCol}>
+                  <View style={styles.cardMetaCol}>
+                    <Text style={styles.cardDurationText}>{fmtDuration(r.totalTime)}</Text>
+                    <Text style={styles.cardDistanceText}>{fmtDist(r)}</Text>
                   </View>
-                )}
-              </>
-            )}
-
-            {/* 4. Alight Stop (İniş Durağı) */}
-            <View style={styles.stationRow}>
-              <View style={[styles.stationDot, { backgroundColor: '#EF4444' }]} />
-              <View style={styles.stationCol}>
-                <Text style={[styles.stationRoleLabel, { color: '#EF4444' }]}>İNİŞ DURAĞI</Text>
-                <Text style={styles.stationName} numberOfLines={1}>
-                  {currentRoute.endStop?.name || 'Varış Durağı'}
-                </Text>
+                  <ChevronRight size={16} color={isSelected ? '#38BDF8' : '#64748B'} style={{ marginLeft: 6 }} />
+                </View>
               </View>
-              {currentRoute.walkDistanceEnd > 0 && (
-                <View style={styles.walkPillInline}>
-                  <Footprints size={11} color="#38BDF8" />
-                  <Text style={styles.walkPillText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
+
+              {/* If Selected: Sleek Button to open Turn-by-Turn Steps */}
+              {isSelected && (
+                <View style={styles.selectedActionDividerRow}>
+                  <TouchableOpacity
+                    style={styles.openDetailsBtn}
+                    onPress={() => onOpenDetails && onOpenDetails(r)}
+                    activeOpacity={0.75}
+                  >
+                    <Navigation size={13} color="#38BDF8" />
+                    <Text style={styles.openDetailsBtnText}>Detaylı Adımları Gör</Text>
+                    <ChevronRight size={13} color="#38BDF8" />
+                  </TouchableOpacity>
                 </View>
               )}
-            </View>
-          </View>
-        ) : (
-          /* Walk Only Mode */
-          <View style={styles.walkOnlyBox}>
-            <View style={styles.walkIconBox}>
-              <Footprints size={20} color="#38BDF8" />
-            </View>
-            <View style={styles.walkOnlyInfo}>
-              <Text style={styles.walkOnlyTitle}>Yürüyüş Rotası</Text>
-              <Text style={styles.walkOnlyDesc}>
-                {fmtWalk(currentRoute.walkDistanceStart)} mesafe (~{currentRoute.totalTime} dk) yürüyerek rahatça ulaşabilirsiniz.
-              </Text>
-            </View>
-          </View>
-        )}
-
-        {/* Card Footer: Kentkart Fare Pill & Primary Guide Action */}
-        <View style={styles.passFooterBar}>
-          <View style={styles.fareCluster}>
-            <Text style={styles.fareAmount}>{formatFare(fare)}</Text>
-
-            {onFareTypeChange ? (
-              <TouchableOpacity
-                style={styles.fareTypePill}
-                onPress={() => onFareTypeChange(fareType === 'ogrenci' ? 'tam' : 'ogrenci')}
-                activeOpacity={0.7}
-              >
-                {fareType === 'ogrenci' ? (
-                  <>
-                    <GraduationCap size={12} color="#94A3B8" />
-                    <Text style={styles.fareTypePillText}>Öğrenci ▾</Text>
-                  </>
-                ) : (
-                  <>
-                    <User size={12} color="#94A3B8" />
-                    <Text style={styles.fareTypePillText}>Tam ▾</Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            ) : (
-              <Text style={styles.fareTypeLabel}>
-                {fareType === 'ogrenci' ? 'Öğrenci' : 'Tam'}
-              </Text>
-            )}
-          </View>
-
-          {/* Primary Action Button: Detaylı Yol Tarifi */}
-          <TouchableOpacity
-            style={styles.detailsBtn}
-            onPress={onOpenDetails}
-            activeOpacity={0.8}
-          >
-            <Navigation size={15} color="#FFFFFF" />
-            <Text style={styles.detailsBtnText}>Detaylı Rehber</Text>
-            <ChevronRight size={15} color="#FFFFFF" />
-          </TouchableOpacity>
-        </View>
-      </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  // Main Bottom Sheet Drawer Container
+  // Main Sheet Container
   sheetContainer: {
-    backgroundColor: '#12161E',
+    backgroundColor: '#0D111A',
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
     borderColor: '#1E2538',
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 24,
+    paddingHorizontal: 16,
+    paddingTop: 6,
+    paddingBottom: 16,
+    maxHeight: Math.min(SCREEN_HEIGHT * 0.58, 520),
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 16,
+    shadowOffset: { width: 0, height: -8 },
+    shadowOpacity: 0.6,
+    shadowRadius: 20,
+    elevation: 20,
   },
 
   // Grabber Handle
@@ -613,502 +366,204 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A344A',
   },
 
-  // Header Row
-  headerRow: {
+  // Sheet Header
+  sheetHeader: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 6,
+    paddingVertical: 10,
+    marginBottom: 6,
   },
-  destinationCol: {
+  headerTitleCol: {
     flex: 1,
-    paddingRight: 12,
+    paddingRight: 8,
   },
-  destMetaRow: {
+  headerTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  headerMainTitle: {
+    fontSize: 17,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  headerSubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 2,
+    fontWeight: '500',
+  },
+  filterPillsGroup: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  filterPill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    marginBottom: 3,
-  },
-  destMetaLabel: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: '#94A3B8',
-    letterSpacing: 0.5,
-  },
-  fromLocationHint: {
-    fontSize: 10,
-    color: '#64748B',
-    flexShrink: 1,
-  },
-  destTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  circleActionBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
     backgroundColor: '#161B24',
     borderWidth: 1,
     borderColor: '#1E2538',
+    paddingHorizontal: 9,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+  filterPillActive: {
+    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+    borderColor: '#38BDF8',
+  },
+  filterPillText: {
+    fontSize: 11.5,
+    color: '#94A3B8',
+    fontWeight: '600',
+  },
+  filterPillTextActive: {
+    color: '#38BDF8',
+    fontWeight: '700',
+  },
+
+  // Routes Scroll
+  routesScroll: {
+    flexGrow: 0,
+  },
+  routesScrollContent: {
+    paddingBottom: 8,
+  },
+
+  // Route Item Card
+  routeCard: {
+    backgroundColor: '#121620',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    padding: 13,
+    marginBottom: 9,
+  },
+  routeCardSelected: {
+    backgroundColor: '#0E1726',
+    borderColor: '#0284C7',
+    borderWidth: 1.5,
+    shadowColor: '#0284C7',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  cardMainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
+  // Radio Indicator
+  radioOuter: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1.5,
+    borderColor: '#475569',
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Alternative Route Selector Tabs
-  routeTabsWrapper: {
-    marginTop: 6,
-    marginBottom: 4,
-  },
-  routeTabsScroll: {
-    gap: 8,
-    paddingVertical: 4,
-  },
-  routeTab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 7,
-    backgroundColor: '#161B24',
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: '#1E2538',
-  },
-  routeTabActive: {
-    backgroundColor: '#1E293B',
+  radioOuterSelected: {
     borderColor: '#38BDF8',
   },
-  routeTabDivider: {
-    width: 1,
+  radioInner: {
+    width: 10,
     height: 10,
-    backgroundColor: '#2A344A',
-  },
-  routeTabDividerActive: {
+    borderRadius: 5,
     backgroundColor: '#38BDF8',
   },
-  routeTabTime: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: '#94A3B8',
-  },
-  routeTabTimeActive: {
-    color: '#38BDF8',
-  },
-  routeTabCode: {
-    fontSize: 12,
-    color: '#64748B',
-    fontWeight: '600',
-  },
-  routeTabCodeActive: {
-    color: '#FFFFFF',
-  },
-  tabChainRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
 
-  // Hero Transit Pass Card
-  heroPassCard: {
-    backgroundColor: '#161B24',
-    borderRadius: 20,
-    padding: 15,
-    borderWidth: 1,
-    borderColor: '#1E2538',
-    marginTop: 8,
-  },
-  passTopBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  chainAndTagsCol: {
+  // Card Center
+  cardCenterCol: {
     flex: 1,
-    paddingRight: 6,
+    marginHorizontal: 12,
   },
-  flowChainContainer: {
+  journeyBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 5,
+    marginBottom: 4,
   },
-  flowWalkPill: {
+  walkHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(56, 189, 248, 0.14)',
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
   },
-  flowWalkText: {
-    color: '#38BDF8',
-    fontSize: 12,
+  walkTitle: {
+    fontSize: 15,
     fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  flowWalkInline: {
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    paddingHorizontal: 5,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  cardLineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 3.5,
+    borderRadius: 7,
+  },
+  cardLineBadgeText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 12.5,
   },
   flowTransferRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-  },
-  flowLineBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  flowLineText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 13,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 7,
-  },
-  lineBadgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
-    flex: 1,
-  },
-  lineBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  lineBadgeText: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 14,
-  },
-  transferBadgesRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  fastestTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 4,
-    backgroundColor: 'rgba(36, 199, 149, 0.15)',
-    borderWidth: 1,
-    borderColor: '#24C795',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
   },
-  fastestTagText: {
-    color: '#24C795',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.3,
-  },
-  directTag: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    borderWidth: 1,
-    borderColor: '#38BDF8',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  directTagText: {
-    color: '#38BDF8',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  transferTag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    borderWidth: 1,
-    borderColor: '#F59E0B',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  transferTagText: {
-    color: '#F59E0B',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  walkBadgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: 8,
-  },
-  walkBadgePillText: {
-    color: '#38BDF8',
+  cardSubtitle: {
     fontSize: 12,
-    fontWeight: '700',
+    color: '#94A3B8',
+    fontWeight: '500',
   },
 
-  // Time & ETA
-  timeCluster: {
+  // Card Right
+  cardRightCol: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  cardMetaCol: {
     alignItems: 'flex-end',
-    marginLeft: 10,
   },
-  durationRow: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    gap: 3,
-  },
-  durationBig: {
-    fontSize: 24,
+  cardDurationText: {
+    fontSize: 14,
     fontWeight: '800',
     color: '#FFFFFF',
-    letterSpacing: -0.5,
   },
-  durationUnit: {
-    fontSize: 12.5,
-    fontWeight: '700',
-    color: '#94A3B8',
-  },
-  etaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 1,
-  },
-  etaText: {
-    fontSize: 11,
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-
-  // Subway Route Visualizer
-  subwayTimelineBox: {
-    backgroundColor: '#0E121A',
-    borderRadius: 14,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#1E2538',
-  },
-  stationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  stationDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  stationCol: {
-    flex: 1,
-  },
-  stationRoleLabel: {
-    fontSize: 9,
-    fontWeight: '700',
-    color: '#64748B',
-    letterSpacing: 0.4,
-  },
-  stationName: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#FFFFFF',
-    marginTop: 1,
-  },
-  walkPillInline: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  walkPillText: {
-    color: '#38BDF8',
-    fontSize: 10.5,
-    fontWeight: '600',
-  },
-  transferBadgePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: 'rgba(245, 158, 11, 0.15)',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  transferBadgePillText: {
-    color: '#F59E0B',
-    fontSize: 10,
-    fontWeight: '600',
-  },
-
-  // Connector Track Line
-  connectorRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 6,
-    marginLeft: 3,
-    gap: 12,
-  },
-  connectorLine: {
-    width: 2,
-    height: 28,
-    borderRadius: 1,
-  },
-  legInfoCol: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  legLineName: {
-    fontSize: 12,
-    color: '#94A3B8',
-    fontWeight: '500',
-  },
-  accordionToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    paddingVertical: 2,
-    paddingHorizontal: 6,
-  },
-  accordionToggleText: {
-    fontSize: 11,
-    color: '#38BDF8',
-    fontWeight: '600',
-  },
-  stopsDropdown: {
-    marginLeft: 15,
-    marginBottom: 8,
-    paddingLeft: 10,
-    borderLeftWidth: 1,
-    borderLeftColor: '#1E2538',
-    gap: 4,
-  },
-  dropdownStopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingVertical: 2,
-  },
-  dropdownStopDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#64748B',
-  },
-  dropdownStopName: {
+  cardDistanceText: {
     fontSize: 11.5,
     color: '#94A3B8',
+    marginTop: 2,
+    fontWeight: '600',
   },
 
-  // Walk Only Mode
-  walkOnlyBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: '#0E121A',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: '#1E2538',
-    marginBottom: 12,
+  // Selected Action
+  selectedActionDividerRow: {
+    marginTop: 10,
+    paddingTop: 8,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(56, 189, 248, 0.2)',
   },
-  walkIconBox: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+  openDetailsBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  walkOnlyInfo: {
-    flex: 1,
-  },
-  walkOnlyTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  walkOnlyDesc: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 2,
-  },
-
-  // Pass Footer
-  passFooterBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingTop: 4,
-  },
-  fareCluster: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  fareAmount: {
-    fontSize: 19,
-    fontWeight: '800',
-    color: '#38BDF8',
-  },
-  fareTypePill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#1E2538',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 10,
-  },
-  fareTypePillText: {
-    fontSize: 11,
-    fontWeight: '600',
-    color: '#E2E8F0',
-  },
-  fareTypeLabel: {
-    fontSize: 12,
-    color: '#94A3B8',
-  },
-  detailsBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
     gap: 6,
-    backgroundColor: '#3B82F6',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 14,
-    shadowColor: '#3B82F6',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 4,
+    paddingVertical: 4,
   },
-  detailsBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
+  openDetailsBtnText: {
+    fontSize: 12.5,
     fontWeight: '700',
+    color: '#38BDF8',
   },
 
   // Minimized Capsule Mode
@@ -1134,36 +589,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
-  miniChainRow: {
+  miniBadge: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-  },
-  miniWalkPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 2,
-    backgroundColor: 'rgba(56, 189, 248, 0.12)',
-    paddingHorizontal: 5,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  miniWalkText: {
-    color: '#38BDF8',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  miniLineBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 8,
   },
-  miniLineBadgeText: {
+  miniBadgeText: {
     color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 13,
+    fontWeight: '800',
+    fontSize: 12.5,
   },
   minimizedInfo: {
     flex: 1,
