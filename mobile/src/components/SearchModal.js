@@ -10,10 +10,26 @@ import {
   ActivityIndicator,
   StyleSheet
 } from 'react-native';
-import { ArrowLeft, X, MapPin, Bus, Search } from 'lucide-react-native';
+import {
+  ArrowLeft,
+  X,
+  MapPin,
+  Bus,
+  Search,
+  Utensils,
+  Coffee,
+  Pill,
+  Bed,
+  ShoppingBag,
+  Store,
+  Landmark,
+  CreditCard,
+  Activity,
+  Star
+} from 'lucide-react-native';
 import { theme } from '../theme';
 import { LOCAL_PLACES } from '../data/places';
-import { searchPlacesOnline } from '../services/api';
+import { searchPlacesOnline, getCategoryMeta } from '../services/api';
 
 export default function SearchModal({
   visible,
@@ -23,7 +39,7 @@ export default function SearchModal({
   onSelect
 }) {
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'stops' | 'places'
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'places' | 'stops'
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
   const inputRef = useRef(null);
@@ -31,20 +47,23 @@ export default function SearchModal({
 
   useEffect(() => {
     if (visible) {
-      const initialText = currentName === 'Konumunuz' || currentName === 'Edirne Merkez' ? '' : currentName || '';
+      const initialText =
+        currentName === 'Konumunuz' || currentName === 'Edirne Merkez'
+          ? ''
+          : currentName || '';
       setQuery(initialText);
       setActiveTab('all');
-      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place' })));
+      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place', source: 'local' })));
     }
   }, [visible, currentName]);
 
-  // Debounced Live Search with TomTom, Nominatim & ETUS Stops DB
+  // Debounced Live Search with TomTom Live POIs, Mapbox, Nominatim & ETUS DB
   useEffect(() => {
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
     const q = query.trim();
     if (!q || q.length < 2) {
-      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place' })));
+      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place', source: 'local' })));
       setSearching(false);
       return;
     }
@@ -59,19 +78,52 @@ export default function SearchModal({
       } finally {
         setSearching(false);
       }
-    }, 280);
+    }, 220);
 
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
   }, [query]);
 
-  // Tab Filtering
+  // Filter tabs: 'all' | 'places' (businesses, cafes, shops) | 'stops' (bus stops)
   const filteredResults = results.filter(item => {
     if (activeTab === 'stops') return item.type === 'stop';
     if (activeTab === 'places') return item.type === 'place';
     return true;
   });
+
+  // Render contextual Icon based on category
+  const renderItemIcon = (meta) => {
+    const size = 15;
+    const color = meta.color;
+
+    switch (meta.icon) {
+      case 'bus':
+        return <Bus size={size} color={color} />;
+      case 'utensils':
+        return <Utensils size={size} color={color} />;
+      case 'coffee':
+        return <Coffee size={size} color={color} />;
+      case 'pill':
+        return <Pill size={size} color={color} />;
+      case 'bed':
+        return <Bed size={size} color={color} />;
+      case 'shopping-bag':
+        return <ShoppingBag size={size} color={color} />;
+      case 'store':
+        return <Store size={size} color={color} />;
+      case 'landmark':
+        return <Landmark size={size} color={color} />;
+      case 'credit-card':
+        return <CreditCard size={size} color={color} />;
+      case 'activity':
+        return <Activity size={size} color={color} />;
+      case 'star':
+        return <Star size={size} color={color} />;
+      default:
+        return <MapPin size={size} color={color} />;
+    }
+  };
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -99,8 +151,8 @@ export default function SearchModal({
               style={styles.textInput}
               placeholder={
                 targetType === 'from'
-                  ? 'Başlangıç durağı, mekan veya sokak...'
-                  : 'Nereye gitmek istiyorsunuz? (AVM, durak, kafe...)'
+                  ? 'Başlangıç durağı, işletme veya sokak...'
+                  : 'Nereye gitmek istiyorsunuz? (Kafe, AVM, durak...)'
               }
               placeholderTextColor={theme.colors.textMuted}
               value={query}
@@ -135,22 +187,22 @@ export default function SearchModal({
           </TouchableOpacity>
 
           <TouchableOpacity
+            style={[styles.filterChip, activeTab === 'places' && styles.filterChipActive]}
+            onPress={() => setActiveTab('places')}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.filterChipText, activeTab === 'places' && styles.filterChipTextActive]}>
+              İşletme & Mekan
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
             style={[styles.filterChip, activeTab === 'stops' && styles.filterChipActive]}
             onPress={() => setActiveTab('stops')}
             activeOpacity={0.7}
           >
             <Text style={[styles.filterChipText, activeTab === 'stops' && styles.filterChipTextActive]}>
               ETUS Durakları
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, activeTab === 'places' && styles.filterChipActive]}
-            onPress={() => setActiveTab('places')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.filterChipText, activeTab === 'places' && styles.filterChipTextActive]}>
-              Mekan & Adresler
             </Text>
           </TouchableOpacity>
         </View>
@@ -160,6 +212,9 @@ export default function SearchModal({
           <Text style={styles.sectionTitle}>
             {query.length < 2 ? 'ÖNERİLEN POPÜLER NOKTALAR' : `SONUÇLAR (${filteredResults.length})`}
           </Text>
+          {searching && (
+            <Text style={styles.sectionSearchingText}>Canlı taranıyor...</Text>
+          )}
         </View>
 
         {/* Results List */}
@@ -173,30 +228,40 @@ export default function SearchModal({
             !searching && query.length >= 2 ? (
               <View style={styles.emptyResultsBox}>
                 <Text style={styles.emptyResultsText}>Sonuç bulunamadı.</Text>
-                <Text style={styles.emptyResultsSub}>Farklı bir kelime veya durak adı deneyebilirsiniz.</Text>
+                <Text style={styles.emptyResultsSub}>
+                  Farklı bir işletme adı, cadde veya ETUS durağı deneyebilirsiniz.
+                </Text>
               </View>
             ) : null
           }
           renderItem={({ item }) => {
             const isStop = item.type === 'stop';
+            const meta = getCategoryMeta(item);
+
             return (
               <TouchableOpacity
                 style={styles.resultItem}
                 onPress={() => onSelect(item)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.iconBox, isStop ? styles.iconBoxStop : styles.iconBoxPlace]}>
-                  {isStop ? (
-                    <Bus size={15} color={theme.colors.primary} />
-                  ) : (
-                    <MapPin size={15} color={theme.colors.fare} />
-                  )}
+                {/* Visual Icon with Tinted Badge Background */}
+                <View style={[styles.iconBox, { backgroundColor: meta.bg }]}>
+                  {renderItemIcon(meta)}
                 </View>
 
+                {/* Information Column */}
                 <View style={styles.itemTextCol}>
-                  <Text style={styles.itemTitleText} numberOfLines={1}>
-                    {item.name}
-                  </Text>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.itemTitleText} numberOfLines={1}>
+                      {item.name}
+                    </Text>
+                    <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}>
+                      <Text style={[styles.categoryBadgeText, { color: meta.color }]}>
+                        {meta.label}
+                      </Text>
+                    </View>
+                  </View>
+
                   <Text style={styles.itemSubText} numberOfLines={1}>
                     {item.detail || (isStop ? 'ETUS Otobüs Durağı' : item.shortName || 'Edirne')}
                   </Text>
@@ -268,8 +333,8 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   filterChip: {
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: theme.radius.xs,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
@@ -289,6 +354,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingTop: 10,
     paddingBottom: 4,
@@ -298,6 +366,11 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: theme.colors.textMuted,
     letterSpacing: 0.5,
+  },
+  sectionSearchingText: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -310,26 +383,38 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconBox: {
-    width: 32,
-    height: 32,
+    width: 34,
+    height: 34,
     borderRadius: theme.radius.xs,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBoxStop: {
-    backgroundColor: theme.colors.primaryLight,
-  },
-  iconBoxPlace: {
-    backgroundColor: theme.colors.fareLight,
-  },
   itemTextCol: {
     flex: 1,
   },
+  titleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    marginBottom: 2,
+  },
   itemTitleText: {
+    flex: 1,
     fontSize: 13.5,
     fontWeight: '600',
     color: theme.colors.textPrimary,
-    marginBottom: 2,
+  },
+  categoryBadge: {
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  categoryBadgeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    letterSpacing: 0.2,
+    textTransform: 'uppercase',
   },
   itemSubText: {
     fontSize: 11.5,
@@ -338,11 +423,11 @@ const styles = StyleSheet.create({
   itemSeparator: {
     height: 1,
     backgroundColor: theme.colors.hairline,
-    marginLeft: 44,
+    marginLeft: 46,
   },
   emptyResultsBox: {
     alignItems: 'center',
-    paddingVertical: 30,
+    paddingVertical: 36,
   },
   emptyResultsText: {
     fontSize: 13,
@@ -353,5 +438,6 @@ const styles = StyleSheet.create({
     fontSize: 11.5,
     color: theme.colors.textMuted,
     marginTop: 4,
+    textAlign: 'center',
   },
 });
