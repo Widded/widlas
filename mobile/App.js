@@ -287,7 +287,7 @@ function MainScreen() {
   const floatingWidgetsBottom = bottomNavHeight + sheetHeight + 14;
 
   // Positioning top compass & layer buttons cleanly BELOW the search bar pill
-  const topFloatingTop = topPadding + 132;
+  const topFloatingTop = topPadding + 70;
 
   return (
     <View style={styles.container}>
@@ -347,25 +347,8 @@ function MainScreen() {
         onMapPress={handleMapPress}
       />
 
-      {/* 2. TOP GREETING & PILL SEARCH BAR (Safe Area Protected) */}
-      <View style={[styles.topHeaderCard, { paddingTop: topPadding + 4 }]} pointerEvents="box-none">
-        {/* Greeting Row with Profile Avatar */}
-        <View style={styles.greetingRow}>
-          <View style={styles.greetingTextCol}>
-            <Text style={styles.greetingTitle}>Merhaba,</Text>
-            <Text style={styles.greetingSubtitle}>Nereye gideceksin?</Text>
-          </View>
-
-          <TouchableOpacity
-            style={styles.profileBtn}
-            onPress={() => setActiveTab('settings')}
-            activeOpacity={0.8}
-          >
-            <User size={18} color="#CBD5E1" />
-          </TouchableOpacity>
-        </View>
-
-        {/* Pill Search Input Button */}
+      {/* 2. TOP PILL SEARCH BAR (Floating OLED Capsule - Safe Area Protected) */}
+      <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
         <TouchableOpacity
           style={styles.searchPill}
           onPress={() => {
@@ -374,8 +357,8 @@ function MainScreen() {
           }}
           activeOpacity={0.85}
         >
-          <Search size={17} color="#94A3B8" />
-          <Text style={styles.searchPillPlaceholder}>Varış noktası ara</Text>
+          <Search size={18} color="#3B82F6" />
+          <Text style={styles.searchPillPlaceholder}>Varış noktası veya hat ara...</Text>
           <Mic size={17} color="#94A3B8" />
         </TouchableOpacity>
       </View>
@@ -485,7 +468,7 @@ function MainScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.presetIconBox}>
-                  <Home size={18} color="#E2E8F0" />
+                  <Home size={18} color="#3B82F6" />
                 </View>
                 <View style={styles.presetTextCol}>
                   <Text style={styles.presetTitle}>Ev</Text>
@@ -494,6 +477,8 @@ function MainScreen() {
                 <ChevronRight size={18} color="#475569" />
               </TouchableOpacity>
 
+              <View style={styles.presetItemSeparator} />
+
               {/* 2. İş */}
               <TouchableOpacity
                 style={styles.presetItem}
@@ -501,7 +486,7 @@ function MainScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.presetIconBox}>
-                  <Briefcase size={18} color="#E2E8F0" />
+                  <Briefcase size={18} color="#24C795" />
                 </View>
                 <View style={styles.presetTextCol}>
                   <Text style={styles.presetTitle}>İş</Text>
@@ -510,6 +495,8 @@ function MainScreen() {
                 <ChevronRight size={18} color="#475569" />
               </TouchableOpacity>
 
+              <View style={styles.presetItemSeparator} />
+
               {/* 3. Trakya Üniversitesi */}
               <TouchableOpacity
                 style={styles.presetItem}
@@ -517,7 +504,7 @@ function MainScreen() {
                 activeOpacity={0.7}
               >
                 <View style={styles.presetIconBox}>
-                  <GraduationCap size={18} color="#E2E8F0" />
+                  <GraduationCap size={18} color="#818CF8" />
                 </View>
                 <View style={styles.presetTextCol}>
                   <Text style={styles.presetTitle}>Trakya Üniversitesi</Text>
@@ -835,13 +822,18 @@ const styles = StyleSheet.create({
   searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(22, 27, 34, 0.95)',
-    height: 48,
-    borderRadius: 24,
+    backgroundColor: '#12161E',
+    height: 50,
+    borderRadius: 25,
     paddingHorizontal: 16,
     gap: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.09)',
+    borderColor: '#1E2538',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
   },
   searchPillPlaceholder: {
     flex: 1,
@@ -861,25 +853,35 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(22, 27, 34, 0.94)',
+    backgroundColor: '#12161E',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderColor: '#1E2538',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
 
   // Weather & Air Quality Widget (Bottom-Left above sheet)
   weatherWidget: {
     position: 'absolute',
     left: 18,
-    backgroundColor: 'rgba(22, 27, 34, 0.94)',
+    backgroundColor: '#12161E',
     borderRadius: 16,
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: '#1E2538',
     zIndex: 85,
     gap: 3,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 3,
   },
   weatherTempRow: {
     flexDirection: 'row',
@@ -963,47 +965,57 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  // Preset Bottom Sheet Card (Matching screenshot)
+  // Preset Bottom Sheet Card (Matching OLED dark schema)
   presetSheetContainer: {
     position: 'absolute',
     left: 0,
     right: 0,
-    backgroundColor: '#11151B',
+    backgroundColor: '#12161E',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     borderTopWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+    borderColor: '#1E2538',
     paddingHorizontal: 20,
     paddingBottom: 14,
     zIndex: 80,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
+    elevation: 8,
   },
   sheetGrabberBar: {
     width: 38,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#333C4D',
+    backgroundColor: '#2A344A',
     alignSelf: 'center',
     marginTop: 10,
     marginBottom: 8,
   },
   presetList: {
-    gap: 4,
+    gap: 2,
   },
   presetItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     gap: 14,
   },
   presetIconBox: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#181E29',
+    backgroundColor: '#182030',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.04)',
+    borderColor: '#1E2538',
+  },
+  presetItemSeparator: {
+    height: 1,
+    backgroundColor: '#182030',
+    marginLeft: 54,
   },
   presetTextCol: {
     flex: 1,
