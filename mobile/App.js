@@ -43,6 +43,7 @@ import LinesExplorer from './src/components/LinesExplorer';
 import SearchModal from './src/components/SearchModal';
 import FaresView from './src/components/FaresView';
 import RouteResultSheet from './src/components/RouteResultSheet';
+import SavedView from './src/components/SavedView';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
@@ -76,6 +77,7 @@ function MainScreen() {
   const [linesModalVisible, setLinesModalVisible] = useState(false);
   const [faresModalVisible, setFaresModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [savedModalVisible, setSavedModalVisible] = useState(false);
 
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
@@ -517,8 +519,7 @@ function MainScreen() {
           style={styles.navTab}
           onPress={() => {
             setActiveTab('saved');
-            setSearchTargetType('to');
-            setSearchModalVisible(true);
+            setSavedModalVisible(true);
           }}
           activeOpacity={0.75}
         >
@@ -732,6 +733,41 @@ function MainScreen() {
               setFaresModalVisible(false);
             }}
             onClose={() => setFaresModalVisible(false)}
+          />
+        </View>
+      </Modal>
+
+      {/* 15. SAVED PLACES & FAVORITES MODAL */}
+      <Modal
+        visible={savedModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => {
+          setSavedModalVisible(false);
+          setActiveTab('explore');
+        }}
+      >
+        <View style={styles.modalBody}>
+          <SavedView
+            onSelectPlace={(place) => {
+              setSavedModalVisible(false);
+              setActiveTab('explore');
+              executeRouteSearch(fromLocation, place);
+            }}
+            onSelectLine={(line, dirIdx) => {
+              setSavedModalVisible(false);
+              setActiveTab('explore');
+              setPreviewLine({ line, dirIdx });
+            }}
+            onOpenSearch={() => {
+              setSavedModalVisible(false);
+              setSearchTargetType('to');
+              setSearchModalVisible(true);
+            }}
+            onClose={() => {
+              setSavedModalVisible(false);
+              setActiveTab('explore');
+            }}
           />
         </View>
       </Modal>
