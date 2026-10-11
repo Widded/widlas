@@ -45,6 +45,7 @@ import FaresView from './src/components/FaresView';
 import RouteResultSheet from './src/components/RouteResultSheet';
 import SavedView from './src/components/SavedView';
 import HistoryView from './src/components/HistoryView';
+import SettingsView from './src/components/SettingsView';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
@@ -320,6 +321,16 @@ function MainScreen() {
             setActiveTab('explore');
           }}
         />
+      ) : activeTab === 'settings' ? (
+        <SettingsView
+          topPadding={topPadding}
+          bottomPadding={bottomNavHeight}
+          fareType={fareType}
+          onFareTypeChange={setFareType}
+          onOpenLines={() => setLinesModalVisible(true)}
+          onOpenProfile={() => setProfileModalVisible(true)}
+          onBack={() => setActiveTab('explore')}
+        />
       ) : (
         <>
           {/* 1. FULL-SCREEN DARK NATIVE MAP */}
@@ -347,7 +358,7 @@ function MainScreen() {
 
           <TouchableOpacity
             style={styles.profileBtn}
-            onPress={() => setProfileModalVisible(true)}
+            onPress={() => setActiveTab('settings')}
             activeOpacity={0.8}
           >
             <User size={18} color="#CBD5E1" />
@@ -595,7 +606,6 @@ function MainScreen() {
           style={styles.navTab}
           onPress={() => {
             setActiveTab('settings');
-            setProfileModalVisible(true);
           }}
           activeOpacity={0.75}
         >
