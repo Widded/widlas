@@ -536,18 +536,7 @@ function MainScreen() {
         </TouchableOpacity>
       )}
 
-      {/* 6. BOTTOM-RIGHT RECENTER BUTTON (Positioned cleanly ABOVE the sheet) */}
-      {!searchResults && (
-        <View style={[styles.bottomRecenterContainer, { bottom: floatingWidgetsBottom }]}>
-          <TouchableOpacity
-            style={styles.circleMapBtn}
-            onPress={handleUseGps}
-            activeOpacity={0.8}
-          >
-            <Crosshair size={18} color="#E2E8F0" />
-          </TouchableOpacity>
-        </View>
-      )}
+
 
       {/* 7. LOADING SPINNER OVERLAY */}
       {loading && (
