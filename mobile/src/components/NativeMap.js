@@ -73,6 +73,7 @@ export default function NativeMap({
   walkingPathStart,
   walkingPathEnd,
   onMapPress,
+  onMapLongPress,
   style,
   mapType = 'Standart',
   recenterTrigger = 0,
@@ -206,6 +207,11 @@ export default function NativeMap({
         mapType={mapType === 'Uydu' ? 'satellite' : 'standard'}
         customMapStyle={mapType === 'Uydu' ? undefined : (Platform.OS === 'android' ? darkMapStyle : undefined)}
         userInterfaceStyle="dark"
+        onLongPress={(e) => {
+          if (onMapLongPress && e.nativeEvent?.coordinate) {
+            onMapLongPress(e.nativeEvent.coordinate);
+          }
+        }}
         onPress={(e) => {
           if (onMapPress && e.nativeEvent?.coordinate) {
             onMapPress(e.nativeEvent.coordinate);

@@ -246,8 +246,8 @@ function MainScreen() {
     }
   };
 
-  // Map Tap / Pin Dropping (Web parity: tap map to pick destination)
-  const handleMapPress = async (coord) => {
+  // Map Long Press / Pin Dropping (Hold map to pick destination)
+  const handleMapLongPress = async (coord) => {
     if (!coord?.latitude || !coord?.longitude) return;
     const placeName = await reverseGeocodeCoord(coord.latitude, coord.longitude);
     executeRouteSearch(fromLocation, {
@@ -377,7 +377,7 @@ function MainScreen() {
             userLocation={userLocation}
             walkingPathStart={walkingPathStart}
             walkingPathEnd={walkingPathEnd}
-            onMapPress={handleMapPress}
+            onMapLongPress={handleMapLongPress}
             mapType={mapType}
             recenterTrigger={recenterTrigger}
             showAllStops={showAllStops}
