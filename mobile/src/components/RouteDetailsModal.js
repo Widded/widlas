@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet
 } from 'react-native';
-import { X, Footprints, Bus, MapPin, Flag, Repeat, ChevronDown, ChevronUp } from 'lucide-react-native';
+import { X, Footprints, Bus, MapPin, Flag, Repeat, Clock, ShieldCheck } from 'lucide-react-native';
 import { theme } from '../theme';
 import { FARES, calculateFare, formatFare } from '../data/fares';
 
@@ -21,68 +21,82 @@ const fmtM = (km) => {
 export default function RouteDetailsModal({ visible, route, onClose }) {
   if (!route) return null;
 
-  const [expandedStops, setExpandedStops] = useState(false);
   const isTransfer = route.isTransfer;
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.safeArea}>
-        {/* Modal Header */}
+    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+      <SafeAreaView style={styles.sheetContainer}>
+        {/* Grabber Bar */}
+        <View style={styles.grabberBox}>
+          <View style={styles.grabberBar} />
+        </View>
+
+        {/* Header */}
         <View style={styles.header}>
           <View>
-            <Text style={styles.headerTitle}>Güzergah Detayları</Text>
-            <Text style={styles.headerSub}>Toplam Süre: ~{route.totalTime} dakika</Text>
+            <Text style={styles.headerTitle}>Güzergah Rehberi</Text>
+            <Text style={styles.headerSubtitle}>
+              Toplam Seyahat Süresi: ~{route.totalTime} dakika
+            </Text>
           </View>
           <TouchableOpacity onPress={onClose} style={styles.closeBtn} activeOpacity={0.7}>
-            <X size={20} color={theme.colors.textMain} />
+            <X size={18} color="#FFFFFF" />
           </TouchableOpacity>
         </View>
 
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          {/* Quick Route Summary Card */}
-          <View style={styles.summaryCard}>
-            <View style={styles.badgesRow}>
+          {/* Hero Transit Summary Box */}
+          <View style={styles.heroBox}>
+            <View style={styles.heroBadgesRow}>
               {route.isWalkOnly ? (
-                <View style={styles.walkPill}>
+                <View style={styles.walkTag}>
                   <Footprints size={14} color={theme.colors.success} />
-                  <Text style={styles.walkPillText}>Sadece Yürüme</Text>
+                  <Text style={styles.walkTagText}>Yürüyerek Ulaşım</Text>
                 </View>
               ) : isTransfer ? (
-                <View style={styles.transferBadges}>
-                  <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.primary }]}>
-                    <Text style={styles.lineBadgeText}>{route.line1}</Text>
+                <View style={styles.transferTagChain}>
+                  <View style={[styles.badge, { backgroundColor: route.color || theme.colors.primary }]}>
+                    <Text style={styles.badgeText}>{route.line1}</Text>
                   </View>
-                  <Text style={styles.transferArrow}>➔</Text>
-                  <View style={[styles.lineBadge, { backgroundColor: route.color2 || theme.colors.warning }]}>
-                    <Text style={styles.lineBadgeText}>{route.line2}</Text>
+                  <Text style={styles.chainArrow}>➔</Text>
+                  <View style={[styles.badge, { backgroundColor: route.color2 || theme.colors.warning }]}>
+                    <Text style={styles.badgeText}>{route.line2}</Text>
                   </View>
                 </View>
               ) : (
-                <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.primary }]}>
-                  <Text style={styles.lineBadgeText}>{route.name || route.lineCode}</Text>
+                <View style={[styles.badge, { backgroundColor: route.color || theme.colors.primary }]}>
+                  <Text style={styles.badgeText}>{route.name || route.lineCode}</Text>
                 </View>
               )}
+
+              <View style={styles.timeTag}>
+                <Clock size={12} color={theme.colors.primaryGlow} />
+                <Text style={styles.timeTagText}>~{route.totalTime} dk</Text>
+              </View>
             </View>
 
-            <Text style={styles.summaryTitle}>
+            <Text style={styles.heroDestination}>
               {route.isWalkOnly
                 ? `${fmtM(route.walkDistanceStart)} yürüyerek hedefe varış`
                 : `${route.startStop?.name} ➔ ${route.endStop?.name}`}
             </Text>
           </View>
 
-          {/* Turn-by-Turn Steps Timeline */}
-          <View style={styles.stepsCard}>
-            <Text style={styles.cardHeaderTitle}>Adım Adım Yol Tarifi</Text>
+          {/* Turn-by-Turn Metro Timeline */}
+          <View style={styles.timelineSection}>
+            <Text style={styles.sectionHeading}>ADIM ADIM YOL TARİFİ</Text>
 
             {/* Step 1: Walk to first stop */}
-            <View style={styles.stepItem}>
-              <View style={[styles.stepIconBox, { backgroundColor: theme.colors.successLight }]}>
-                <Footprints size={16} color={theme.colors.success} />
+            <View style={styles.stepBlock}>
+              <View style={styles.stepRailCol}>
+                <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.successLight }]}>
+                  <Footprints size={15} color={theme.colors.success} />
+                </View>
+                <View style={styles.railLine} />
               </View>
-              <View style={styles.stepTextCol}>
-                <Text style={styles.stepHeading}>İlk Durağa Yürüyün</Text>
-                <Text style={styles.stepDesc}>
+              <View style={styles.stepContentCol}>
+                <Text style={styles.stepTitle}>İlk Durağa Yürüyün</Text>
+                <Text style={styles.stepSubtitle}>
                   {fmtM(route.walkDistanceStart)} mesafe (~{Math.max(1, Math.ceil(route.walkDistanceStart * 1.4 * 12))} dk)
                 </Text>
               </View>
@@ -90,18 +104,21 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
 
             {/* Step 2: Board first bus */}
             {!route.isWalkOnly && route.startStop && (
-              <View style={styles.stepItem}>
-                <View style={[styles.stepIconBox, { backgroundColor: theme.colors.primaryLight }]}>
-                  <Bus size={16} color={theme.colors.primary} />
+              <View style={styles.stepBlock}>
+                <View style={styles.stepRailCol}>
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.primaryLight }]}>
+                    <Bus size={15} color={theme.colors.primaryGlow} />
+                  </View>
+                  <View style={styles.railLine} />
                 </View>
-                <View style={styles.stepTextCol}>
-                  <View style={styles.stepBadgeLine}>
+                <View style={styles.stepContentCol}>
+                  <View style={styles.lineTagInline}>
                     <View style={[styles.miniBadge, { backgroundColor: route.color || theme.colors.primary }]}>
                       <Text style={styles.miniBadgeText}>{route.line1 || route.name}</Text>
                     </View>
-                    <Text style={styles.stepHeading}>{route.startStop.name} Durağı</Text>
+                    <Text style={styles.stepTitle}>{route.startStop.name} Durağı</Text>
                   </View>
-                  <Text style={styles.stepDesc}>
+                  <Text style={styles.stepSubtitle}>
                     Otobüse binin ({route.line1 || route.name} Hattı)
                   </Text>
                 </View>
@@ -110,43 +127,51 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
 
             {/* Step 3: Transfer if applicable */}
             {isTransfer && route.transferStop && (
-              <View style={styles.stepItem}>
-                <View style={[styles.stepIconBox, { backgroundColor: theme.colors.warningLight }]}>
-                  <Repeat size={16} color={theme.colors.warning} />
+              <View style={styles.stepBlock}>
+                <View style={styles.stepRailCol}>
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.warningLight }]}>
+                    <Repeat size={15} color={theme.colors.warning} />
+                  </View>
+                  <View style={styles.railLine} />
                 </View>
-                <View style={styles.stepTextCol}>
-                  <Text style={[styles.stepHeading, { color: theme.colors.warning }]}>
-                    {route.transferStop.name} (Aktarma Durağı)
+                <View style={styles.stepContentCol}>
+                  <Text style={[styles.stepTitle, { color: theme.colors.warning }]}>
+                    {route.transferStop.name} (Aktarma Noktası)
                   </Text>
-                  <Text style={styles.stepDesc}>
+                  <Text style={styles.stepSubtitle}>
                     {route.line1} hattından inip {route.line2} hattına aktarma yapın
                   </Text>
                 </View>
               </View>
             )}
 
-            {/* Step 4: Alight destination stop */}
+            {/* Step 4: Alight bus */}
             {!route.isWalkOnly && route.endStop && (
-              <View style={styles.stepItem}>
-                <View style={[styles.stepIconBox, { backgroundColor: theme.colors.dangerLight }]}>
-                  <MapPin size={16} color={theme.colors.danger} />
+              <View style={styles.stepBlock}>
+                <View style={styles.stepRailCol}>
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.dangerLight }]}>
+                    <MapPin size={15} color={theme.colors.danger} />
+                  </View>
+                  {route.walkDistanceEnd > 0 && <View style={styles.railLine} />}
                 </View>
-                <View style={styles.stepTextCol}>
-                  <Text style={styles.stepHeading}>{route.endStop.name} Durağı</Text>
-                  <Text style={styles.stepDesc}>Otobüsten inin</Text>
+                <View style={styles.stepContentCol}>
+                  <Text style={styles.stepTitle}>{route.endStop.name} Durağı</Text>
+                  <Text style={styles.stepSubtitle}>Otobüsten inin</Text>
                 </View>
               </View>
             )}
 
             {/* Step 5: Final walk */}
             {route.walkDistanceEnd > 0 && (
-              <View style={styles.stepItem}>
-                <View style={[styles.stepIconBox, { backgroundColor: theme.colors.successLight }]}>
-                  <Flag size={16} color={theme.colors.success} />
+              <View style={styles.stepBlock}>
+                <View style={styles.stepRailCol}>
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.successLight }]}>
+                    <Flag size={15} color={theme.colors.success} />
+                  </View>
                 </View>
-                <View style={styles.stepTextCol}>
-                  <Text style={styles.stepHeading}>Hedefe Yürüyün</Text>
-                  <Text style={styles.stepDesc}>
+                <View style={styles.stepContentCol}>
+                  <Text style={styles.stepTitle}>Hedefe Yürüyün</Text>
+                  <Text style={styles.stepSubtitle}>
                     {fmtM(route.walkDistanceEnd)} mesafe (~{Math.max(1, Math.ceil(route.walkDistanceEnd * 1.4 * 12))} dk)
                   </Text>
                 </View>
@@ -154,37 +179,40 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             )}
           </View>
 
-          {/* Official 2026 ETUS Fares Card */}
+          {/* Official 2026 Fare Calculator Card */}
           {!route.isWalkOnly && (
-            <View style={styles.fareCard}>
-              <Text style={styles.cardHeaderTitle}>Tahmini Bilet Ücreti (2026)</Text>
+            <View style={styles.fareTicketSection}>
+              <View style={styles.fareTitleRow}>
+                <ShieldCheck size={16} color={theme.colors.primaryGlow} />
+                <Text style={styles.sectionHeading}>RESMİ BİLET ÜCRETİ (2026)</Text>
+              </View>
 
-              <View style={styles.fareGrid}>
-                <View style={styles.fareBox}>
-                  <Text style={styles.fareBoxLabel}>Öğrenci</Text>
-                  <Text style={[styles.fareBoxPrice, { color: theme.colors.success }]}>
+              <View style={styles.fareCardsRow}>
+                <View style={styles.fareTicketBox}>
+                  <Text style={styles.fareRole}>Öğrenci</Text>
+                  <Text style={[styles.farePriceValue, { color: theme.colors.success }]}>
                     {formatFare(calculateFare('ogrenci', isTransfer))}
                   </Text>
                 </View>
 
-                <View style={styles.fareBox}>
-                  <Text style={styles.fareBoxLabel}>Sivil / Tam</Text>
-                  <Text style={[styles.fareBoxPrice, { color: theme.colors.primary }]}>
+                <View style={styles.fareTicketBox}>
+                  <Text style={styles.fareRole}>Sivil / Tam</Text>
+                  <Text style={[styles.farePriceValue, { color: theme.colors.primaryGlow }]}>
                     {formatFare(calculateFare('tam', isTransfer))}
                   </Text>
                 </View>
 
-                <View style={styles.fareBox}>
-                  <Text style={styles.fareBoxLabel}>Temassız / QR</Text>
-                  <Text style={[styles.fareBoxPrice, { color: theme.colors.warning }]}>
+                <View style={styles.fareTicketBox}>
+                  <Text style={styles.fareRole}>Temassız / QR</Text>
+                  <Text style={[styles.farePriceValue, { color: theme.colors.warning }]}>
                     {formatFare(calculateFare('temassiz', isTransfer))}
                   </Text>
                 </View>
               </View>
 
               {isTransfer && (
-                <Text style={styles.fareNote}>
-                  * 45 dakika içinde gerçekleşen 2. binişlerde aktarma indirimi geçerlidir.
+                <Text style={styles.transferDiscountHint}>
+                  * 45 dakika içinde gerçekleşen aktarmada indirimli tarife dahil edilmiştir.
                 </Text>
               )}
             </View>
@@ -196,28 +224,37 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  sheetContainer: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: theme.colors.sheetBg,
+  },
+  grabberBox: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  grabberBar: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 18,
-    paddingVertical: 14,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.hairline,
-    backgroundColor: theme.colors.bg,
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: '800',
+    fontWeight: '900',
     color: theme.colors.textMain,
     letterSpacing: -0.3,
   },
-  headerSub: {
-    fontSize: 13,
+  headerSubtitle: {
+    fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
@@ -225,28 +262,36 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: theme.colors.surfaceElevated,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.hairline,
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 36,
   },
-  summaryCard: {
+  heroBox: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
-    marginBottom: 14,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  badgesRow: {
+  heroBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     marginBottom: 10,
   },
-  walkPill: {
+  walkTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -255,69 +300,94 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
     borderRadius: theme.radius.pill,
   },
-  walkPillText: {
+  walkTagText: {
     color: theme.colors.success,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
   },
-  transferBadges: {
+  transferTagChain: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  lineBadge: {
+  badge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: theme.radius.xs,
   },
-  lineBadgeText: {
+  badgeText: {
     color: '#FFFFFF',
     fontSize: 14,
-    fontWeight: '800',
+    fontWeight: '900',
   },
-  transferArrow: {
+  chainArrow: {
     color: theme.colors.textTertiary,
     fontSize: 13,
   },
-  summaryTitle: {
+  timeTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: theme.radius.pill,
+  },
+  timeTagText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: theme.colors.primaryGlow,
+  },
+  heroDestination: {
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '800',
     color: theme.colors.textMain,
     letterSpacing: -0.3,
   },
-  stepsCard: {
+  timelineSection: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
+    marginBottom: 16,
+  },
+  sectionHeading: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: theme.colors.textTertiary,
+    letterSpacing: 0.6,
     marginBottom: 14,
   },
-  cardHeaderTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 14,
-  },
-  stepItem: {
+  stepBlock: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 14,
-    marginBottom: 16,
+    minHeight: 52,
   },
-  stepIconBox: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  stepRailCol: {
+    alignItems: 'center',
+    width: 32,
+  },
+  stepIconBubble: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  stepTextCol: {
+  railLine: {
+    width: 2,
     flex: 1,
+    backgroundColor: theme.colors.hairline,
+    marginVertical: 4,
   },
-  stepBadgeLine: {
+  stepContentCol: {
+    flex: 1,
+    paddingTop: 4,
+    paddingBottom: 10,
+  },
+  lineTagInline: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
@@ -331,47 +401,53 @@ const styles = StyleSheet.create({
   miniBadgeText: {
     color: '#FFFFFF',
     fontSize: 11,
-    fontWeight: '800',
+    fontWeight: '900',
   },
-  stepHeading: {
-    fontSize: 15,
+  stepTitle: {
+    fontSize: 14,
     fontWeight: '700',
     color: theme.colors.textMain,
   },
-  stepDesc: {
-    fontSize: 13,
+  stepSubtitle: {
+    fontSize: 12,
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  fareCard: {
+  fareTicketSection: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
   },
-  fareGrid: {
+  fareTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 10,
+  },
+  fareCardsRow: {
     flexDirection: 'row',
     gap: 8,
   },
-  fareBox: {
+  fareTicketBox: {
     flex: 1,
-    backgroundColor: theme.colors.surfaceElevated,
+    backgroundColor: theme.colors.inputBg,
     borderRadius: theme.radius.md,
-    padding: 12,
+    padding: 10,
     alignItems: 'center',
   },
-  fareBoxLabel: {
+  fareRole: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.textSecondary,
     marginBottom: 4,
   },
-  fareBoxPrice: {
+  farePriceValue: {
     fontSize: 16,
-    fontWeight: '800',
+    fontWeight: '900',
   },
-  fareNote: {
+  transferDiscountHint: {
     fontSize: 11,
     color: theme.colors.textTertiary,
     marginTop: 10,

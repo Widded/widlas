@@ -1,13 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
-import { Search, ChevronDown, ChevronUp, MapPin, Map as MapIcon, X } from 'lucide-react-native';
+import { Search, ChevronDown, ChevronUp, MapPin, Map as MapIcon, X, Route } from 'lucide-react-native';
 import { theme } from '../theme';
 import { etusLines, allStopsDB } from '../data/db';
 
 const CATEGORIES = [
   { id: 'all', label: 'Tümü' },
   { id: 'kampus', label: 'Kampüs & Fakülte' },
-  { id: 'otogar', label: 'Otogar Hatları' },
+  { id: 'otogar', label: 'Otogar' },
   { id: 'merkez', label: 'Çarşı & Merkez' },
 ];
 
@@ -26,7 +26,6 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
 
   const filteredLines = useMemo(() => {
     return allLines.filter(line => {
-      // Category filter
       if (activeCategory === 'kampus') {
         const hasCampus = line.directions.some(d =>
           (d.headSign || '').toLowerCase().includes('fakülte') ||
@@ -48,7 +47,6 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
         if (!hasMerkez) return false;
       }
 
-      // Text query filter
       if (!filterText.trim()) return true;
       const q = filterText.toLowerCase();
       return (
@@ -67,12 +65,12 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
+      {/* Search Bar Capsule */}
       <View style={styles.searchBar}>
-        <Search size={16} color={theme.colors.textSecondary} />
+        <Search size={16} color={theme.colors.primaryGlow} />
         <TextInput
           style={styles.searchInput}
-          placeholder="Hat numarası veya durak ara (1A, Otogar...)"
+          placeholder="Hat no veya güzergah ara (1A, Otogar...)"
           placeholderTextColor={theme.colors.textTertiary}
           value={filterText}
           onChangeText={setFilterText}
@@ -85,18 +83,18 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
         )}
       </View>
 
-      {/* Filter Categories */}
+      {/* Category Pills */}
       <View style={styles.categoriesRow}>
         {CATEGORIES.map(cat => {
           const isActive = activeCategory === cat.id;
           return (
             <TouchableOpacity
               key={cat.id}
-              style={[styles.catChip, isActive && styles.catChipActive]}
+              style={[styles.catPill, isActive && styles.catPillActive]}
               onPress={() => setActiveCategory(cat.id)}
               activeOpacity={0.7}
             >
-              <Text style={[styles.catText, isActive && styles.catTextActive]}>
+              <Text style={[styles.catPillText, isActive && styles.catPillTextActive]}>
                 {cat.label}
               </Text>
             </TouchableOpacity>
@@ -104,14 +102,14 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
         })}
       </View>
 
-      {/* Lines Counter Header */}
-      <View style={styles.listHeader}>
-        <Text style={styles.listCountText}>
-          {filteredLines.length} ETUS Hattı Listeleniyor
+      {/* List Header */}
+      <View style={styles.listHeaderRow}>
+        <Text style={styles.listHeaderText}>
+          ETUS Hat Rehberi ({filteredLines.length} Hat)
         </Text>
       </View>
 
-      {/* Lines List */}
+      {/* Lines Grid Cards */}
       {filteredLines.map(line => {
         const isExpanded = expandedCode === line.code;
         const currentDirIdx = selectedDirectionIdx[line.code] || 0;
@@ -120,69 +118,73 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
 
         return (
           <View key={line.code} style={styles.lineCard}>
-            {/* Header summary row */}
-            <TouchableOpacity
-              style={styles.lineHeader}
-              onPress={() => setExpandedCode(isExpanded ? null : line.code)}
-              activeOpacity={0.7}
-            >
-              <View style={[styles.badgeBox, { backgroundColor: line.color || theme.colors.primary }]}>
+            {/* Top Line Card Row */}
+            <View style={styles.lineTopRow}>
+              {/* Badge */}
+              <View style={[styles.badgeBubble, { backgroundColor: line.color || theme.colors.primary }]}>
                 <Text style={styles.badgeText}>{line.code}</Text>
               </View>
 
+              {/* Line Headsign / Route */}
               <View style={styles.lineInfoCol}>
                 <Text style={styles.lineTitle} numberOfLines={1}>
                   {activeDir?.headSign || `Hat ${line.code}`}
                 </Text>
-                <View style={styles.lineMetaRow}>
-                  <Text style={styles.stopCountText}>{stopsCount} Durak</Text>
-                  <Text style={styles.dotSeparator}>•</Text>
-                  <Text style={styles.directionLabel}>
-                    {line.directions?.length > 1 ? `${line.directions.length} Yön Mevcut` : 'Tek Yön'}
+                <View style={styles.metaRow}>
+                  <Text style={styles.metaText}>{stopsCount} Durak</Text>
+                  <Text style={styles.metaBullet}>•</Text>
+                  <Text style={styles.metaText}>
+                    {line.directions?.length > 1 ? `${line.directions.length} Yön` : 'Tek Yön'}
                   </Text>
                 </View>
               </View>
 
-              <View style={styles.headerActions}>
-                {/* Direct Map Preview Button */}
-                {onSelectLineOnMap && (
-                  <TouchableOpacity
-                    style={styles.mapActionBtn}
-                    onPress={() => onSelectLineOnMap(line, currentDirIdx)}
-                    activeOpacity={0.7}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <MapIcon size={14} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                )}
+              {/* Direct Map Preview Icon Button */}
+              {onSelectLineOnMap && (
+                <TouchableOpacity
+                  style={styles.mapCircleAction}
+                  onPress={() => onSelectLineOnMap(line, currentDirIdx)}
+                  activeOpacity={0.7}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                  <MapIcon size={16} color={theme.colors.primaryGlow} />
+                </TouchableOpacity>
+              )}
+            </View>
 
-                <View style={styles.chevronBox}>
-                  {isExpanded ? (
-                    <ChevronUp size={18} color={theme.colors.textSecondary} />
-                  ) : (
-                    <ChevronDown size={18} color={theme.colors.textSecondary} />
-                  )}
-                </View>
-              </View>
+            {/* Expand / Collapse Button Bar */}
+            <TouchableOpacity
+              style={styles.expandToggleBar}
+              onPress={() => setExpandedCode(isExpanded ? null : line.code)}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.expandToggleText}>
+                {isExpanded ? 'Durak Listesini Gizle' : 'Durakları ve Güzergahı Gör'}
+              </Text>
+              {isExpanded ? (
+                <ChevronUp size={16} color={theme.colors.textSecondary} />
+              ) : (
+                <ChevronDown size={16} color={theme.colors.textSecondary} />
+              )}
             </TouchableOpacity>
 
-            {/* Expanded Stops & Direction Switcher */}
+            {/* Expanded Content */}
             {isExpanded && (
-              <View style={styles.expandedSection}>
-                {/* Direction Switcher (if more than 1 direction) */}
+              <View style={styles.expandedContent}>
+                {/* Direction Switcher */}
                 {line.directions?.length > 1 && (
-                  <View style={styles.directionSwitcher}>
+                  <View style={styles.directionSegmentRow}>
                     {line.directions.map((dir, dIdx) => {
                       const isDirSelected = currentDirIdx === dIdx;
                       return (
                         <TouchableOpacity
                           key={dIdx}
-                          style={[styles.dirBtn, isDirSelected && styles.dirBtnSelected]}
+                          style={[styles.dirPill, isDirSelected && styles.dirPillActive]}
                           onPress={() => toggleDirection(line.code, dIdx)}
                           activeOpacity={0.7}
                         >
                           <Text
-                            style={[styles.dirBtnText, isDirSelected && styles.dirBtnTextSelected]}
+                            style={[styles.dirPillText, isDirSelected && styles.dirPillTextActive]}
                             numberOfLines={1}
                           >
                             Yön {dIdx + 1}: {dir.headSign?.split(' - ')[0] || `Yön ${dIdx + 1}`}
@@ -193,43 +195,40 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
                   </View>
                 )}
 
-                {/* Map Action Banner */}
+                {/* Map Preview Banner */}
                 <TouchableOpacity
-                  style={styles.fullMapBanner}
+                  style={styles.mapBannerBtn}
                   onPress={() => onSelectLineOnMap(line, currentDirIdx)}
                   activeOpacity={0.8}
                 >
                   <MapPin size={15} color="#FFFFFF" />
-                  <Text style={styles.fullMapBannerText}>
-                    Bu Hattı ve Durakları Haritada Göster
-                  </Text>
+                  <Text style={styles.mapBannerBtnText}>Bu Hattı Haritada Çiz ve Takip Et</Text>
                 </TouchableOpacity>
 
-                {/* Stops Timeline (Clean flat items) */}
-                <View style={styles.stopsTimeline}>
-                  <Text style={styles.stopsTimelineTitle}>Güzergah Durakları:</Text>
+                {/* Stops Timeline */}
+                <View style={styles.stopsTimelineBox}>
                   {activeDir?.stopIds?.map((stopId, sIdx) => {
                     const stop = allStopsDB[stopId];
                     const isFirst = sIdx === 0;
                     const isLast = sIdx === activeDir.stopIds.length - 1;
 
                     return (
-                      <View key={`${stopId}_${sIdx}`} style={styles.stopRow}>
-                        <View style={styles.timelineNode}>
+                      <View key={`${stopId}_${sIdx}`} style={styles.stationRow}>
+                        <View style={styles.stationRailCol}>
                           <View
                             style={[
-                              styles.timelineDot,
-                              isFirst && styles.timelineDotStart,
-                              isLast && styles.timelineDotEnd,
+                              styles.stationDot,
+                              isFirst && styles.stationDotStart,
+                              isLast && styles.stationDotEnd,
                               !isFirst && !isLast && { backgroundColor: line.color || theme.colors.primary }
                             ]}
                           />
-                          {!isLast && <View style={styles.timelineSegment} />}
+                          {!isLast && <View style={styles.stationRailLine} />}
                         </View>
                         <Text
                           style={[
-                            styles.stopLabel,
-                            (isFirst || isLast) && styles.stopLabelImportant
+                            styles.stationName,
+                            (isFirst || isLast) && styles.stationNameTerminus
                           ]}
                           numberOfLines={1}
                         >
@@ -256,10 +255,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
-    paddingHorizontal: 12,
+    paddingHorizontal: 14,
     height: 44,
     gap: 8,
     marginBottom: 12,
@@ -268,7 +267,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     color: theme.colors.textMain,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   categoriesRow: {
     flexDirection: 'row',
@@ -276,63 +275,73 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     marginBottom: 14,
   },
-  catChip: {
+  catPill: {
     paddingVertical: 6,
-    paddingHorizontal: 12,
+    paddingHorizontal: 13,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
   },
-  catChipActive: {
+  catPillActive: {
     backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.primaryGlow,
   },
-  catText: {
+  catPillText: {
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: '700',
     color: theme.colors.textSecondary,
   },
-  catTextActive: {
-    color: theme.colors.primary,
-    fontWeight: '700',
+  catPillTextActive: {
+    color: theme.colors.primaryGlow,
+    fontWeight: '800',
   },
-  listHeader: {
+  listHeaderRow: {
     marginBottom: 10,
     paddingHorizontal: 2,
   },
-  listCountText: {
-    fontSize: 12,
-    fontWeight: '700',
+  listHeaderText: {
+    fontSize: 11,
+    fontWeight: '800',
     color: theme.colors.textTertiary,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
+    letterSpacing: 0.6,
   },
   lineCard: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     borderWidth: 1,
     borderColor: theme.colors.hairline,
-    marginBottom: 10,
+    marginBottom: 12,
     overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  lineHeader: {
+  lineTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 14,
     gap: 12,
   },
-  badgeBox: {
+  badgeBubble: {
     width: 44,
-    height: 38,
+    height: 40,
     borderRadius: theme.radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 2,
   },
   badgeText: {
     color: '#FFFFFF',
-    fontWeight: '800',
-    fontSize: 15,
+    fontWeight: '900',
+    fontSize: 16,
     letterSpacing: 0.3,
   },
   lineInfoCol: {
@@ -340,60 +349,60 @@ const styles = StyleSheet.create({
   },
   lineTitle: {
     fontSize: 15,
-    fontWeight: '700',
+    fontWeight: '800',
     color: theme.colors.textMain,
-    letterSpacing: -0.2,
+    letterSpacing: -0.3,
   },
-  lineMetaRow: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginTop: 3,
   },
-  stopCountText: {
+  metaText: {
     fontSize: 12,
     color: theme.colors.textSecondary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  dotSeparator: {
+  metaBullet: {
     fontSize: 12,
     color: theme.colors.textTertiary,
   },
-  directionLabel: {
-    fontSize: 12,
-    color: theme.colors.textTertiary,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  mapActionBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
+  mapCircleAction: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  chevronBox: {
-    width: 24,
-    height: 24,
+  expandToggleBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-  },
-  expandedSection: {
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
     borderTopWidth: 1,
     borderTopColor: theme.colors.hairline,
     backgroundColor: theme.colors.surfaceElevated,
+  },
+  expandToggleText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+  },
+  expandedContent: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.hairline,
+    backgroundColor: theme.colors.bgSecondary,
     padding: 14,
   },
-  directionSwitcher: {
+  directionSegmentRow: {
     flexDirection: 'row',
     gap: 8,
     marginBottom: 12,
   },
-  dirBtn: {
+  dirPill: {
     flex: 1,
     paddingVertical: 7,
     paddingHorizontal: 10,
@@ -403,20 +412,20 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.hairline,
   },
-  dirBtnSelected: {
+  dirPillActive: {
     backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primary,
+    borderColor: theme.colors.primaryGlow,
   },
-  dirBtnText: {
-    fontSize: 12,
-    fontWeight: '600',
+  dirPillText: {
+    fontSize: 11,
+    fontWeight: '700',
     color: theme.colors.textSecondary,
   },
-  dirBtnTextSelected: {
-    color: theme.colors.primary,
-    fontWeight: '700',
+  dirPillTextActive: {
+    color: theme.colors.primaryGlow,
+    fontWeight: '800',
   },
-  fullMapBanner: {
+  mapBannerBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -426,64 +435,57 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.sm,
     marginBottom: 14,
   },
-  fullMapBannerText: {
+  mapBannerBtnText: {
     color: '#FFFFFF',
     fontSize: 13,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  stopsTimeline: {
+  stopsTimelineBox: {
     paddingLeft: 4,
   },
-  stopsTimelineTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  stopRow: {
+  stationRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 12,
     minHeight: 28,
   },
-  timelineNode: {
+  stationRailCol: {
     alignItems: 'center',
     width: 14,
   },
-  timelineDot: {
+  stationDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-  timelineDotStart: {
+  stationDotStart: {
     backgroundColor: theme.colors.success,
     width: 10,
     height: 10,
     borderRadius: 5,
   },
-  timelineDotEnd: {
+  stationDotEnd: {
     backgroundColor: theme.colors.danger,
     width: 10,
     height: 10,
     borderRadius: 5,
   },
-  timelineSegment: {
+  stationRailLine: {
     width: 2,
     flex: 1,
     minHeight: 18,
     backgroundColor: theme.colors.hairline,
     marginVertical: 2,
   },
-  stopLabel: {
+  stationName: {
     fontSize: 13,
     color: theme.colors.textSecondary,
     flex: 1,
     paddingBottom: 8,
+    fontWeight: '500',
   },
-  stopLabelImportant: {
+  stationNameTerminus: {
     color: theme.colors.textMain,
-    fontWeight: '700',
+    fontWeight: '800',
   },
 });
