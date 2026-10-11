@@ -42,6 +42,7 @@ import {
   Wind,
   ChevronLeft,
   ArrowUpDown,
+  ArrowRight,
   SlidersHorizontal
 } from 'lucide-react-native';
 
@@ -327,7 +328,7 @@ function MainScreen() {
   const floatingWidgetsBottom = bottomNavHeight + 14;
 
   // Positioning top compass & layer buttons cleanly BELOW the active top header
-  const topFloatingTop = searchResults ? (topPadding + 130) : (topPadding + 114);
+  const topFloatingTop = searchResults ? (topPadding + 62) : (topPadding + 114);
 
   return (
     <View style={styles.container}>
@@ -397,72 +398,39 @@ function MainScreen() {
             recenterTrigger={recenterTrigger}
           />
 
-      {/* 2. TOP HEADER: FLOATING ROUTE HEADER (WHEN ROUTING) OR SEARCH BAR (NORMAL) */}
+      {/* 2. TOP HEADER: ROUTE SELECTION NAVIGATION BAR OR NORMAL SEARCH BAR */}
       {searchResults ? (
         <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
-          <View style={styles.floatingRouteHeader}>
-            {/* Back to Clean Map Button */}
+          <View style={styles.routeHeaderBar}>
+            {/* 1. Solda: Mevcut Konum (ayrı rounded background) */}
+            <View style={styles.routePillBox}>
+              <View style={styles.routeDotPill} />
+              <Text style={styles.routePillText} numberOfLines={1}>
+                {fromLocation?.name || 'Mevcut Konum'}
+              </Text>
+            </View>
+
+            {/* 2. Arada: Küçük bir ok sağa doğru */}
+            <View style={styles.routeArrowBox}>
+              <ArrowRight size={13} color="#94A3B8" />
+            </View>
+
+            {/* 3. Sağda: Varış Noktası (ayrı rounded background) */}
+            <View style={styles.routePillBox}>
+              <MapPin size={12} color="#EF4444" style={{ marginRight: 6 }} />
+              <Text style={styles.routePillText} numberOfLines={1}>
+                {toLocation?.name || 'Varış Noktası'}
+              </Text>
+            </View>
+
+            {/* 4. En Sağda: Yükseklik ve genişlik eşit, 50% rounded çarpı butonu */}
             <TouchableOpacity
-              style={styles.floatingBackCircleBtn}
+              style={styles.routeCloseCircleBtn}
               onPress={handleClearRoute}
               activeOpacity={0.75}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <ChevronLeft size={22} color="#FFFFFF" />
-            </TouchableOpacity>
-
-            {/* Floating Origin / Destination Card */}
-            <View style={styles.originDestCard}>
-              <View style={styles.originDestRowsCol}>
-                {/* Origin Row */}
-                <View style={styles.originDestSingleRow}>
-                  <View style={styles.originDotPill} />
-                  <View style={styles.originDestTextCol}>
-                    <Text style={styles.originDestMainTitle} numberOfLines={1}>
-                      {fromLocation?.name || 'Mevcut konum'}
-                    </Text>
-                    <Text style={styles.originDestSubTitle}>Mevcut konum</Text>
-                  </View>
-                </View>
-
-                {/* Divider Line */}
-                <View style={styles.originDestRowDivider} />
-
-                {/* Destination Row */}
-                <View style={styles.originDestSingleRow}>
-                  <MapPin size={12} color="#EF4444" style={{ marginRight: 6 }} />
-                  <View style={styles.originDestTextCol}>
-                    <Text style={styles.originDestMainTitle} numberOfLines={1}>
-                      {toLocation?.name || 'Varış noktası'}
-                    </Text>
-                    <Text style={styles.originDestSubTitle}>
-                      {toLocation?.category || 'Varış noktası'}
-                    </Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* Swap Origin / Destination Action Button */}
-              <TouchableOpacity
-                style={styles.swapActionBtn}
-                onPress={handleSwapRouteLocations}
-                activeOpacity={0.7}
-              >
-                <ArrowUpDown size={15} color="#38BDF8" />
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Floating Filter Button on Left over Map */}
-          <View style={styles.floatingFilterPillRow}>
-            <TouchableOpacity
-              style={styles.floatingFilterPillBtn}
-              onPress={() => {
-                // Filter action
-              }}
-              activeOpacity={0.8}
-            >
-              <SlidersHorizontal size={13} color="#CBD5E1" />
-              <Text style={styles.floatingFilterPillBtnText}>Filtrele</Text>
+              <X size={17} color="#FFFFFF" />
             </TouchableOpacity>
           </View>
         </View>
@@ -1162,28 +1130,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     zIndex: 90,
   },
-  // Floating Route Header (Back btn + Origin-Dest card + Swap)
-  floatingRouteHeader: {
+  // Floating Route Selection Navigation Bar
+  routeHeaderBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 7,
   },
-  floatingBackCircleBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#121620',
-    borderWidth: 1,
-    borderColor: '#1E2538',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  originDestCard: {
+  routePillBox: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -1191,82 +1144,46 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     borderColor: '#1E2538',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
-  },
-  originDestRowsCol: {
-    flex: 1,
-    paddingRight: 8,
-  },
-  originDestSingleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  originDotPill: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#38BDF8',
-    marginRight: 8,
-  },
-  originDestTextCol: {
-    flex: 1,
-  },
-  originDestMainTitle: {
-    fontSize: 13.5,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  originDestSubTitle: {
-    fontSize: 10.5,
-    color: '#94A3B8',
-    marginTop: 1,
-  },
-  originDestRowDivider: {
-    height: 1,
-    backgroundColor: '#1E2538',
-    marginVertical: 6,
-    marginLeft: 16,
-  },
-  swapActionBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    backgroundColor: '#161B24',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#1E2538',
-  },
-  floatingFilterPillRow: {
-    marginTop: 10,
-    alignSelf: 'flex-start',
-  },
-  floatingFilterPillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#121620',
-    borderWidth: 1,
-    borderColor: '#1E2538',
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 16,
+    height: 42,
     shadowColor: '#000000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 4,
   },
-  floatingFilterPillBtnText: {
-    fontSize: 12,
-    color: '#CBD5E1',
+  routeDotPill: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#38BDF8',
+    marginRight: 7,
+  },
+  routePillText: {
+    fontSize: 13,
     fontWeight: '600',
+    color: '#FFFFFF',
+    flex: 1,
+  },
+  routeArrowBox: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 1,
+  },
+  routeCloseCircleBtn: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#121620',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
+    shadowRadius: 6,
+    elevation: 4,
   },
   greetingRow: {
     flexDirection: 'row',
