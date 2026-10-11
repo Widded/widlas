@@ -76,8 +76,7 @@ export default function NativeMap({
   onMapLongPress,
   style,
   mapType = 'Standart',
-  recenterTrigger = 0,
-  showAllStops = false
+  recenterTrigger = 0
 }) {
   const mapRef = useRef(null);
 
@@ -218,17 +217,6 @@ export default function NativeMap({
           }
         }}
       >
-        {/* 0. Optional Stops Preview on map */}
-        {showAllStops && allStopsDB && Object.values(allStopsDB).filter(s => s && s.lat && s.lon).slice(0, 150).map(s => (
-          <Marker
-            key={`stop-${s.id}`}
-            coordinate={{ latitude: s.lat, longitude: s.lon }}
-            title={s.name || `Durak #${s.id}`}
-            description={s.routes?.length ? `Geçen Hatlar: ${s.routes.join(', ')}` : `ETUS Durak #${s.id}`}
-            pinColor="#3B82F6"
-            tracksViewChanges={false}
-          />
-        ))}
         {/* Origin / GPS Start Pin (Show only if custom location, don't duplicate native GPS puck) */}
         {fromLocation?.lat && fromLocation.name !== 'Konumunuz' && fromLocation.name !== 'Mevcut Konumunuz' && (
           <Marker

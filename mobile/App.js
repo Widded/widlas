@@ -95,7 +95,6 @@ function MainScreen() {
   const [walkingDistance, setWalkingDistance] = useState('500 m');
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
-  const [showAllStops, setShowAllStops] = useState(false);
 
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
@@ -380,7 +379,6 @@ function MainScreen() {
             onMapLongPress={handleMapLongPress}
             mapType={mapType}
             recenterTrigger={recenterTrigger}
-            showAllStops={showAllStops}
           />
 
       {/* 2. TOP PILL SEARCH BAR & HORIZONTAL PRESET CHIPS (Safe Area Protected) */}
@@ -882,27 +880,8 @@ function MainScreen() {
               </TouchableOpacity>
             </View>
 
-            <Text style={styles.sheetSectionLabel}>ULAŞIM KATMANLARI</Text>
+            <Text style={styles.sheetSectionLabel}>TOPLU TAŞIMA REHBERİ</Text>
             <View style={styles.sheetGroupCard}>
-              {/* Durakları Göster */}
-              <View style={styles.sheetRowItem}>
-                <View style={styles.sheetIconCircle}>
-                  <MapPin size={18} color="#F59E0B" />
-                </View>
-                <View style={{ flex: 1, marginLeft: 12 }}>
-                  <Text style={styles.sheetRowTitle}>Durakları Haritada Vurgula</Text>
-                  <Text style={styles.sheetRowSubtitle}>Tüm ETUS durak işaretçilerini göster</Text>
-                </View>
-                <Switch
-                  value={showAllStops}
-                  onValueChange={setShowAllStops}
-                  trackColor={{ false: '#1E2538', true: '#3B82F6' }}
-                  thumbColor="#FFFFFF"
-                />
-              </View>
-
-              <View style={styles.sheetRowDivider} />
-
               {/* Tüm Hatları Aç */}
               <TouchableOpacity
                 style={styles.sheetRowItem}
