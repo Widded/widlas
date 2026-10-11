@@ -70,6 +70,9 @@ export default function NativeMap({
   activeLineData,
   activeLineDirIdx,
   userLocation,
+  walkingPathStart,
+  walkingPathEnd,
+  onMapPress,
   style
 }) {
   const mapRef = useRef(null);
@@ -117,10 +120,16 @@ export default function NativeMap({
       if (Array.isArray(activeRoute.routeGeometry2)) {
         activeRoute.routeGeometry2.forEach(c => coords.push({ latitude: c[0], longitude: c[1] }));
       }
+      if (Array.isArray(walkingPathStart)) {
+        walkingPathStart.forEach(c => coords.push(c));
+      }
+      if (Array.isArray(walkingPathEnd)) {
+        walkingPathEnd.forEach(c => coords.push(c));
+      }
 
       if (coords.length > 1) {
         mapRef.current.fitToCoordinates(coords, {
-          edgePadding: { top: 110, right: 50, bottom: 240, left: 50 },
+          edgePadding: { top: 110, right: 50, bottom: 260, left: 50 },
           animated: true
         });
       }
@@ -136,7 +145,7 @@ export default function NativeMap({
         longitudeDelta: 0.03
       }, 700);
     }
-  }, [activeRoute, activeLineData, activeLineDirIdx, fromLocation?.lat, fromLocation?.lon]);
+  }, [activeRoute, activeLineData, activeLineDirIdx, fromLocation?.lat, fromLocation?.lon, walkingPathStart?.length, walkingPathEnd?.length]);
 
   const toCoords = (geom) => {
     if (!geom || !Array.isArray(geom)) return [];
@@ -179,6 +188,11 @@ export default function NativeMap({
         showsCompass={false}
         customMapStyle={Platform.OS === 'android' ? darkMapStyle : undefined}
         userInterfaceStyle="dark"
+        onPress={(e) => {
+          if (onMapPress && e.nativeEvent?.coordinate) {
+            onMapPress(e.nativeEvent.coordinate);
+          }
+        }}
       >
         {/* Origin / GPS Start Pin (Primary Accent Green) */}
         {fromLocation?.lat && (
@@ -197,6 +211,25 @@ export default function NativeMap({
             title="Varış Noktası"
             description={toLocation.name}
             pinColor={theme.colors.error}
+          />
+        )}
+
+        {/* Real Pedestrian Walking Polyline (Mapbox Directions API) */}
+        {walkingPathStart && walkingPathStart.length > 1 && (
+          <Polyline
+            coordinates={walkingPathStart}
+            strokeColor={theme.colors.primary}
+            strokeWidth={3.5}
+            lineDashPattern={[6, 6]}
+          />
+        )}
+
+        {walkingPathEnd && walkingPathEnd.length > 1 && (
+          <Polyline
+            coordinates={walkingPathEnd}
+            strokeColor={theme.colors.primary}
+            strokeWidth={3.5}
+            lineDashPattern={[6, 6]}
           />
         )}
 

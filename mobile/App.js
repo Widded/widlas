@@ -33,6 +33,7 @@ import RouteResultSheet from './src/components/RouteResultSheet';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { QUICK_PLACES } from './src/data/places';
+import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
 
 export default function App() {
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
@@ -47,6 +48,10 @@ export default function App() {
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
   const [loading, setLoading] = useState(false);
 
+  // Pedestrian Walking Polylines (Real Street Sidewalks from Mapbox)
+  const [walkingPathStart, setWalkingPathStart] = useState([]);
+  const [walkingPathEnd, setWalkingPathEnd] = useState([]);
+
   // Modals & Panels
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchTargetType, setSearchTargetType] = useState('to'); // 'from' | 'to'
@@ -57,8 +62,9 @@ export default function App() {
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
 
-  // GPS on initial load
+  // Continuous Live GPS Watcher
   useEffect(() => {
+    let locationSubscription = null;
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
@@ -71,6 +77,23 @@ export default function App() {
           };
           setUserLocation(userCoords);
           setFromLocation(userCoords);
+
+          // Watch position continuously
+          locationSubscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.Balanced,
+              distanceInterval: 10,
+              timeInterval: 4000
+            },
+            (newLoc) => {
+              const updated = {
+                name: 'Mevcut Konumunuz',
+                lat: newLoc.coords.latitude,
+                lon: newLoc.coords.longitude
+              };
+              setUserLocation(updated);
+            }
+          );
         } else {
           setFromLocation({
             name: 'Edirne Merkez',
@@ -86,7 +109,39 @@ export default function App() {
         });
       }
     })();
+
+    return () => {
+      if (locationSubscription) {
+        locationSubscription.remove();
+      }
+    };
   }, []);
+
+  const activeRoute = searchResults?.routes?.[selectedRouteIdx] || null;
+
+  // Real Mapbox Pedestrian Walking Paths when route is active
+  useEffect(() => {
+    if (!activeRoute || !fromLocation?.lat || !toLocation?.lat) {
+      setWalkingPathStart([]);
+      setWalkingPathEnd([]);
+      return;
+    }
+
+    if (activeRoute.isWalkOnly) {
+      fetchWalkingPath(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon)
+        .then(setWalkingPathStart);
+      setWalkingPathEnd([]);
+    } else {
+      if (activeRoute.startStop?.lat) {
+        fetchWalkingPath(fromLocation.lat, fromLocation.lon, activeRoute.startStop.lat, activeRoute.startStop.lon)
+          .then(setWalkingPathStart);
+      }
+      if (activeRoute.endStop?.lat) {
+        fetchWalkingPath(activeRoute.endStop.lat, activeRoute.endStop.lon, toLocation.lat, toLocation.lon)
+          .then(setWalkingPathEnd);
+      }
+    }
+  }, [activeRoute?.id, fromLocation?.lat, fromLocation?.lon, toLocation?.lat, toLocation?.lon]);
 
   // Force GPS Recenter
   const handleUseGps = async () => {
@@ -147,6 +202,17 @@ export default function App() {
     executeRouteSearch(fromLocation, place);
   };
 
+  // Map Tap / Pin Dropping (Web parity: tap map to pick destination)
+  const handleMapPress = async (coord) => {
+    if (!coord?.latitude || !coord?.longitude) return;
+    const placeName = await reverseGeocodeCoord(coord.latitude, coord.longitude);
+    executeRouteSearch(fromLocation, {
+      name: placeName,
+      lat: coord.latitude,
+      lon: coord.longitude
+    });
+  };
+
   // Search Modal Select
   const handleModalSelect = (place) => {
     setSearchModalVisible(false);
@@ -164,16 +230,16 @@ export default function App() {
   const handleClearRoute = () => {
     setSearchResults(null);
     setToLocation({ name: '', lat: null, lon: null });
+    setWalkingPathStart([]);
+    setWalkingPathEnd([]);
   };
-
-  const activeRoute = searchResults?.routes?.[selectedRouteIdx] || null;
 
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
         <StatusBar style="light" />
 
-        {/* 1. FULL-SCREEN NATIVE MAP (Zero Split, 100% Canvas) */}
+        {/* 1. FULL-SCREEN NATIVE MAP (Zero Split, 100% Canvas, Mapbox Walking Polylines & Map Tap) */}
         <NativeMap
           style={StyleSheet.absoluteFillObject}
           fromLocation={fromLocation}
@@ -182,6 +248,9 @@ export default function App() {
           activeLineData={previewLine?.line}
           activeLineDirIdx={previewLine?.dirIdx}
           userLocation={userLocation}
+          walkingPathStart={walkingPathStart}
+          walkingPathEnd={walkingPathEnd}
+          onMapPress={handleMapPress}
         />
 
         {/* 2. COMPACT TOP HEADER BAR (Minimal & Apple Maps inspired) */}
@@ -340,7 +409,7 @@ export default function App() {
           />
         )}
 
-        {/* 8. SEARCH MODAL (Full Autocomplete across all 745+ stops) */}
+        {/* 8. SEARCH MODAL (TomTom + Nominatim + 745 Stops Live Search) */}
         <SearchModal
           visible={searchModalVisible}
           onClose={() => setSearchModalVisible(false)}
