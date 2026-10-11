@@ -1,11 +1,14 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
   TouchableOpacity,
   TextInput,
   ScrollView,
-  StyleSheet
+  StyleSheet,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import {
   Search,
@@ -76,6 +79,28 @@ export default function LinesExplorer({ onSelectLine, onSelectLineOnMap, onClose
     });
   }, [allLines, filterText, selectedCorridor]);
 
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
+
   const toggleLine = (code) => {
     if (expandedLineCode === code) {
       setExpandedLineCode(null);
@@ -87,75 +112,88 @@ export default function LinesExplorer({ onSelectLine, onSelectLineOnMap, onClose
   };
 
   return (
-    <View style={styles.container}>
-      {/* Header Bar */}
-      <View style={styles.headerBar}>
-        <View>
-          <Text style={styles.headerTitle}>ETUS Hatları</Text>
-          <Text style={styles.headerSubtitle}>
-            {allLines.length} aktif hat • Edirne Toplu Taşıma
-          </Text>
-        </View>
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      <View style={styles.container}>
+        {/* Header Bar */}
+        <View style={styles.headerBar}>
+          <View>
+            <Text style={styles.headerTitle}>ETUS Hatları</Text>
+            <Text style={styles.headerSubtitle}>
+              {allLines.length} aktif hat • Edirne Toplu Taşıma
+            </Text>
+          </View>
 
-        {onClose && (
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={onClose}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <X size={16} color={theme.colors.textPrimary} />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {/* Search Bar Input */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search size={15} color={theme.colors.textMuted} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Hat kodu veya güzergah ara (1A, Otogar...)"
-            placeholderTextColor={theme.colors.textMuted}
-            value={filterText}
-            onChangeText={setFilterText}
-            autoCorrect={false}
-          />
-          {filterText.length > 0 && (
-            <TouchableOpacity onPress={() => setFilterText('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <X size={14} color={theme.colors.textSecondary} />
+          {onClose && (
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              activeOpacity={0.7}
+              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+            >
+              <X size={16} color={theme.colors.textPrimary} />
             </TouchableOpacity>
           )}
         </View>
-      </View>
 
-      {/* Corridor Filter Chips */}
-      <View style={styles.corridorContainer}>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.corridorScroll}
-        >
-          {CORRIDORS.map(cor => {
-            const isActive = selectedCorridor === cor.id;
-            return (
-              <TouchableOpacity
-                key={cor.id}
-                style={[styles.corridorChip, isActive && styles.corridorChipActive]}
-                onPress={() => setSelectedCorridor(cor.id)}
-                activeOpacity={0.7}
-              >
-                <Text style={[styles.corridorChipText, isActive && styles.corridorChipTextActive]}>
-                  {cor.title}
-                </Text>
+        {/* Search Bar Input */}
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <Search size={15} color={theme.colors.textMuted} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Hat kodu veya güzergah ara (1A, Otogar...)"
+              placeholderTextColor={theme.colors.textMuted}
+              value={filterText}
+              onChangeText={setFilterText}
+              autoCorrect={false}
+            />
+            {filterText.length > 0 && (
+              <TouchableOpacity onPress={() => setFilterText('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                <X size={14} color={theme.colors.textSecondary} />
               </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
+            )}
+          </View>
+        </View>
 
-      {/* Lines Stream List */}
-      <ScrollView contentContainerStyle={styles.linesListContent} showsVerticalScrollIndicator={false}>
+        {/* Corridor Filter Chips */}
+        <View style={styles.corridorContainer}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.corridorScroll}
+            keyboardShouldPersistTaps="handled"
+          >
+            {CORRIDORS.map(cor => {
+              const isActive = selectedCorridor === cor.id;
+              return (
+                <TouchableOpacity
+                  key={cor.id}
+                  style={[styles.corridorChip, isActive && styles.corridorChipActive]}
+                  onPress={() => setSelectedCorridor(cor.id)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={[styles.corridorChipText, isActive && styles.corridorChipTextActive]}>
+                    {cor.title}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        </View>
+
+        {/* Lines Stream List */}
+        <ScrollView
+          contentContainerStyle={[
+            styles.linesListContent,
+            { paddingBottom: Math.max(40, keyboardHeight + 30) }
+          ]}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="on-drag"
+        >
         {filteredLines.length === 0 ? (
           <View style={styles.emptyResultsBox}>
             <Text style={styles.emptyResultsTitle}>Sonuç Bulunamadı</Text>
@@ -307,7 +345,8 @@ export default function LinesExplorer({ onSelectLine, onSelectLineOnMap, onClose
           })
         )}
       </ScrollView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 

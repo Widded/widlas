@@ -10,7 +10,10 @@ import {
   SafeAreaView,
   ActivityIndicator,
   StyleSheet,
-  Dimensions
+  Dimensions,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform
 } from 'react-native';
 import {
   Search,
@@ -107,7 +110,28 @@ export default function SearchModal({
   const [searching, setSearching] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'places' | 'stops'
   const inputRef = useRef(null);
-  const debounceTimerRef = useRef(null);
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
+
+  // Real-time keyboard tracking to prevent content from hiding behind keyboard
+  useEffect(() => {
+    const showSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow',
+      (e) => {
+        setKeyboardHeight(e.endCoordinates.height);
+      }
+    );
+    const hideSub = Keyboard.addListener(
+      Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide',
+      () => {
+        setKeyboardHeight(0);
+      }
+    );
+
+    return () => {
+      showSub.remove();
+      hideSub.remove();
+    };
+  }, []);
 
   // Sync initial query when opened
   useEffect(() => {
@@ -251,67 +275,75 @@ export default function SearchModal({
       onRequestClose={onClose}
     >
       <SafeAreaView style={styles.container}>
-        {/* TOP HEADER ROW: Title, Subtitle & Clean Close Button */}
-        <View style={styles.headerArea}>
-          <View style={styles.headerTextGroup}>
-            <Text style={styles.headerTitle}>Ara</Text>
-            <Text style={styles.headerSubtitle}>
-              {targetType === 'from' ? 'Başlangıç noktası veya konum seçin.' : 'Durak, hat, adres veya konum ara.'}
-            </Text>
+        <KeyboardAvoidingView
+          style={{ flex: 1 }}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        >
+          {/* TOP HEADER ROW: Title, Subtitle & Clean Close Button */}
+          <View style={styles.headerArea}>
+            <View style={styles.headerTextGroup}>
+              <Text style={styles.headerTitle}>Ara</Text>
+              <Text style={styles.headerSubtitle}>
+                {targetType === 'from' ? 'Başlangıç noktası veya konum seçin.' : 'Durak, hat, adres veya konum ara.'}
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.closeBtn}
+              onPress={onClose}
+              hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              activeOpacity={0.7}
+            >
+              <X size={18} color="#CBD5E1" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity
-            style={styles.closeBtn}
-            onPress={onClose}
-            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
-            activeOpacity={0.7}
-          >
-            <X size={18} color="#CBD5E1" />
-          </TouchableOpacity>
-        </View>
 
-        {/* SEARCH INPUT BAR (Pill Container matching screenshot) */}
-        <View style={styles.inputContainer}>
-          <Search size={18} color="#64748B" style={styles.searchIcon} />
-          <TextInput
-            ref={inputRef}
-            style={styles.textInput}
-            placeholder={targetType === 'from' ? 'Başlangıç durağı veya adres ara...' : 'Örn: Selimiye, 1A, Trakya Üniversitesi'}
-            placeholderTextColor="#64748B"
-            value={query}
-            onChangeText={setQuery}
-            returnKeyType="search"
-            autoCorrect={false}
-            autoFocus
-          />
-          {query.length > 0 ? (
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() => setQuery('')}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <X size={16} color="#94A3B8" />
-            </TouchableOpacity>
-          ) : (
-            <TouchableOpacity
-              style={styles.iconBtn}
-              onPress={() => {
-                if (onOpenVoice) onOpenVoice();
-              }}
-              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            >
-              <Mic size={17} color="#94A3B8" />
-            </TouchableOpacity>
-          )}
-        </View>
+          {/* SEARCH INPUT BAR (Pill Container matching screenshot) */}
+          <View style={styles.inputContainer}>
+            <Search size={18} color="#64748B" style={styles.searchIcon} />
+            <TextInput
+              ref={inputRef}
+              style={styles.textInput}
+              placeholder={targetType === 'from' ? 'Başlangıç durağı veya adres ara...' : 'Örn: Selimiye, 1A, Trakya Üniversitesi'}
+              placeholderTextColor="#64748B"
+              value={query}
+              onChangeText={setQuery}
+              returnKeyType="search"
+              autoCorrect={false}
+              autoFocus
+            />
+            {query.length > 0 ? (
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => setQuery('')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <X size={16} color="#94A3B8" />
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={styles.iconBtn}
+                onPress={() => {
+                  if (onOpenVoice) onOpenVoice();
+                }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Mic size={17} color="#94A3B8" />
+              </TouchableOpacity>
+            )}
+          </View>
 
-        {/* CONTENT AREA: DEFAULT OVERVIEW OR LIVE SEARCH RESULTS */}
-        {!isLiveSearchActive ? (
-          <ScrollView
-            style={styles.scrollContent}
-            contentContainerStyle={styles.scrollInner}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
+          {/* CONTENT AREA: DEFAULT OVERVIEW OR LIVE SEARCH RESULTS */}
+          {!isLiveSearchActive ? (
+            <ScrollView
+              style={styles.scrollContent}
+              contentContainerStyle={[
+                styles.scrollInner,
+                { paddingBottom: Math.max(40, keyboardHeight + 35) }
+              ]}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+              keyboardDismissMode="on-drag"
+            >
             {/* 4 ACTION GRID CARDS (Ev, İş, Harita, Favori Hatlar) */}
             <View style={styles.actionGrid}>
               {/* Card 1: Ev */}
@@ -476,8 +508,12 @@ export default function SearchModal({
                 data={filteredResults}
                 keyExtractor={(item, index) => `${item.name}_${item.lat}_${item.lon}_${index}`}
                 keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
                 showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.resultsListContent}
+                contentContainerStyle={[
+                  styles.resultsListContent,
+                  { paddingBottom: Math.max(40, keyboardHeight + 35) }
+                ]}
                 ListEmptyComponent={
                   <View style={styles.emptyBox}>
                     <Text style={styles.emptyTitle}>Sonuç bulunamadı</Text>
@@ -518,6 +554,7 @@ export default function SearchModal({
             )}
           </View>
         )}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );
