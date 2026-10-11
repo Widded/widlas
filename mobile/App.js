@@ -308,14 +308,11 @@ function MainScreen() {
   // Bottom nav bar total height (including home bar safe area)
   const bottomNavHeight = 56 + bottomPadding;
 
-  // Height of the preset bottom drawer
-  const sheetHeight = 224;
+  // Positioning floating widgets cleanly ABOVE the bottom navigation bar with 14px breathing room
+  const floatingWidgetsBottom = bottomNavHeight + 14;
 
-  // Positioning floating widgets cleanly ABOVE the bottom drawer with 14px breathing room
-  const floatingWidgetsBottom = bottomNavHeight + sheetHeight + 14;
-
-  // Positioning top compass & layer buttons cleanly BELOW the search bar pill
-  const topFloatingTop = topPadding + 70;
+  // Positioning top compass & layer buttons cleanly BELOW the search bar pill and chips
+  const topFloatingTop = topPadding + 114;
 
   return (
     <View style={styles.container}>
@@ -386,7 +383,7 @@ function MainScreen() {
             showAllStops={showAllStops}
           />
 
-      {/* 2. TOP PILL SEARCH BAR (Floating OLED Capsule - Safe Area Protected) */}
+      {/* 2. TOP PILL SEARCH BAR & HORIZONTAL PRESET CHIPS (Safe Area Protected) */}
       <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
         <View style={styles.searchPill}>
           <TouchableOpacity
@@ -410,6 +407,77 @@ function MainScreen() {
             <Mic size={17} color="#3B82F6" />
           </TouchableOpacity>
         </View>
+
+        {/* Horizontal Scrollable Quick Destination Chips */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.quickChipsScroll}
+          style={styles.quickChipsWrapper}
+        >
+          {/* Ev */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => handleQuickPreset('home')}
+            activeOpacity={0.75}
+          >
+            <Home size={15} color="#3B82F6" />
+            <Text style={styles.quickChipText}>Ev</Text>
+            <Text style={styles.quickChipSub}>22 dk</Text>
+          </TouchableOpacity>
+
+          {/* İş */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => handleQuickPreset('work')}
+            activeOpacity={0.75}
+          >
+            <Briefcase size={15} color="#24C795" />
+            <Text style={styles.quickChipText}>İş</Text>
+            <Text style={styles.quickChipSub}>35 dk</Text>
+          </TouchableOpacity>
+
+          {/* Trakya Üniversitesi */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => handleQuickPreset('uni')}
+            activeOpacity={0.75}
+          >
+            <GraduationCap size={15} color="#818CF8" />
+            <Text style={styles.quickChipText}>Trakya Üni</Text>
+            <Text style={styles.quickChipSub}>18 dk</Text>
+          </TouchableOpacity>
+
+          {/* Erasta AVM */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => executeRouteSearch(fromLocation, { name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 })}
+            activeOpacity={0.75}
+          >
+            <MapPin size={15} color="#F59E0B" />
+            <Text style={styles.quickChipText}>Erasta AVM</Text>
+          </TouchableOpacity>
+
+          {/* Selimiye Camii */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => executeRouteSearch(fromLocation, { name: 'Selimiye Camii', lat: 41.6781, lon: 26.5594 })}
+            activeOpacity={0.75}
+          >
+            <MapPin size={15} color="#EC4899" />
+            <Text style={styles.quickChipText}>Selimiye</Text>
+          </TouchableOpacity>
+
+          {/* Edirne Otogar */}
+          <TouchableOpacity
+            style={styles.quickChip}
+            onPress={() => executeRouteSearch(fromLocation, { name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 })}
+            activeOpacity={0.75}
+          >
+            <Bus size={15} color="#06B6D4" />
+            <Text style={styles.quickChipText}>Otogar</Text>
+          </TouchableOpacity>
+        </ScrollView>
       </View>
 
       {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers - Placed below search bar) */}
@@ -491,8 +559,8 @@ function MainScreen() {
         </View>
       )}
 
-      {/* 8. BOTTOM SHEET: PRESET DESTINATIONS OR ROUTE RESULT SHEET */}
-      {searchResults && !loading ? (
+      {/* 8. BOTTOM SHEET: ROUTE RESULT SHEET */}
+      {searchResults && !loading && (
         <View style={[styles.routeResultSheetWrapper, { bottom: bottomNavHeight }]}>
           <RouteResultSheet
             routes={searchResults.routes}
@@ -506,68 +574,6 @@ function MainScreen() {
             onClose={handleClearRoute}
           />
         </View>
-      ) : (
-        !loading && (
-          <View style={[styles.presetSheetContainer, { bottom: bottomNavHeight }]}>
-            {/* Grabber Handle */}
-            <View style={styles.sheetGrabberBar} />
-
-            {/* Destination Preset Items */}
-            <View style={styles.presetList}>
-              {/* 1. Ev */}
-              <TouchableOpacity
-                style={styles.presetItem}
-                onPress={() => handleQuickPreset('home')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.presetIconBox}>
-                  <Home size={18} color="#3B82F6" />
-                </View>
-                <View style={styles.presetTextCol}>
-                  <Text style={styles.presetTitle}>Ev</Text>
-                  <Text style={styles.presetSubtitle}>Tahmini süre · 22 dk</Text>
-                </View>
-                <ChevronRight size={18} color="#475569" />
-              </TouchableOpacity>
-
-              <View style={styles.presetItemSeparator} />
-
-              {/* 2. İş */}
-              <TouchableOpacity
-                style={styles.presetItem}
-                onPress={() => handleQuickPreset('work')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.presetIconBox}>
-                  <Briefcase size={18} color="#24C795" />
-                </View>
-                <View style={styles.presetTextCol}>
-                  <Text style={styles.presetTitle}>İş</Text>
-                  <Text style={styles.presetSubtitle}>Tahmini süre · 35 dk</Text>
-                </View>
-                <ChevronRight size={18} color="#475569" />
-              </TouchableOpacity>
-
-              <View style={styles.presetItemSeparator} />
-
-              {/* 3. Trakya Üniversitesi */}
-              <TouchableOpacity
-                style={styles.presetItem}
-                onPress={() => handleQuickPreset('uni')}
-                activeOpacity={0.7}
-              >
-                <View style={styles.presetIconBox}>
-                  <GraduationCap size={18} color="#818CF8" />
-                </View>
-                <View style={styles.presetTextCol}>
-                  <Text style={styles.presetTitle}>Trakya Üniversitesi</Text>
-                  <Text style={styles.presetSubtitle}>Balkan Kampüsü · 18 dk</Text>
-                </View>
-                <ChevronRight size={18} color="#475569" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )
       )}
       </>
       )}
@@ -1145,6 +1151,41 @@ const styles = StyleSheet.create({
     fontSize: 14.5,
     color: '#94A3B8',
     fontWeight: '400',
+  },
+
+  // Horizontal Quick Destination Chips
+  quickChipsWrapper: {
+    marginTop: 10,
+  },
+  quickChipsScroll: {
+    paddingRight: 20,
+    gap: 8,
+  },
+  quickChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#12161E',
+    borderRadius: 20,
+    paddingHorizontal: 13,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    gap: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  quickChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  quickChipSub: {
+    fontSize: 11,
+    color: '#94A3B8',
+    marginLeft: 2,
   },
 
   // Floating Right Map Controls (Compass & Layers)
