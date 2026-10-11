@@ -219,13 +219,14 @@ export default function NativeMap({
         }}
       >
         {/* 0. Optional Stops Preview on map */}
-        {showAllStops && allStopsDB && allStopsDB.slice(0, 120).map(s => (
+        {showAllStops && allStopsDB && Object.values(allStopsDB).filter(s => s && s.lat && s.lon).slice(0, 150).map(s => (
           <Marker
-            key={`s-${s.id}`}
+            key={`stop-${s.id}`}
             coordinate={{ latitude: s.lat, longitude: s.lon }}
-            title={s.name}
-            description={`ETUS Durak #${s.id}`}
+            title={s.name || `Durak #${s.id}`}
+            description={s.routes?.length ? `Geçen Hatlar: ${s.routes.join(', ')}` : `ETUS Durak #${s.id}`}
             pinColor="#3B82F6"
+            tracksViewChanges={false}
           />
         ))}
         {/* Origin / GPS Start Pin (Show only if custom location, don't duplicate native GPS puck) */}
