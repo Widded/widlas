@@ -110,6 +110,7 @@ export default function SearchModal({
   const [searching, setSearching] = useState(false);
   const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'places' | 'stops'
   const inputRef = useRef(null);
+  const debounceTimerRef = useRef(null);
   const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // Real-time keyboard tracking to prevent content from hiding behind keyboard
