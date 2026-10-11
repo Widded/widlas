@@ -15,15 +15,9 @@ import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import {
   Search,
-  Navigation,
   Bus,
   CreditCard,
-  MapPin,
   X,
-  ChevronRight,
-  Footprints,
-  ArrowRight,
-  RefreshCw,
   LocateFixed,
   GraduationCap,
   User
@@ -39,16 +33,9 @@ import RouteResultSheet from './src/components/RouteResultSheet';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { QUICK_PLACES } from './src/data/places';
-import { calculateFare, formatFare } from './src/data/fares';
-
-const fmtWalk = (km) => {
-  if (!km) return '';
-  const m = km * 1000;
-  return m > 1000 ? (m / 1000).toFixed(1) + ' km' : Math.round(m) + ' m';
-};
 
 export default function App() {
-  const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' (20₺) | 'tam' (30₺)
+  const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
 
   // Locations
   const [fromLocation, setFromLocation] = useState({ name: 'Konumunuz', lat: null, lon: null });
@@ -60,17 +47,17 @@ export default function App() {
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  // Active line preview on map (from Lines Explorer)
-  const [previewLine, setPreviewLine] = useState(null); // { line, dirIdx }
-
-  // Modals
+  // Modals & Panels
   const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchTargetType, setSearchTargetType] = useState('to'); // 'from' | 'to'
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [linesModalVisible, setLinesModalVisible] = useState(false);
   const [faresModalVisible, setFaresModalVisible] = useState(false);
 
-  // Auto-fetch GPS on launch
+  // Line preview mode from explorer
+  const [previewLine, setPreviewLine] = useState(null);
+
+  // GPS on initial load
   useEffect(() => {
     (async () => {
       try {
@@ -78,36 +65,50 @@ export default function App() {
         if (status === 'granted') {
           const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
           const userCoords = {
-            name: 'Konumunuz',
+            name: 'Mevcut Konumunuz',
             lat: loc.coords.latitude,
             lon: loc.coords.longitude
           };
           setUserLocation(userCoords);
           setFromLocation(userCoords);
+        } else {
+          setFromLocation({
+            name: 'Edirne Merkez',
+            lat: 41.6771,
+            lon: 26.5557
+          });
         }
       } catch (err) {
-        console.log('GPS alınamadı', err);
+        setFromLocation({
+          name: 'Edirne Merkez',
+          lat: 41.6771,
+          lon: 26.5557
+        });
       }
     })();
   }, []);
 
-  // Use GPS button
+  // Force GPS Recenter
   const handleUseGps = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Konum İzni Gerekli', 'Lütfen ayarlardan konum erişimine izin verin.');
+        Alert.alert('İzin Gerekli', 'Konumunuza erişmek için lütfen izin verin.');
         return;
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
       const userCoords = {
-        name: 'Konumunuz',
+        name: 'Mevcut Konumunuz',
         lat: loc.coords.latitude,
         lon: loc.coords.longitude
       };
       setUserLocation(userCoords);
       setFromLocation(userCoords);
-    } catch (err) {
+
+      if (toLocation?.lat) {
+        executeRouteSearch(userCoords, toLocation);
+      }
+    } catch (e) {
       Alert.alert('Hata', 'Konumunuz tespit edilemedi.');
     }
   };
@@ -119,7 +120,6 @@ export default function App() {
       return;
     }
 
-    // Default to Edirne center if GPS is unavailable
     const startPoint = from?.lat ? from : (userLocation?.lat ? userLocation : {
       name: 'Edirne Merkez',
       lat: 41.6771,
@@ -184,37 +184,43 @@ export default function App() {
           userLocation={userLocation}
         />
 
-        {/* 2. FLOATING TOP ISLAND (Apple Maps / Uber Style Capsule) */}
+        {/* 2. COMPACT TOP HEADER BAR (Minimal & Apple Maps inspired) */}
         <SafeAreaView style={styles.topSafeArea}>
-          <View style={styles.topCapsule}>
-            {/* Brand Logo */}
+          <View style={styles.topBar}>
+            {/* ETUS Brand */}
             <View style={styles.brandGroup}>
-              <View style={styles.busDot}>
-                <Bus size={14} color="#FFFFFF" />
+              <View style={styles.brandIconBox}>
+                <Bus size={14} color={theme.colors.primary} />
               </View>
-              <Text style={styles.brandTitle}>EDİRNE ETUS</Text>
+              <Text style={styles.brandTitle}>ETUS</Text>
             </View>
 
-            {/* Quick Fare Toggle */}
-            <View style={styles.fareSwitch}>
+            {/* Clean Segmented Fare Switcher */}
+            <View style={styles.fareSegmentedControl}>
               <TouchableOpacity
-                style={[styles.fareTab, fareType === 'ogrenci' && styles.fareTabActiveStudent]}
+                style={[styles.fareSegment, fareType === 'ogrenci' && styles.fareSegmentActive]}
                 onPress={() => setFareType('ogrenci')}
                 activeOpacity={0.7}
               >
-                <GraduationCap size={12} color={fareType === 'ogrenci' ? '#FFFFFF' : theme.colors.textSecondary} />
-                <Text style={[styles.fareTabText, fareType === 'ogrenci' && styles.fareTabTextActive]}>
+                <GraduationCap
+                  size={12}
+                  color={fareType === 'ogrenci' ? theme.colors.textPrimary : theme.colors.textMuted}
+                />
+                <Text style={[styles.fareSegmentText, fareType === 'ogrenci' && styles.fareSegmentTextActive]}>
                   Öğrenci 20₺
                 </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.fareTab, fareType === 'tam' && styles.fareTabActiveAdult]}
+                style={[styles.fareSegment, fareType === 'tam' && styles.fareSegmentActive]}
                 onPress={() => setFareType('tam')}
                 activeOpacity={0.7}
               >
-                <User size={12} color={fareType === 'tam' ? '#FFFFFF' : theme.colors.textSecondary} />
-                <Text style={[styles.fareTabText, fareType === 'tam' && styles.fareTabTextActive]}>
+                <User
+                  size={12}
+                  color={fareType === 'tam' ? theme.colors.textPrimary : theme.colors.textMuted}
+                />
+                <Text style={[styles.fareSegmentText, fareType === 'tam' && styles.fareSegmentTextActive]}>
                   Tam 30₺
                 </Text>
               </TouchableOpacity>
@@ -222,33 +228,33 @@ export default function App() {
           </View>
         </SafeAreaView>
 
-        {/* 3. FLOATING ACTION STACK ON RIGHT SIDE */}
-        <View style={styles.floatingActionStack}>
+        {/* 3. MAP CONTROLS STACK (Controlled 40x40px, high-contrast minimal buttons) */}
+        <View style={styles.floatingControlsStack}>
           {/* Recenter GPS */}
           <TouchableOpacity
-            style={styles.floatingCircleBtn}
+            style={styles.controlSquareBtn}
             onPress={handleUseGps}
             activeOpacity={0.8}
           >
-            <LocateFixed size={18} color={theme.colors.primaryGlow} />
+            <LocateFixed size={18} color={theme.colors.primary} />
           </TouchableOpacity>
 
           {/* All Lines Sheet */}
           <TouchableOpacity
-            style={styles.floatingCircleBtn}
+            style={styles.controlSquareBtn}
             onPress={() => setLinesModalVisible(true)}
             activeOpacity={0.8}
           >
-            <Bus size={18} color={theme.colors.lavender} />
+            <Bus size={18} color={theme.colors.textPrimary} />
           </TouchableOpacity>
 
-          {/* Fares & Wallet Sheet */}
+          {/* Fares & Tariffs Sheet */}
           <TouchableOpacity
-            style={styles.floatingCircleBtn}
+            style={styles.controlSquareBtn}
             onPress={() => setFaresModalVisible(true)}
             activeOpacity={0.8}
           >
-            <CreditCard size={18} color={theme.colors.amber} />
+            <CreditCard size={18} color={theme.colors.fare} />
           </TouchableOpacity>
         </View>
 
@@ -256,7 +262,7 @@ export default function App() {
         {previewLine && (
           <View style={styles.previewLineBanner}>
             <View style={styles.previewLineInfo}>
-              <View style={[styles.previewLineBadge, { backgroundColor: previewLine.line.color || theme.colors.violet }]}>
+              <View style={[styles.previewLineBadge, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
                 <Text style={styles.previewLineBadgeText}>{previewLine.line.code}</Text>
               </View>
               <Text style={styles.previewLineName} numberOfLines={1}>
@@ -268,36 +274,34 @@ export default function App() {
               onPress={() => setPreviewLine(null)}
               activeOpacity={0.7}
             >
-              <X size={15} color="#FFFFFF" />
+              <X size={14} color={theme.colors.textSecondary} />
             </TouchableOpacity>
           </View>
         )}
 
-        {/* 5. UBER-STYLE BOTTOM SEARCH CAPSULE (When Idle / No Route Active) */}
+        {/* 5. MINIMAL BOTTOM SEARCH BAR (Idle Map State) */}
         {!searchResults && !loading && (
-          <View style={styles.uberBottomStage}>
+          <View style={styles.bottomSearchContainer}>
             {/* The Main "Nereye?" Search Bar */}
             <TouchableOpacity
-              style={styles.uberSearchBar}
+              style={styles.searchBarInput}
               onPress={() => {
                 setSearchTargetType('to');
                 setSearchModalVisible(true);
               }}
               activeOpacity={0.85}
             >
-              <View style={styles.searchIconHalo}>
-                <Search size={18} color={theme.colors.violet} />
-              </View>
-              <Text style={styles.searchPlaceholderText}>
+              <Search size={16} color={theme.colors.textMuted} />
+              <Text style={styles.searchBarPlaceholder}>
                 Nereye gitmek istiyorsunuz?
               </Text>
             </TouchableOpacity>
 
-            {/* 1-Tap Quick Destination Chips Row */}
+            {/* Quick Destination Chips (Compact, minimal 10px radius) */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.quickChipsRow}
+              contentContainerStyle={styles.quickChipsScroll}
             >
               {QUICK_PLACES.map((place) => (
                 <TouchableOpacity
@@ -306,7 +310,6 @@ export default function App() {
                   onPress={() => handleSelectQuickDestination(place)}
                   activeOpacity={0.75}
                 >
-                  <Text style={styles.quickChipIcon}>{place.icon}</Text>
                   <Text style={styles.quickChipText}>{place.shortName}</Text>
                 </TouchableOpacity>
               ))}
@@ -316,9 +319,9 @@ export default function App() {
 
         {/* 6. LOADING SPINNER OVERLAY */}
         {loading && (
-          <View style={styles.loadingCardFloating}>
-            <ActivityIndicator size="small" color={theme.colors.lavender} />
-            <Text style={styles.loadingCardText}>En uygun ETUS rotaları hesaplanıyor...</Text>
+          <View style={styles.loadingBanner}>
+            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <Text style={styles.loadingBannerText}>En uygun ETUS rotaları hesaplanıyor...</Text>
           </View>
         )}
 
@@ -353,59 +356,41 @@ export default function App() {
           onClose={() => setDetailsModalVisible(false)}
         />
 
-        {/* 10. LINES EXPLORER MODAL (Opened from floating bus icon) */}
+        {/* 10. LINES EXPLORER MODAL */}
         <Modal
           visible={linesModalVisible}
           animationType="slide"
           presentationStyle="pageSheet"
           onRequestClose={() => setLinesModalVisible(false)}
         >
-          <SafeAreaView style={styles.modalSafeArea}>
-            <View style={styles.modalHeaderRow}>
-              <Text style={styles.modalHeaderTitle}>Tüm ETUS Hatları</Text>
-              <TouchableOpacity
-                style={styles.modalCloseCircle}
-                onPress={() => setLinesModalVisible(false)}
-                activeOpacity={0.7}
-              >
-                <X size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScrollBody}>
-              <LinesExplorer
-                onSelectLineOnMap={(line, dirIdx) => {
-                  setPreviewLine({ line, dirIdx });
-                  setLinesModalVisible(false);
-                  setSearchResults(null);
-                }}
-              />
-            </ScrollView>
-          </SafeAreaView>
+          <View style={styles.modalBody}>
+            <LinesExplorer
+              onSelectLine={(line, dirIdx) => {
+                setLinesModalVisible(false);
+                setPreviewLine({ line, dirIdx });
+              }}
+              onClose={() => setLinesModalVisible(false)}
+            />
+          </View>
         </Modal>
 
-        {/* 11. FARES & WALLET MODAL (Opened from floating card icon) */}
+        {/* 11. FARES & TARIFFS MODAL */}
         <Modal
           visible={faresModalVisible}
           animationType="slide"
           presentationStyle="pageSheet"
           onRequestClose={() => setFaresModalVisible(false)}
         >
-          <SafeAreaView style={styles.modalSafeArea}>
-            <View style={styles.modalHeaderRow}>
-              <Text style={styles.modalHeaderTitle}>Ücret Tarifeleri & Kurallar</Text>
-              <TouchableOpacity
-                style={styles.modalCloseCircle}
-                onPress={() => setFaresModalVisible(false)}
-                activeOpacity={0.7}
-              >
-                <X size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
+          <View style={styles.modalBody}>
             <FaresView
-              fareType={fareType}
-              setFareType={setFareType}
+              selectedType={fareType}
+              onSelectType={(t) => {
+                setFareType(t);
+                setFaresModalVisible(false);
+              }}
+              onClose={() => setFaresModalVisible(false)}
             />
-          </SafeAreaView>
+          </View>
         </Modal>
       </View>
     </SafeAreaProvider>
@@ -422,117 +407,102 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 100,
-    paddingHorizontal: 16,
-    paddingTop: 4,
+    zIndex: 90,
   },
-  topCapsule: {
+  topBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: theme.colors.glass,
-    borderRadius: theme.radius.pill,
-    paddingVertical: 7,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 6,
     paddingHorizontal: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
     borderWidth: 1,
-    borderColor: theme.colors.glassBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
-    elevation: 8,
+    borderColor: theme.colors.border,
+    ...theme.shadows.subtle,
   },
   brandGroup: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  busDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: theme.colors.violet,
+  brandIconBox: {
+    width: 26,
+    height: 26,
+    borderRadius: theme.radius.xs,
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
   brandTitle: {
-    fontSize: 13,
-    fontWeight: '900',
+    fontSize: 14,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    letterSpacing: 0.5,
+    letterSpacing: 0.2,
   },
-  fareSwitch: {
+  fareSegmentedControl: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: theme.radius.pill,
+    borderRadius: theme.radius.sm,
     padding: 2,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
-  fareTab: {
+  fareSegment: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingVertical: 4,
     paddingHorizontal: 8,
-    borderRadius: theme.radius.pill,
+    borderRadius: theme.radius.xs,
   },
-  fareTabActiveStudent: {
-    backgroundColor: theme.colors.emerald,
+  fareSegmentActive: {
+    backgroundColor: theme.colors.surfaceHover,
   },
-  fareTabActiveAdult: {
-    backgroundColor: theme.colors.primary,
-  },
-  fareTabText: {
+  fareSegmentText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
+    fontWeight: '500',
+    color: theme.colors.textMuted,
   },
-  fareTabTextActive: {
-    color: '#FFFFFF',
-    fontWeight: '800',
+  fareSegmentTextActive: {
+    color: theme.colors.textPrimary,
+    fontWeight: '600',
   },
-  floatingActionStack: {
+  floatingControlsStack: {
     position: 'absolute',
     right: 16,
-    bottom: 140,
-    gap: 10,
+    bottom: 146,
+    gap: 8,
     zIndex: 90,
   },
-  floatingCircleBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.glass,
+  controlSquareBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.glassBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 6,
+    borderColor: theme.colors.border,
+    ...theme.shadows.subtle,
   },
   previewLineBanner: {
     position: 'absolute',
-    top: 90,
+    top: 76,
     left: 16,
     right: 16,
-    backgroundColor: theme.colors.glass,
-    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
     paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: theme.colors.glassBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 10,
-    elevation: 8,
+    borderColor: theme.colors.border,
+    ...theme.shadows.subtle,
     zIndex: 95,
   },
   previewLineInfo: {
@@ -542,151 +512,98 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   previewLineBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 7,
+    paddingVertical: 2,
     borderRadius: theme.radius.xs,
   },
   previewLineBadgeText: {
     color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '900',
+    fontSize: 11,
+    fontWeight: '700',
   },
   previewLineName: {
     color: theme.colors.textPrimary,
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontWeight: '600',
     flex: 1,
   },
   previewLineClose: {
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: 12,
     width: 24,
     height: 24,
+    borderRadius: theme.radius.xs,
+    backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
   },
-  uberBottomStage: {
+  bottomSearchContainer: {
     position: 'absolute',
     left: 16,
     right: 16,
     bottom: 24,
     zIndex: 90,
-    gap: 10,
+    gap: 8,
   },
-  uberSearchBar: {
+  searchBarInput: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.pill,
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    gap: 12,
+    borderRadius: theme.radius.md,
+    height: 46,
+    paddingHorizontal: 14,
+    gap: 10,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.35)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 10,
+    borderColor: theme.colors.border,
+    ...theme.shadows.subtle,
   },
-  searchIconHalo: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.lavenderLight,
-    alignItems: 'center',
-    justifyContent: 'center',
+  searchBarPlaceholder: {
+    fontSize: 13.5,
+    fontWeight: '500',
+    color: theme.colors.textSecondary,
+    letterSpacing: -0.1,
   },
-  searchPlaceholderText: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.2,
-  },
-  quickChipsRow: {
-    gap: 8,
+  quickChipsScroll: {
+    gap: 6,
     paddingVertical: 2,
   },
   quickChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
     backgroundColor: theme.colors.surface,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: theme.radius.pill,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: theme.radius.sm,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
-  },
-  quickChipIcon: {
-    fontSize: 13,
   },
   quickChipText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
-  loadingCardFloating: {
+  loadingBanner: {
     position: 'absolute',
-    left: 24,
-    right: 24,
-    bottom: 40,
+    left: 20,
+    right: 20,
+    bottom: 34,
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.pill,
-    paddingVertical: 14,
-    paddingHorizontal: 18,
+    borderRadius: theme.radius.md,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 10,
+    ...theme.shadows.subtle,
     zIndex: 90,
   },
-  loadingCardText: {
+  loadingBannerText: {
     color: theme.colors.textPrimary,
-    fontSize: 13,
-    fontWeight: '700',
+    fontSize: 12.5,
+    fontWeight: '500',
   },
-
-  modalSafeArea: {
+  modalBody: {
     flex: 1,
     backgroundColor: theme.colors.bg,
-  },
-  modalHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  modalHeaderTitle: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-  },
-  modalCloseCircle: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  modalScrollBody: {
-    padding: 16,
   },
 });

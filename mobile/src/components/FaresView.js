@@ -1,139 +1,158 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { CreditCard, GraduationCap, User, Clock, Moon, Phone, Zap } from 'lucide-react-native';
+import { X, Check, Phone } from 'lucide-react-native';
 import { theme } from '../theme';
 
-export default function FaresView({ fareType, setFareType }) {
+export default function FaresView({
+  selectedType,
+  onSelectType,
+  fareType,
+  setFareType,
+  onClose
+}) {
+  const currentType = selectedType || fareType || 'ogrenci';
+  const handleSelect = onSelectType || setFareType || (() => {});
+
   const handleCall = () => {
     Linking.openURL('tel:02842139140').catch(() => {});
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-      {/* Wallet Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>ETUS 2026 Tarife & Kart</Text>
-        <Text style={styles.subtitle}>Edirne Toplu Ulaşım Sistemi Resmi Ücret Tarifeleri</Text>
+    <View style={styles.container}>
+      {/* Top Header Bar */}
+      <View style={styles.headerBar}>
+        <View>
+          <Text style={styles.headerTitle}>Ücret Tarifeleri</Text>
+          <Text style={styles.headerSubtitle}>ETUS 2026 Resmi Fiyatlandırma</Text>
+        </View>
+
+        {onClose && (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={onClose}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <X size={16} color={theme.colors.textPrimary} />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Digital Transit Pass Cards */}
-      <View style={styles.passesSection}>
-        {/* Student Pass Card */}
-        <TouchableOpacity
-          style={[styles.passCard, fareType === 'ogrenci' && styles.passCardActiveStudent]}
-          onPress={() => setFareType('ogrenci')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.emeraldLight }]}>
-              <GraduationCap size={20} color={theme.colors.emerald} />
-            </View>
-            <View style={styles.passBadgeCol}>
-              <Text style={styles.passCategory}>İNDİRİMLİ TARİFE</Text>
-              <Text style={styles.passTitle}>Öğrenci Kentkart</Text>
-            </View>
-            <Text style={[styles.passPrice, { color: theme.colors.emerald }]}>20,00 ₺</Text>
-          </View>
-          <Text style={styles.passDetail}>
-            Trakya Üniversitesi ve tüm örgün lise/ortaokul öğrencileri için geçerlidir.
-          </Text>
-          {fareType === 'ogrenci' && (
-            <View style={styles.activeTagStudent}>
-              <Zap size={11} color="#FFFFFF" />
-              <Text style={styles.activeTagText}>Uygulamada Aktif Tarife</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        {/* Section 1: Kentkart Seçimi */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionLabel}>KENTKART TARİFELERİ (UYGULAMA TERCİHİ)</Text>
+          <View style={styles.tableCard}>
+            {/* Öğrenci Row */}
+            <TouchableOpacity
+              style={[styles.tableRow, currentType === 'ogrenci' && styles.tableRowSelected]}
+              onPress={() => handleSelect('ogrenci')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.rowLeftCol}>
+                <View style={styles.titleWithCheck}>
+                  <Text style={styles.rowTitle}>Öğrenci Kentkart</Text>
+                  {currentType === 'ogrenci' && (
+                    <View style={styles.activeCheckBadge}>
+                      <Check size={11} color={theme.colors.primary} />
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.rowSub}>Trakya Üni. ve örgün eğitim öğrencileri</Text>
+              </View>
+              <Text style={[styles.priceTag, currentType === 'ogrenci' && styles.priceTagActive]}>
+                20,00 ₺
+              </Text>
+            </TouchableOpacity>
 
-        {/* Adult Standard Pass Card */}
-        <TouchableOpacity
-          style={[styles.passCard, fareType === 'tam' && styles.passCardActiveAdult]}
-          onPress={() => setFareType('tam')}
-          activeOpacity={0.8}
-        >
-          <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.lavenderLight }]}>
-              <User size={20} color={theme.colors.lavender} />
-            </View>
-            <View style={styles.passBadgeCol}>
-              <Text style={styles.passCategory}>STANDART TARİFE</Text>
-              <Text style={styles.passTitle}>Sivil Kentkart</Text>
-            </View>
-            <Text style={[styles.passPrice, { color: theme.colors.lavender }]}>30,00 ₺</Text>
-          </View>
-          <Text style={styles.passDetail}>
-            Tüm vatandaşlar için standart şehir içi ETUS biniş tarifesi.
-          </Text>
-          {fareType === 'tam' && (
-            <View style={styles.activeTagAdult}>
-              <Zap size={11} color="#FFFFFF" />
-              <Text style={styles.activeTagText}>Uygulamada Aktif Tarife</Text>
-            </View>
-          )}
-        </TouchableOpacity>
+            <View style={styles.tableDivider} />
 
-        {/* Contactless / QR Pass Card */}
-        <View style={styles.passCard}>
-          <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.amberLight }]}>
-              <CreditCard size={20} color={theme.colors.amber} />
-            </View>
-            <View style={styles.passBadgeCol}>
-              <Text style={styles.passCategory}>KARTSIZ / TEMASSIZ</Text>
-              <Text style={styles.passTitle}>Kredi Kartı & QR</Text>
-            </View>
-            <Text style={[styles.passPrice, { color: theme.colors.amber }]}>33,00 ₺</Text>
-          </View>
-          <Text style={styles.passDetail}>
-            Kentkart olmadan temassız banka/kredi kartı veya mobil QR ile binişlerde geçerlidir.
-          </Text>
-        </View>
-      </View>
-
-      {/* 45 Min Transfer Discount Rule */}
-      <View style={styles.infoBox}>
-        <View style={styles.infoTitleRow}>
-          <Clock size={16} color={theme.colors.lavender} />
-          <Text style={styles.infoBoxTitle}>45 Dakika Aktarma Kuralı</Text>
-        </View>
-        <Text style={styles.infoBoxBody}>
-          İlk binişten sonraki 45 dakika içerisinde yapılan 2. hat binişlerinde indirimli tarife otomatik yansıtılır:
-        </Text>
-        <View style={styles.transferRatesRow}>
-          <View style={styles.transferRatePill}>
-            <Text style={styles.rateRole}>Öğrenci 2. Biniş</Text>
-            <Text style={[styles.rateValue, { color: theme.colors.emerald }]}>10,00 ₺</Text>
-          </View>
-          <View style={styles.transferRatePill}>
-            <Text style={styles.rateRole}>Sivil 2. Biniş</Text>
-            <Text style={[styles.rateValue, { color: theme.colors.lavender }]}>15,00 ₺</Text>
+            {/* Sivil Row */}
+            <TouchableOpacity
+              style={[styles.tableRow, currentType === 'tam' && styles.tableRowSelected]}
+              onPress={() => handleSelect('tam')}
+              activeOpacity={0.7}
+            >
+              <View style={styles.rowLeftCol}>
+                <View style={styles.titleWithCheck}>
+                  <Text style={styles.rowTitle}>Sivil Kentkart</Text>
+                  {currentType === 'tam' && (
+                    <View style={styles.activeCheckBadge}>
+                      <Check size={11} color={theme.colors.primary} />
+                    </View>
+                  )}
+                </View>
+                <Text style={styles.rowSub}>Standart tam şehir içi biniş tarifesi</Text>
+              </View>
+              <Text style={[styles.priceTag, currentType === 'tam' && styles.priceTagActive]}>
+                30,00 ₺
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
-      </View>
 
-      {/* Night Owl Service Notice */}
-      <View style={styles.infoBox}>
-        <View style={styles.infoTitleRow}>
-          <Moon size={16} color={theme.colors.amber} />
-          <Text style={styles.infoBoxTitle}>Gece Nöbetçi Seferleri (00:00 - 06:00)</Text>
+        {/* Section 2: Temassız ve QR */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionLabel}>DİJİTAL & TEMASSIZ ÖDEME</Text>
+          <View style={styles.tableCard}>
+            <View style={styles.tableRowStatic}>
+              <View style={styles.rowLeftCol}>
+                <Text style={styles.rowTitle}>Kredi Kartı / QR Biniş</Text>
+                <Text style={styles.rowSub}>Temassız banka/kredi kartı veya mobil QR</Text>
+              </View>
+              <Text style={styles.priceTagMuted}>33,00 ₺</Text>
+            </View>
+          </View>
         </View>
-        <Text style={styles.infoBoxBody}>
-          Gece 00:00 ile 06:00 saatleri arasında 1A, 3 ve 3A ana hatları ile Otogar - Tıp Fakültesi hattında nöbetçi servisler sefer yapmaktadır.
-        </Text>
-      </View>
 
-      {/* ETUS Hotline Support */}
-      <View style={styles.hotlineBox}>
-        <View style={styles.hotlineInfo}>
-          <Text style={styles.hotlineTitle}>ETUS Danışma & Destek</Text>
-          <Text style={styles.hotlineSub}>Kayıp eşya, durak şikayeti ve sefer bilgisi</Text>
+        {/* Section 3: Aktarma Kuralları */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionLabel}>AKTARMA KURALLARI (45 DAKİKA İÇİNDE)</Text>
+          <View style={styles.tableCard}>
+            <View style={styles.tableRowStatic}>
+              <View style={styles.rowLeftCol}>
+                <Text style={styles.rowTitle}>Öğrenci 2. Biniş</Text>
+                <Text style={styles.rowSub}>İlk basımdan sonraki 45 dakika boyunca</Text>
+              </View>
+              <Text style={styles.priceTagMuted}>10,00 ₺</Text>
+            </View>
+
+            <View style={styles.tableDivider} />
+
+            <View style={styles.tableRowStatic}>
+              <View style={styles.rowLeftCol}>
+                <Text style={styles.rowTitle}>Sivil 2. Biniş</Text>
+                <Text style={styles.rowSub}>İlk basımdan sonraki 45 dakika boyunca</Text>
+              </View>
+              <Text style={styles.priceTagMuted}>15,00 ₺</Text>
+            </View>
+          </View>
         </View>
-        <TouchableOpacity style={styles.callButton} onPress={handleCall} activeOpacity={0.8}>
-          <Phone size={14} color="#FFFFFF" />
-          <Text style={styles.callButtonText}>0284 213 91 40</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+
+        {/* Section 4: Gece Seferleri */}
+        <View style={styles.sectionBlock}>
+          <Text style={styles.sectionLabel}>GECE NÖBETÇİ SEFERLERİ</Text>
+          <View style={styles.noticeCard}>
+            <Text style={styles.noticeTitle}>00:00 - 06:00 Nöbetçi Hatlar</Text>
+            <Text style={styles.noticeBody}>
+              1A, 3, 3A ve Otogar - Tıp Fakültesi güzergahında gece boyunca nöbetçi ETUS araçları sefer yapmaktadır.
+            </Text>
+          </View>
+        </View>
+
+        {/* Section 5: Destek Hattı */}
+        <View style={styles.supportCard}>
+          <View style={styles.supportTextCol}>
+            <Text style={styles.supportTitle}>ETUS Danışma ve Destek</Text>
+            <Text style={styles.supportSub}>Kayıp eşya ve sefer bilgisi</Text>
+          </View>
+          <TouchableOpacity style={styles.callBtn} onPress={handleCall} activeOpacity={0.8}>
+            <Phone size={13} color={theme.colors.textPrimary} />
+            <Text style={styles.callBtnText}>0284 213 91 40</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -142,194 +161,178 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
-  content: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 16,
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: '900',
-    color: theme.colors.textPrimary,
-    letterSpacing: -0.4,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    marginTop: 3,
-  },
-  passesSection: {
-    gap: 12,
-    marginBottom: 16,
-  },
-  passCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 3,
-  },
-  passCardActiveStudent: {
-    borderColor: theme.colors.emerald,
-    backgroundColor: theme.colors.surfaceElevated,
-  },
-  passCardActiveAdult: {
-    borderColor: theme.colors.lavender,
-    backgroundColor: theme.colors.surfaceElevated,
-  },
-  passTopRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    marginBottom: 8,
-  },
-  passIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  passBadgeCol: {
-    flex: 1,
-  },
-  passCategory: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: theme.colors.textMuted,
-    letterSpacing: 0.5,
-  },
-  passTitle: {
-    fontSize: 16,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-  },
-  passPrice: {
-    fontSize: 20,
-    fontWeight: '900',
-    letterSpacing: -0.4,
-  },
-  passDetail: {
-    fontSize: 12,
-    color: theme.colors.textSecondary,
-    lineHeight: 17,
-  },
-  activeTagStudent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.emerald,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: theme.radius.sm,
-    alignSelf: 'flex-start',
-    marginTop: 10,
-  },
-  activeTagAdult: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.violet,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: theme.radius.sm,
-    alignSelf: 'flex-start',
-    marginTop: 10,
-  },
-  activeTagText: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '800',
-  },
-  infoBox: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 14,
-  },
-  infoTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  infoBoxTitle: {
-    fontSize: 14,
-    fontWeight: '800',
-    color: theme.colors.textPrimary,
-  },
-  infoBoxBody: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    lineHeight: 18,
-    marginBottom: 12,
-  },
-  transferRatesRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  transferRatePill: {
-    flex: 1,
-    backgroundColor: theme.colors.inputBg,
-    borderRadius: theme.radius.md,
-    padding: 12,
-    alignItems: 'center',
-  },
-  rateRole: {
-    fontSize: 11,
-    color: theme.colors.textSecondary,
-    fontWeight: '700',
-    marginBottom: 4,
-  },
-  rateValue: {
-    fontSize: 18,
-    fontWeight: '900',
-  },
-  hotlineBox: {
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: theme.radius.lg,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 12,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderSubtle,
   },
-  hotlineInfo: {
-    flex: 1,
-  },
-  hotlineTitle: {
-    fontSize: 14,
-    fontWeight: '800',
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
+    letterSpacing: -0.2,
   },
-  hotlineSub: {
-    fontSize: 11,
+  headerSubtitle: {
+    fontSize: 11.5,
     color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  callButton: {
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceElevated,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+    gap: 18,
+  },
+  sectionBlock: {
+    gap: 6,
+  },
+  sectionLabel: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    letterSpacing: 0.5,
+    marginLeft: 2,
+  },
+  tableCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  tableRowSelected: {
+    backgroundColor: theme.colors.surfaceHover,
+  },
+  tableRowStatic: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+  },
+  tableDivider: {
+    height: 1,
+    backgroundColor: theme.colors.hairline,
+    marginLeft: 14,
+  },
+  rowLeftCol: {
+    flex: 1,
+    paddingRight: 12,
+  },
+  titleWithCheck: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.violet,
-    paddingVertical: 9,
-    paddingHorizontal: 13,
-    borderRadius: theme.radius.sm,
   },
-  callButtonText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
+  rowTitle: {
+    fontSize: 13.5,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  activeCheckBadge: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: theme.colors.primaryLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rowSub: {
+    fontSize: 11.5,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
+  },
+  priceTag: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.fare,
+    letterSpacing: -0.2,
+  },
+  priceTagActive: {
+    color: theme.colors.primary,
+  },
+  priceTagMuted: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
+    letterSpacing: -0.2,
+  },
+  noticeCard: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  noticeTitle: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    marginBottom: 4,
+  },
+  noticeBody: {
+    fontSize: 11.5,
+    color: theme.colors.textSecondary,
+    lineHeight: 16,
+  },
+  supportCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  supportTextCol: {
+    flex: 1,
+  },
+  supportTitle: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  supportSub: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    marginTop: 1,
+  },
+  callBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    backgroundColor: theme.colors.surfaceHover,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  callBtnText: {
+    fontSize: 11.5,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
   },
 });

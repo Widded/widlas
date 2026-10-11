@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   ScrollView,
   StyleSheet,
-  Dimensions,
   Platform,
   LayoutAnimation,
   UIManager
@@ -14,21 +13,18 @@ import {
   X,
   ArrowRight,
   Footprints,
-  Clock,
   ChevronRight,
   ChevronDown,
   ChevronUp,
   Bus,
   MapPin,
-  Navigation,
   Zap,
   Repeat,
   GraduationCap,
   User,
   Minimize2,
   Maximize2,
-  RefreshCw,
-  Compass
+  RefreshCw
 } from 'lucide-react-native';
 import { theme } from '../theme';
 import { calculateFare, formatFare } from '../data/fares';
@@ -81,7 +77,7 @@ export default function RouteResultSheet({
     setShowStopsLeg2(prev => !prev);
   };
 
-  // If no routes found, render empty state card
+  // Empty State
   if (!routes || routes.length === 0) {
     return (
       <View style={styles.sheetContainer}>
@@ -91,16 +87,13 @@ export default function RouteResultSheet({
 
         <View style={styles.emptyCardBox}>
           <View style={styles.emptyIconCircle}>
-            <Bus size={22} color={theme.colors.textMuted} />
+            <Bus size={20} color={theme.colors.textMuted} />
           </View>
-          <Text style={styles.emptyTitle}>Uygun ETUS Hattı Bulunamadı</Text>
+          <Text style={styles.emptyTitle}>Uygun Hat Bulunamadı</Text>
           <Text style={styles.emptySubtitle}>
             {toLocation?.name
-              ? `"${toLocation.name}" konumuna doğrudan veya tek aktarmalı bir sefer eşleşmedi.`
-              : 'Bu iki konum arasında toplu taşıma güzergahı tespit edilemedi.'}
-          </Text>
-          <Text style={styles.emptyHint}>
-            Duraklara daha yakın bir nokta belirleyebilir veya harita üzerinden farklı bir hedef seçebilirsiniz.
+              ? `"${toLocation.name}" için doğrudan veya tek aktarmalı ETUS seferi tespit edilemedi.`
+              : 'Bu iki konum arasında uygun hat bulunamadı.'}
           </Text>
 
           <TouchableOpacity
@@ -108,7 +101,7 @@ export default function RouteResultSheet({
             onPress={onClose}
             activeOpacity={0.8}
           >
-            <RefreshCw size={15} color="#FFFFFF" />
+            <RefreshCw size={14} color={theme.colors.textPrimary} />
             <Text style={styles.emptyRetryBtnText}>Yeni Arama Yap</Text>
           </TouchableOpacity>
         </View>
@@ -140,7 +133,7 @@ export default function RouteResultSheet({
       : [];
   }
 
-  // MINIMIZED CAPSULE VIEW (Leaves 90% map visible)
+  // MINIMIZED CAPSULE VIEW
   if (isMinimized) {
     return (
       <TouchableOpacity
@@ -148,38 +141,33 @@ export default function RouteResultSheet({
         onPress={toggleMinimize}
         activeOpacity={0.9}
       >
-        <View style={styles.minimizedGrabber} />
         <View style={styles.minimizedRow}>
-          {/* Badge */}
-          <View style={[styles.miniLineBadge, { backgroundColor: currentRoute.color || theme.colors.violet }]}>
+          <View style={[styles.miniLineBadge, { backgroundColor: currentRoute.color || theme.colors.primary }]}>
             <Text style={styles.miniLineBadgeText}>
               {currentRoute.isWalkOnly ? 'Yürüme' : currentRoute.isTransfer ? `${currentRoute.line1}+${currentRoute.line2}` : currentRoute.name || currentRoute.lineCode}
             </Text>
           </View>
 
-          {/* Info */}
           <View style={styles.minimizedInfo}>
             <Text style={styles.minimizedDest} numberOfLines={1}>
-              {toLocation?.name || 'Seçilen Rota'}
+              {toLocation?.name || 'Seçilen Hedef'}
             </Text>
             <Text style={styles.minimizedSub}>
               {currentRoute.totalTime} dk • Varış ~{getEta(currentRoute.totalTime)} • {formatFare(fare)}
             </Text>
           </View>
 
-          {/* Action icon */}
-          <View style={styles.expandActionBubble}>
-            <Maximize2 size={16} color={theme.colors.lavender} />
+          <View style={styles.expandIconBox}>
+            <Maximize2 size={15} color={theme.colors.textSecondary} />
           </View>
         </View>
       </TouchableOpacity>
     );
   }
 
-  // EXPANDED BOARDING PASS CARD
   return (
     <View style={styles.sheetContainer}>
-      {/* Top Grabber Handle (Tap to minimize) */}
+      {/* Top Grabber */}
       <TouchableOpacity
         style={styles.grabberBox}
         onPress={toggleMinimize}
@@ -191,12 +179,12 @@ export default function RouteResultSheet({
       {/* Header: Destination & Controls */}
       <View style={styles.headerRow}>
         <View style={styles.destinationCol}>
-          <View style={styles.destBadgeRow}>
-            <MapPin size={13} color={theme.colors.rose} />
-            <Text style={styles.destLabel}>VARIŞ NOKTASI</Text>
+          <View style={styles.destMetaRow}>
+            <MapPin size={12} color={theme.colors.error} />
+            <Text style={styles.destMetaLabel}>VARIŞ NOKTASI</Text>
             {fromLocation?.name && (
-              <Text style={styles.fromLocationSub} numberOfLines={1}>
-                • {fromLocation.name} kalkışlı
+              <Text style={styles.fromLocationHint} numberOfLines={1}>
+                • {fromLocation.name}
               </Text>
             )}
           </View>
@@ -205,23 +193,23 @@ export default function RouteResultSheet({
           </Text>
         </View>
 
-        <View style={styles.headerControlsRow}>
+        <View style={styles.headerActions}>
           <TouchableOpacity
-            style={styles.headerIconBtn}
+            style={styles.headerBtn}
             onPress={toggleMinimize}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <Minimize2 size={15} color={theme.colors.textSecondary} />
+            <Minimize2 size={14} color={theme.colors.textSecondary} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.closeBtn}
+            style={styles.headerBtn}
             onPress={onClose}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <X size={16} color={theme.colors.textPrimary} />
+            <X size={15} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -238,121 +226,110 @@ export default function RouteResultSheet({
             return (
               <TouchableOpacity
                 key={idx}
-                style={[styles.routeTabPill, isTabActive && styles.routeTabPillActive]}
+                style={[styles.routeTab, isTabActive && styles.routeTabActive]}
                 onPress={() => onSelectIdx(idx)}
                 activeOpacity={0.75}
               >
                 {idx === 0 && (
-                  <Zap size={11} color={isTabActive ? theme.colors.emerald : theme.colors.textMuted} />
+                  <Zap size={11} color={isTabActive ? theme.colors.primary : theme.colors.textMuted} />
                 )}
                 <Text style={[styles.routeTabTime, isTabActive && styles.routeTabTimeActive]}>
                   {r.totalTime} dk
                 </Text>
-                <View style={styles.tabDivider} />
+                <View style={styles.routeTabDivider} />
                 <Text style={[styles.routeTabCode, isTabActive && styles.routeTabCodeActive]}>
-                  {r.isWalkOnly ? 'Yürüme' : r.isTransfer ? `${r.line1} ➔ ${r.line2}` : r.line1 || r.name}
+                  {r.isWalkOnly ? 'Yürüme' : r.isTransfer ? `${r.line1}+${r.line2}` : r.line1 || r.name}
                 </Text>
-                {idx === 0 && isTabActive && (
-                  <View style={styles.fastestMiniDot} />
-                )}
               </TouchableOpacity>
             );
           })}
         </ScrollView>
       )}
 
-      {/* Hero Boarding Pass Transit Card */}
+      {/* Hero Transit Card */}
       <View style={styles.heroPassCard}>
-        {/* Pass Top Bar: Line Badges + Travel Duration + ETA */}
+        {/* Pass Top Bar */}
         <View style={styles.passTopBar}>
-          <View style={styles.lineBadgesGroup}>
+          <View style={styles.lineBadgesRow}>
             {currentRoute.isWalkOnly ? (
               <View style={styles.walkBadgePill}>
-                <Footprints size={15} color={theme.colors.emerald} />
+                <Footprints size={14} color={theme.colors.primary} />
                 <Text style={styles.walkBadgePillText}>Sadece Yürüme</Text>
               </View>
             ) : currentRoute.isTransfer ? (
-              <View style={styles.transferBadgeChain}>
-                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || theme.colors.violet }]}>
+              <View style={styles.transferBadgesRow}>
+                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || theme.colors.primary }]}>
                   <Text style={styles.lineBadgeText}>{currentRoute.line1}</Text>
                 </View>
-                <ArrowRight size={13} color={theme.colors.textMuted} />
-                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color2 || theme.colors.amber }]}>
+                <ArrowRight size={12} color={theme.colors.textMuted} />
+                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color2 || theme.colors.fare }]}>
                   <Text style={styles.lineBadgeText}>{currentRoute.line2}</Text>
                 </View>
               </View>
             ) : (
-              <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || theme.colors.violet }]}>
+              <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || theme.colors.primary }]}>
                 <Text style={styles.lineBadgeText}>{currentRoute.name || currentRoute.lineCode}</Text>
               </View>
             )}
 
             {isFastest && (
-              <View style={styles.statusPillFastest}>
-                <Zap size={10} color={theme.colors.emerald} />
-                <Text style={styles.statusPillFastestText}>EN HIZLI</Text>
+              <View style={styles.fastestTag}>
+                <Text style={styles.fastestTagText}>EN HIZLI</Text>
               </View>
             )}
             {isDirect && !isFastest && (
-              <View style={styles.statusPillDirect}>
-                <Text style={styles.statusPillDirectText}>TEK HAT</Text>
+              <View style={styles.directTag}>
+                <Text style={styles.directTagText}>DİREKT</Text>
               </View>
             )}
             {currentRoute.isTransfer && (
-              <View style={styles.statusPillTransfer}>
-                <Repeat size={10} color={theme.colors.amber} />
-                <Text style={styles.statusPillTransferText}>1 AKTARMA</Text>
+              <View style={styles.transferTag}>
+                <Text style={styles.transferTagText}>AKTARMA</Text>
               </View>
             )}
           </View>
 
           {/* Time & ETA */}
-          <View style={styles.timeGroup}>
+          <View style={styles.timeCluster}>
             <View style={styles.durationRow}>
-              <Text style={styles.durationNumber}>{currentRoute.totalTime}</Text>
+              <Text style={styles.durationBig}>{currentRoute.totalTime}</Text>
               <Text style={styles.durationUnit}>dk</Text>
             </View>
             <Text style={styles.etaText}>Varış ~{getEta(currentRoute.totalTime)}</Text>
           </View>
         </View>
 
-        {/* Transit Timeline Flow Rail */}
+        {/* Transit Timeline Flow */}
         {!currentRoute.isWalkOnly ? (
-          <View style={styles.subwayRailChamber}>
-            {/* 1. Origin Node (Biniş Durağı) */}
-            <View style={styles.subwayNodeRow}>
-              <View style={[styles.subwayDot, { backgroundColor: theme.colors.emerald }]} />
-              <View style={styles.subwayStationCol}>
-                <Text style={styles.subwayRole}>BİNİŞ DURAĞI</Text>
-                <Text style={styles.subwayStationName} numberOfLines={1}>
+          <View style={styles.subwayTimelineBox}>
+            {/* 1. Origin Stop (Biniş Durağı) */}
+            <View style={styles.stationRow}>
+              <View style={[styles.stationDot, { backgroundColor: theme.colors.primary }]} />
+              <View style={styles.stationCol}>
+                <Text style={styles.stationRoleLabel}>BİNİŞ DURAĞI</Text>
+                <Text style={styles.stationName} numberOfLines={1}>
                   {currentRoute.startStop?.name || 'İlk Durak'}
                 </Text>
               </View>
               {currentRoute.walkDistanceStart > 0 && (
-                <View style={styles.walkTagInline}>
-                  <Footprints size={11} color={theme.colors.emerald} />
-                  <Text style={styles.walkTagInlineText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
+                <View style={styles.walkPillInline}>
+                  <Footprints size={10} color={theme.colors.primary} />
+                  <Text style={styles.walkPillText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
                 </View>
               )}
             </View>
 
-            {/* 2. Bus Leg 1 Connector & Stop Accordion */}
-            <View style={styles.subwayConnectorRow}>
-              <View style={[styles.subwayVerticalLine, { backgroundColor: currentRoute.color || theme.colors.violet }]} />
-              <View style={styles.busLegHintCol}>
-                <View style={styles.busLegHeaderRow}>
-                  <Text style={styles.busLegLineName}>
-                    {currentRoute.isTransfer ? currentRoute.line1 : currentRoute.name} Hattı
-                  </Text>
-                  <Text style={styles.busLegTimeHint}>
-                    • ~{currentRoute.busTimeMins || 12} dk
-                  </Text>
-                </View>
+            {/* 2. Leg 1 Connector */}
+            <View style={styles.connectorRow}>
+              <View style={[styles.connectorLine, { backgroundColor: currentRoute.color || theme.colors.primary }]} />
+              <View style={styles.legInfoCol}>
+                <Text style={styles.legLineName}>
+                  {currentRoute.isTransfer ? currentRoute.line1 : currentRoute.name} Hattı (~{currentRoute.busTimeMins || 12} dk)
+                </Text>
 
-                {/* Stop Count & Accordion Toggle */}
                 {leg1Stops.length > 0 && (
                   <TouchableOpacity
-                    style={styles.accordionToggleBtn}
+                    style={styles.accordionToggle}
                     onPress={toggleLeg1Stops}
                     activeOpacity={0.7}
                   >
@@ -360,22 +337,22 @@ export default function RouteResultSheet({
                       {leg1Stops.length} Ara Durak {showStopsLeg1 ? 'Gizle' : 'Göster'}
                     </Text>
                     {showStopsLeg1 ? (
-                      <ChevronUp size={12} color={theme.colors.lavender} />
+                      <ChevronUp size={11} color={theme.colors.textSecondary} />
                     ) : (
-                      <ChevronDown size={12} color={theme.colors.lavender} />
+                      <ChevronDown size={11} color={theme.colors.textSecondary} />
                     )}
                   </TouchableOpacity>
                 )}
               </View>
             </View>
 
-            {/* Unfolded Intermediate Stops for Leg 1 */}
+            {/* Unfolded Intermediate Stops (Leg 1) */}
             {showStopsLeg1 && leg1Stops.length > 0 && (
-              <View style={styles.expandedStopsContainer}>
+              <View style={styles.stopsDropdown}>
                 {leg1Stops.map((stopName, sIdx) => (
-                  <View key={sIdx} style={styles.expandedStopRow}>
-                    <View style={styles.expandedStopDot} />
-                    <Text style={styles.expandedStopName} numberOfLines={1}>
+                  <View key={sIdx} style={styles.dropdownStopRow}>
+                    <View style={styles.dropdownStopDot} />
+                    <Text style={styles.dropdownStopName} numberOfLines={1}>
                       {stopName}
                     </Text>
                   </View>
@@ -383,36 +360,34 @@ export default function RouteResultSheet({
               </View>
             )}
 
-            {/* 3. Transfer Node if any */}
+            {/* 3. Transfer Stop (If Transfer) */}
             {currentRoute.isTransfer && currentRoute.transferStop && (
               <>
-                <View style={styles.subwayNodeRow}>
-                  <View style={[styles.subwayDot, { backgroundColor: theme.colors.amber }]} />
-                  <View style={styles.subwayStationCol}>
-                    <Text style={[styles.subwayRole, { color: theme.colors.amber }]}>AKTARMA NOKTASI</Text>
-                    <Text style={[styles.subwayStationName, { color: theme.colors.amber }]} numberOfLines={1}>
+                <View style={styles.stationRow}>
+                  <View style={[styles.stationDot, { backgroundColor: theme.colors.fare }]} />
+                  <View style={styles.stationCol}>
+                    <Text style={[styles.stationRoleLabel, { color: theme.colors.fare }]}>AKTARMA DURAĞI</Text>
+                    <Text style={[styles.stationName, { color: theme.colors.textPrimary }]} numberOfLines={1}>
                       {currentRoute.transferStop.name}
                     </Text>
                   </View>
-                  <View style={styles.transferWaitBadge}>
-                    <Repeat size={10} color={theme.colors.amber} />
-                    <Text style={styles.transferWaitBadgeText}>{currentRoute.line2} Hattı</Text>
+                  <View style={styles.transferNoticePill}>
+                    <Repeat size={10} color={theme.colors.fare} />
+                    <Text style={styles.transferNoticeText}>{currentRoute.line2} Hattı</Text>
                   </View>
                 </View>
 
-                {/* Bus Leg 2 Connector */}
-                <View style={styles.subwayConnectorRow}>
-                  <View style={[styles.subwayVerticalLine, { backgroundColor: currentRoute.color2 || theme.colors.amber }]} />
-                  <View style={styles.busLegHintCol}>
-                    <View style={styles.busLegHeaderRow}>
-                      <Text style={[styles.busLegLineName, { color: theme.colors.amber }]}>
-                        {currentRoute.line2} Hattı
-                      </Text>
-                    </View>
+                {/* Leg 2 Connector */}
+                <View style={styles.connectorRow}>
+                  <View style={[styles.connectorLine, { backgroundColor: currentRoute.color2 || theme.colors.fare }]} />
+                  <View style={styles.legInfoCol}>
+                    <Text style={[styles.legLineName, { color: theme.colors.fare }]}>
+                      {currentRoute.line2} Hattı
+                    </Text>
 
                     {leg2Stops.length > 0 && (
                       <TouchableOpacity
-                        style={styles.accordionToggleBtn}
+                        style={styles.accordionToggle}
                         onPress={toggleLeg2Stops}
                         activeOpacity={0.7}
                       >
@@ -420,22 +395,22 @@ export default function RouteResultSheet({
                           {leg2Stops.length} Ara Durak {showStopsLeg2 ? 'Gizle' : 'Göster'}
                         </Text>
                         {showStopsLeg2 ? (
-                          <ChevronUp size={12} color={theme.colors.amber} />
+                          <ChevronUp size={11} color={theme.colors.textSecondary} />
                         ) : (
-                          <ChevronDown size={12} color={theme.colors.amber} />
+                          <ChevronDown size={11} color={theme.colors.textSecondary} />
                         )}
                       </TouchableOpacity>
                     )}
                   </View>
                 </View>
 
-                {/* Unfolded Intermediate Stops for Leg 2 */}
+                {/* Unfolded Intermediate Stops (Leg 2) */}
                 {showStopsLeg2 && leg2Stops.length > 0 && (
-                  <View style={styles.expandedStopsContainer}>
+                  <View style={styles.stopsDropdown}>
                     {leg2Stops.map((stopName, sIdx) => (
-                      <View key={sIdx} style={styles.expandedStopRow}>
-                        <View style={[styles.expandedStopDot, { backgroundColor: theme.colors.amber }]} />
-                        <Text style={styles.expandedStopName} numberOfLines={1}>
+                      <View key={sIdx} style={styles.dropdownStopRow}>
+                        <View style={[styles.dropdownStopDot, { backgroundColor: theme.colors.fare }]} />
+                        <Text style={styles.dropdownStopName} numberOfLines={1}>
                           {stopName}
                         </Text>
                       </View>
@@ -445,79 +420,76 @@ export default function RouteResultSheet({
               </>
             )}
 
-            {/* 4. Destination Node (İniş Durağı) */}
-            <View style={styles.subwayNodeRow}>
-              <View style={[styles.subwayDot, { backgroundColor: theme.colors.rose }]} />
-              <View style={styles.subwayStationCol}>
-                <Text style={[styles.subwayRole, { color: theme.colors.rose }]}>İNİŞ DURAĞI</Text>
-                <Text style={styles.subwayStationName} numberOfLines={1}>
+            {/* 4. Alight Stop (İniş Durağı) */}
+            <View style={styles.stationRow}>
+              <View style={[styles.stationDot, { backgroundColor: theme.colors.error }]} />
+              <View style={styles.stationCol}>
+                <Text style={[styles.stationRoleLabel, { color: theme.colors.error }]}>İNİŞ DURAĞI</Text>
+                <Text style={styles.stationName} numberOfLines={1}>
                   {currentRoute.endStop?.name || 'Varış Durağı'}
                 </Text>
               </View>
               {currentRoute.walkDistanceEnd > 0 && (
-                <View style={styles.walkTagInline}>
-                  <Footprints size={11} color={theme.colors.emerald} />
-                  <Text style={styles.walkTagInlineText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
+                <View style={styles.walkPillInline}>
+                  <Footprints size={10} color={theme.colors.primary} />
+                  <Text style={styles.walkPillText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
                 </View>
               )}
             </View>
           </View>
         ) : (
-          /* Walk Only Chamber */
-          <View style={styles.walkOnlyChamber}>
-            <View style={styles.walkOnlyIconCircle}>
-              <Footprints size={20} color={theme.colors.emerald} />
+          /* Walk Only Mode */
+          <View style={styles.walkOnlyBox}>
+            <View style={styles.walkIconBox}>
+              <Footprints size={18} color={theme.colors.primary} />
             </View>
             <View style={styles.walkOnlyInfo}>
-              <Text style={styles.walkOnlyTitle}>Doğrudan Yürüyüş Güzergahı</Text>
+              <Text style={styles.walkOnlyTitle}>Yürüyüş Rotası</Text>
               <Text style={styles.walkOnlyDesc}>
-                Yaklaşık {fmtWalk(currentRoute.walkDistanceStart)} mesafe yürüyerek {currentRoute.totalTime} dakikada hedefinize ulaşabilirsiniz.
+                {fmtWalk(currentRoute.walkDistanceStart)} mesafe (~{currentRoute.totalTime} dk) yürüyerek varabilirsiniz.
               </Text>
             </View>
           </View>
         )}
 
-        {/* Card Footer: Fare Cluster + CTAs */}
+        {/* Card Footer: Fare & Action */}
         <View style={styles.passFooterBar}>
-          {/* Fare cluster with optional quick toggle */}
           <View style={styles.fareCluster}>
-            <Text style={styles.farePriceValue}>{formatFare(fare)}</Text>
+            <Text style={styles.fareAmount}>{formatFare(fare)}</Text>
 
             {onFareTypeChange ? (
               <TouchableOpacity
-                style={styles.fareTypeTogglePill}
+                style={styles.fareTypePill}
                 onPress={() => onFareTypeChange(fareType === 'ogrenci' ? 'tam' : 'ogrenci')}
                 activeOpacity={0.7}
               >
                 {fareType === 'ogrenci' ? (
                   <>
-                    <GraduationCap size={11} color={theme.colors.lavender} />
-                    <Text style={styles.fareTypeToggleText}>Öğrenci ▾</Text>
+                    <GraduationCap size={11} color={theme.colors.textSecondary} />
+                    <Text style={styles.fareTypePillText}>Öğrenci ▾</Text>
                   </>
                 ) : (
                   <>
-                    <User size={11} color={theme.colors.amber} />
-                    <Text style={[styles.fareTypeToggleText, { color: theme.colors.amber }]}>Tam ▾</Text>
+                    <User size={11} color={theme.colors.textSecondary} />
+                    <Text style={styles.fareTypePillText}>Tam ▾</Text>
                   </>
                 )}
               </TouchableOpacity>
             ) : (
-              <View style={styles.fareTypePill}>
-                <Text style={styles.fareTypePillText}>
-                  {fareType === 'ogrenci' ? 'Öğrenci Tarifesi' : 'Tam Tarife'}
-                </Text>
-              </View>
+              <Text style={styles.fareTypeLabel}>
+                {fareType === 'ogrenci' ? 'Öğrenci' : 'Tam'}
+              </Text>
             )}
           </View>
 
           {/* Primary Action Button */}
           <TouchableOpacity
-            style={styles.detailsCtaBtn}
+            style={styles.detailsBtn}
             onPress={onOpenDetails}
             activeOpacity={0.8}
           >
-            <Text style={styles.detailsCtaText}>Tüm Adımlar</Text>
-            <ChevronRight size={15} color="#FFFFFF" />
+            <Text style={styles.detailsBtnText}>Tüm Adımlar</Text>
+            <ChevronRight size={14} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -532,28 +504,24 @@ const styles = StyleSheet.create({
     right: 12,
     bottom: 16,
     backgroundColor: theme.colors.surface,
-    borderRadius: 24,
-    paddingHorizontal: 16,
+    borderRadius: theme.radius.lg,
+    paddingHorizontal: 14,
     paddingTop: 8,
-    paddingBottom: 14,
+    paddingBottom: 12,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.25)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.6,
-    shadowRadius: 22,
-    elevation: 16,
+    borderColor: theme.colors.border,
+    ...theme.shadows.floating,
     zIndex: 95,
   },
   grabberBox: {
     alignItems: 'center',
-    paddingVertical: 5,
+    paddingVertical: 4,
   },
   grabberBar: {
-    width: 38,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.22)',
+    backgroundColor: theme.colors.border,
   },
   headerRow: {
     flexDirection: 'row',
@@ -565,109 +533,91 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingRight: 10,
   },
-  destBadgeRow: {
+  destMetaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginBottom: 2,
   },
-  destLabel: {
+  destMetaLabel: {
     fontSize: 9,
-    fontWeight: '800',
+    fontWeight: '700',
     color: theme.colors.textMuted,
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
-  fromLocationSub: {
+  fromLocationHint: {
     fontSize: 9,
-    fontWeight: '600',
     color: theme.colors.textMuted,
     flexShrink: 1,
   },
   destTitle: {
-    fontSize: 16,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.3,
+    letterSpacing: -0.2,
   },
-  headerControlsRow: {
+  headerActions: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  headerIconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  headerBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.radius.sm,
     backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  closeBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: theme.colors.surfaceElevated,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
   routeTabsScroll: {
     flexDirection: 'row',
-    gap: 8,
+    gap: 6,
     paddingVertical: 6,
-    paddingHorizontal: 2,
   },
-  routeTabPill: {
+  routeTab: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: theme.colors.surfaceElevated,
-    paddingVertical: 6,
-    paddingHorizontal: 11,
-    borderRadius: theme.radius.pill,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.sm,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
-  routeTabPillActive: {
-    backgroundColor: 'rgba(139, 92, 246, 0.18)',
-    borderColor: theme.colors.lavender,
+  routeTabActive: {
+    backgroundColor: theme.colors.surfaceHover,
+    borderColor: theme.colors.primary,
   },
-  tabDivider: {
+  routeTabDivider: {
     width: 1,
-    height: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
+    height: 9,
+    backgroundColor: theme.colors.border,
   },
   routeTabTime: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 11.5,
+    fontWeight: '700',
     color: theme.colors.textSecondary,
   },
   routeTabTimeActive: {
-    color: theme.colors.lavender,
+    color: theme.colors.primary,
   },
   routeTabCode: {
     fontSize: 11,
     color: theme.colors.textMuted,
-    fontWeight: '700',
+    fontWeight: '600',
   },
   routeTabCodeActive: {
-    color: '#FFFFFF',
-  },
-  fastestMiniDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
-    backgroundColor: theme.colors.emerald,
+    color: theme.colors.textPrimary,
   },
   heroPassCard: {
     backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: 18,
+    borderRadius: theme.radius.md,
     padding: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
     marginTop: 4,
   },
   passTopBar: {
@@ -676,7 +626,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     marginBottom: 10,
   },
-  lineBadgesGroup: {
+  lineBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
@@ -684,78 +634,71 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   lineBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: theme.radius.xs,
   },
   lineBadgeText: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 13,
-    letterSpacing: 0.2,
+    fontWeight: '700',
+    fontSize: 12.5,
   },
-  transferBadgeChain: {
+  transferBadgesRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
   },
   walkBadgePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: theme.colors.emeraldLight,
-    paddingHorizontal: 9,
-    paddingVertical: 4,
-    borderRadius: theme.radius.pill,
+    gap: 4,
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: theme.radius.xs,
   },
   walkBadgePillText: {
-    color: theme.colors.emerald,
-    fontSize: 12,
+    color: theme.colors.primary,
+    fontSize: 11.5,
+    fontWeight: '600',
+  },
+  fastestTag: {
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: theme.radius.xs,
+  },
+  fastestTagText: {
+    color: theme.colors.primary,
+    fontSize: 9,
     fontWeight: '700',
+    letterSpacing: 0.4,
   },
-  statusPillFastest: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: theme.colors.emeraldLight,
+  directTag: {
+    backgroundColor: theme.colors.surfaceHover,
     paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingVertical: 2,
+    borderRadius: theme.radius.xs,
   },
-  statusPillFastestText: {
-    color: theme.colors.emerald,
+  directTagText: {
+    color: theme.colors.textSecondary,
     fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
-  statusPillDirect: {
-    backgroundColor: theme.colors.lavenderLight,
+  transferTag: {
+    backgroundColor: theme.colors.fareLight,
     paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
+    paddingVertical: 2,
+    borderRadius: theme.radius.xs,
   },
-  statusPillDirectText: {
-    color: theme.colors.lavender,
+  transferTagText: {
+    color: theme.colors.fare,
     fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
+    fontWeight: '700',
+    letterSpacing: 0.4,
   },
-  statusPillTransfer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    backgroundColor: theme.colors.amberLight,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-    borderRadius: 4,
-  },
-  statusPillTransferText: {
-    color: theme.colors.amber,
-    fontSize: 9,
-    fontWeight: '900',
-    letterSpacing: 0.5,
-  },
-  timeGroup: {
+  timeCluster: {
     alignItems: 'flex-end',
     marginLeft: 8,
   },
@@ -764,167 +707,156 @@ const styles = StyleSheet.create({
     alignItems: 'baseline',
     gap: 2,
   },
-  durationNumber: {
-    fontSize: 24,
-    fontWeight: '900',
+  durationBig: {
+    fontSize: 22,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    letterSpacing: -0.5,
+    letterSpacing: -0.4,
   },
   durationUnit: {
-    fontSize: 12,
-    fontWeight: '800',
+    fontSize: 11.5,
+    fontWeight: '600',
     color: theme.colors.textSecondary,
   },
   etaText: {
     fontSize: 10,
     color: theme.colors.textMuted,
-    fontWeight: '700',
-    marginTop: 1,
+    fontWeight: '500',
   },
-  subwayRailChamber: {
-    backgroundColor: theme.colors.inputBg,
-    borderRadius: 14,
+  subwayTimelineBox: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.sm,
     paddingVertical: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
-  subwayNodeRow: {
+  stationRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  subwayDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  stationDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
   },
-  subwayStationCol: {
+  stationCol: {
     flex: 1,
   },
-  subwayRole: {
+  stationRoleLabel: {
     fontSize: 8.5,
-    fontWeight: '800',
-    color: theme.colors.textMuted,
-    letterSpacing: 0.5,
-  },
-  subwayStationName: {
-    fontSize: 12.5,
     fontWeight: '700',
+    color: theme.colors.textMuted,
+    letterSpacing: 0.4,
+  },
+  stationName: {
+    fontSize: 12,
+    fontWeight: '600',
     color: theme.colors.textPrimary,
   },
-  walkTagInline: {
+  walkPillInline: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: theme.colors.emeraldLight,
-    paddingHorizontal: 6,
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 5,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: theme.radius.xs,
   },
-  walkTagInlineText: {
-    color: theme.colors.emerald,
-    fontSize: 10,
-    fontWeight: '700',
+  walkPillText: {
+    color: theme.colors.primary,
+    fontSize: 9.5,
+    fontWeight: '600',
   },
-  subwayConnectorRow: {
+  connectorRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: 10,
-    paddingVertical: 4,
+    paddingVertical: 3,
   },
-  subwayVerticalLine: {
-    width: 2.5,
-    height: '100%',
-    minHeight: 22,
-    borderRadius: 1.5,
+  connectorLine: {
+    width: 2,
+    minHeight: 20,
+    borderRadius: 1,
     marginLeft: 2.5,
   },
-  busLegHintCol: {
+  legInfoCol: {
     flex: 1,
   },
-  busLegHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
+  legLineName: {
+    fontSize: 10.5,
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
-  busLegLineName: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: theme.colors.lavender,
-  },
-  busLegTimeHint: {
-    fontSize: 10,
-    color: theme.colors.textMuted,
-  },
-  accordionToggleBtn: {
+  accordionToggle: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    paddingHorizontal: 7,
-    paddingVertical: 2.5,
-    borderRadius: 4,
-    marginTop: 3,
+    paddingVertical: 2,
+    marginTop: 2,
   },
   accordionToggleText: {
     fontSize: 9.5,
-    fontWeight: '700',
-    color: theme.colors.lavender,
+    fontWeight: '600',
+    color: theme.colors.textMuted,
   },
-  expandedStopsContainer: {
-    backgroundColor: 'rgba(0, 0, 0, 0.25)',
-    borderRadius: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
+  stopsDropdown: {
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.radius.xs,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
     marginLeft: 14,
-    marginBottom: 6,
-    gap: 4,
+    marginBottom: 4,
+    gap: 3,
   },
-  expandedStopRow: {
+  dropdownStopRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  expandedStopDot: {
-    width: 4,
-    height: 4,
+  dropdownStopDot: {
+    width: 3.5,
+    height: 3.5,
     borderRadius: 2,
-    backgroundColor: theme.colors.lavender,
+    backgroundColor: theme.colors.textMuted,
   },
-  expandedStopName: {
-    fontSize: 10.5,
+  dropdownStopName: {
+    fontSize: 10,
     color: theme.colors.textSecondary,
-    fontWeight: '600',
   },
-  transferWaitBadge: {
+  transferNoticePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: theme.colors.amberLight,
-    paddingHorizontal: 6,
+    gap: 3,
+    backgroundColor: theme.colors.fareLight,
+    paddingHorizontal: 5,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: theme.radius.xs,
   },
-  transferWaitBadgeText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: theme.colors.amber,
+  transferNoticeText: {
+    fontSize: 9.5,
+    fontWeight: '700',
+    color: theme.colors.fare,
   },
-  walkOnlyChamber: {
+  walkOnlyBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: theme.colors.inputBg,
-    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.sm,
     padding: 10,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
-  walkOnlyIconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.emeraldLight,
+  walkIconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.radius.xs,
+    backgroundColor: theme.colors.primaryLight,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -933,9 +865,8 @@ const styles = StyleSheet.create({
   },
   walkOnlyTitle: {
     fontSize: 12,
-    fontWeight: '800',
-    color: theme.colors.emerald,
-    marginBottom: 2,
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
   walkOnlyDesc: {
     fontSize: 11,
@@ -947,7 +878,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    borderTopColor: theme.colors.borderSubtle,
     paddingTop: 8,
   },
   fareCluster: {
@@ -955,174 +886,143 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
   },
-  farePriceValue: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: theme.colors.lavender,
+  fareAmount: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: theme.colors.fare,
   },
-  fareTypeTogglePill: {
+  fareTypePill: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 3,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-    paddingHorizontal: 7,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  fareTypeToggleText: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: theme.colors.lavender,
-  },
-  fareTypePill: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
+    paddingVertical: 2.5,
+    borderRadius: theme.radius.xs,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
   fareTypePillText: {
     fontSize: 9.5,
-    color: theme.colors.textMuted,
-    fontWeight: '700',
+    fontWeight: '600',
+    color: theme.colors.textSecondary,
   },
-  detailsCtaBtn: {
+  fareTypeLabel: {
+    fontSize: 9.5,
+    color: theme.colors.textMuted,
+  },
+  detailsBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: theme.colors.violet,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    shadowColor: theme.colors.violet,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 5,
-    elevation: 3,
+    backgroundColor: theme.colors.surfaceHover,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  detailsCtaText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
+  detailsBtnText: {
+    color: theme.colors.textPrimary,
+    fontSize: 11.5,
+    fontWeight: '600',
   },
-  /* Minimized capsule style */
+  /* Minimized capsule */
   minimizedContainer: {
     position: 'absolute',
     left: 14,
     right: 14,
     bottom: 20,
     backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingTop: 6,
-    paddingBottom: 10,
+    borderRadius: theme.radius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
     borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.35)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.5,
-    shadowRadius: 16,
-    elevation: 10,
+    borderColor: theme.colors.border,
+    ...theme.shadows.subtle,
     zIndex: 95,
-  },
-  minimizedGrabber: {
-    width: 32,
-    height: 3,
-    borderRadius: 1.5,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    alignSelf: 'center',
-    marginBottom: 6,
   },
   minimizedRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   miniLineBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    borderRadius: theme.radius.xs,
   },
   miniLineBadgeText: {
     color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 12,
+    fontWeight: '700',
+    fontSize: 11,
   },
   minimizedInfo: {
     flex: 1,
   },
   minimizedDest: {
-    fontSize: 13,
-    fontWeight: '800',
+    fontSize: 12.5,
+    fontWeight: '600',
     color: theme.colors.textPrimary,
   },
   minimizedSub: {
-    fontSize: 10.5,
-    fontWeight: '600',
+    fontSize: 10,
     color: theme.colors.textMuted,
     marginTop: 1,
   },
-  expandActionBubble: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+  expandIconBox: {
+    width: 26,
+    height: 26,
+    borderRadius: theme.radius.xs,
     backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
-  /* Empty State Card */
+  /* Empty State */
   emptyCardBox: {
     alignItems: 'center',
     paddingVertical: 14,
     paddingHorizontal: 8,
   },
   emptyIconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 38,
+    height: 38,
+    borderRadius: theme.radius.sm,
     backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 10,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.borderSubtle,
   },
   emptyTitle: {
-    fontSize: 15,
-    fontWeight: '800',
+    fontSize: 14,
+    fontWeight: '700',
     color: theme.colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 3,
   },
   emptySubtitle: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: theme.colors.textSecondary,
     textAlign: 'center',
-    lineHeight: 16,
-    marginBottom: 6,
-  },
-  emptyHint: {
-    fontSize: 10.5,
-    color: theme.colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 14,
-    marginBottom: 12,
-    paddingHorizontal: 10,
+    lineHeight: 15,
+    marginBottom: 10,
+    paddingHorizontal: 8,
   },
   emptyRetryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    backgroundColor: theme.colors.violet,
-    paddingVertical: 9,
-    paddingHorizontal: 16,
-    borderRadius: 10,
+    gap: 5,
+    backgroundColor: theme.colors.surfaceHover,
+    paddingVertical: 7,
+    paddingHorizontal: 13,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
   emptyRetryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontSize: 11.5,
+    fontWeight: '600',
   },
 });

@@ -9,36 +9,33 @@ import {
 } from 'react-native';
 import {
   Search,
-  Route,
-  MapPin,
-  Map as MapIcon,
   X,
-  Compass,
-  ArrowRight,
-  Layers,
-  Activity,
-  SlidersHorizontal,
   ChevronRight,
-  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  MapPin,
   Navigation
 } from 'lucide-react-native';
+import { theme } from '../theme';
 import { etusLines, allStopsDB } from '../data/db';
 
 const CORRIDORS = [
-  { id: 'all', title: 'Tüm Şebeke', subtitle: 'Tüm ETUS hatları' },
-  { id: 'kampus', title: 'Kampüs Aksı', subtitle: 'Balkan & Ayşekadın hatları' },
-  { id: 'otogar', title: 'Otogar Ekspres', subtitle: 'Terminal bağlantıları' },
-  { id: 'merkez', title: 'Tarihi Merkez', subtitle: 'Çarşı & Saraçlar hatları' },
+  { id: 'all', title: 'Tüm Hatlar' },
+  { id: 'kampus', title: 'Kampüs / Üniversite' },
+  { id: 'otogar', title: 'Otogar' },
+  { id: 'merkez', title: 'Çarşı / Merkez' },
 ];
 
-export default function LinesExplorer({ onSelectLineOnMap }) {
+export default function LinesExplorer({ onSelectLine, onSelectLineOnMap, onClose }) {
   const [filterText, setFilterText] = useState('');
   const [selectedCorridor, setSelectedCorridor] = useState('all');
-  const [activeLineCode, setActiveLineCode] = useState('1A');
+  const [expandedLineCode, setExpandedLineCode] = useState('1A');
   const [selectedDirIdx, setSelectedDirIdx] = useState(0);
-  const [showAllStations, setShowAllStations] = useState(false);
+  const [showAllStops, setShowAllStops] = useState(false);
 
-  // Parse all lines sorted numerically
+  const handleSelectOnMap = onSelectLine || onSelectLineOnMap;
+
+  // Sorted numerically
   const allLines = useMemo(() => {
     return Object.values(etusLines).sort((a, b) => {
       const getNum = (c) => parseInt(c) || 0;
@@ -79,66 +76,61 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
     });
   }, [allLines, filterText, selectedCorridor]);
 
-  // Active line currently highlighted on the stage
-  const activeLine = useMemo(() => {
-    const found = allLines.find(l => l.code === activeLineCode);
-    return found || filteredLines[0] || allLines[0];
-  }, [allLines, filteredLines, activeLineCode]);
-
-  const activeDirection = activeLine?.directions?.[selectedDirIdx] || activeLine?.directions?.[0];
-  const stopIds = activeDirection?.stopIds || [];
-  const totalStopsCount = stopIds.length;
-
-  // Key Terminus and Interchange points
-  const firstStop = stopIds[0] ? allStopsDB[stopIds[0]] : null;
-  const lastStop = stopIds[stopIds.length - 1] ? allStopsDB[stopIds[stopIds.length - 1]] : null;
-  const midStop = stopIds[Math.floor(stopIds.length / 2)] ? allStopsDB[stopIds[Math.floor(stopIds.length / 2)]] : null;
-
-  // Stations to render (either all or compact summary)
-  const displayedStopIds = showAllStations ? stopIds : stopIds.slice(0, 8);
-
-  const handleSelectLine = (code) => {
-    setActiveLineCode(code);
-    setSelectedDirIdx(0);
-    setShowAllStations(false);
+  const toggleLine = (code) => {
+    if (expandedLineCode === code) {
+      setExpandedLineCode(null);
+    } else {
+      setExpandedLineCode(code);
+      setSelectedDirIdx(0);
+      setShowAllStops(false);
+    }
   };
 
   return (
-    <View style={styles.studioContainer}>
-      {/* 1. Network Intelligence Header */}
-      <View style={styles.heroPanel}>
-        <View style={styles.heroHeaderRow}>
-          <View style={styles.pulseIndicator}>
-            <View style={styles.pulseDot} />
-            <Text style={styles.pulseLabel}>CANLI ŞEBEKE ANALİZİ</Text>
-          </View>
-          <Text style={styles.networkBadge}>ETUS 2026</Text>
+    <View style={styles.container}>
+      {/* Header Bar */}
+      <View style={styles.headerBar}>
+        <View>
+          <Text style={styles.headerTitle}>ETUS Hatları</Text>
+          <Text style={styles.headerSubtitle}>
+            {allLines.length} aktif hat • Edirne Toplu Taşıma
+          </Text>
         </View>
 
-        <Text style={styles.heroTitle}>Toplu Taşıma Koridorları</Text>
-        <Text style={styles.heroSubtitle}>
-          Edirne genelinde 23 aktif hat, 745 durak ve 4 stratejik transfer aksı
-        </Text>
+        {onClose && (
+          <TouchableOpacity
+            style={styles.closeBtn}
+            onPress={onClose}
+            activeOpacity={0.7}
+            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+          >
+            <X size={16} color={theme.colors.textPrimary} />
+          </TouchableOpacity>
+        )}
+      </View>
 
-        {/* Live Network Metric Cards */}
-        <View style={styles.metricsGrid}>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricVal}>{allLines.length}</Text>
-            <Text style={styles.metricLabel}>Şehir İçi Hat</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={[styles.metricVal, { color: '#C4B5FD' }]}>745+</Text>
-            <Text style={styles.metricLabel}>Kayıtlı Durak</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={[styles.metricVal, { color: '#A78BFA' }]}>4</Text>
-            <Text style={styles.metricLabel}>Ana Koridor</Text>
-          </View>
+      {/* Search Bar Input */}
+      <View style={styles.searchContainer}>
+        <View style={styles.searchBar}>
+          <Search size={15} color={theme.colors.textMuted} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Hat kodu veya güzergah ara (1A, Otogar...)"
+            placeholderTextColor={theme.colors.textMuted}
+            value={filterText}
+            onChangeText={setFilterText}
+            autoCorrect={false}
+          />
+          {filterText.length > 0 && (
+            <TouchableOpacity onPress={() => setFilterText('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <X size={14} color={theme.colors.textSecondary} />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 
-      {/* 2. Corridor Filter Switcher */}
-      <View style={styles.corridorSection}>
+      {/* Corridor Filter Chips */}
+      <View style={styles.corridorContainer}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -149,742 +141,442 @@ export default function LinesExplorer({ onSelectLineOnMap }) {
             return (
               <TouchableOpacity
                 key={cor.id}
-                style={[styles.corridorTab, isActive && styles.corridorTabActive]}
+                style={[styles.corridorChip, isActive && styles.corridorChipActive]}
                 onPress={() => setSelectedCorridor(cor.id)}
                 activeOpacity={0.7}
               >
-                <Text style={[styles.corridorTitle, isActive && styles.corridorTitleActive]}>
+                <Text style={[styles.corridorChipText, isActive && styles.corridorChipTextActive]}>
                   {cor.title}
                 </Text>
-                <Text style={styles.corridorSubtitle}>{cor.subtitle}</Text>
               </TouchableOpacity>
             );
           })}
         </ScrollView>
       </View>
 
-      {/* 3. Search Field Bar */}
-      <View style={styles.searchBarContainer}>
-        <Search size={16} color="#A78BFA" />
-        <TextInput
-          style={styles.searchTextInput}
-          placeholder="Hat no veya güzergah terminali ara (1A, Otogar...)"
-          placeholderTextColor="#64748B"
-          value={filterText}
-          onChangeText={setFilterText}
-          autoCorrect={false}
-        />
-        {filterText.length > 0 && (
-          <TouchableOpacity onPress={() => setFilterText('')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-            <X size={15} color="#94A3B8" />
-          </TouchableOpacity>
-        )}
-      </View>
+      {/* Lines Stream List */}
+      <ScrollView contentContainerStyle={styles.linesListContent} showsVerticalScrollIndicator={false}>
+        {filteredLines.length === 0 ? (
+          <View style={styles.emptyResultsBox}>
+            <Text style={styles.emptyResultsTitle}>Sonuç Bulunamadı</Text>
+            <Text style={styles.emptyResultsSub}>Arama kriterinize uygun ETUS hattı bulunamadı.</Text>
+          </View>
+        ) : (
+          filteredLines.map(line => {
+            const isExpanded = expandedLineCode === line.code;
+            const currentDir = line.directions?.[selectedDirIdx] || line.directions?.[0];
+            const stopIds = currentDir?.stopIds || [];
+            const displayedStops = showAllStops ? stopIds : stopIds.slice(0, 6);
 
-      {/* 4. Horizontal Line Selector Rail */}
-      <View style={styles.selectorRailSection}>
-        <Text style={styles.sectionHeaderTitle}>HIZLI HAT SEÇİCİ</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.selectorRailScroll}
-        >
-          {filteredLines.map(l => {
-            const isCurrent = l.code === activeLine?.code;
             return (
-              <TouchableOpacity
-                key={l.code}
-                style={[styles.linePillBtn, isCurrent && styles.linePillBtnActive]}
-                onPress={() => handleSelectLine(l.code)}
-                activeOpacity={0.7}
-              >
-                <View style={[styles.linePillDot, { backgroundColor: l.color || '#8B5CF6' }]} />
-                <Text style={[styles.linePillText, isCurrent && styles.linePillTextActive]}>
-                  {l.code}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </ScrollView>
-      </View>
-
-      {/* 5. Featured Line Interactive Stage */}
-      {activeLine && (
-        <View style={styles.showcaseStage}>
-          {/* Stage Top Bar */}
-          <View style={styles.stageHeroRow}>
-            <View style={styles.stageBadgeCol}>
-              <View style={[styles.largeBadge, { backgroundColor: activeLine.color || '#7C3AED' }]}>
-                <Text style={styles.largeBadgeText}>{activeLine.code}</Text>
-              </View>
-              <View style={styles.verifiedDot}>
-                <CheckCircle2 size={12} color="#C4B5FD" />
-                <Text style={styles.verifiedText}>Aktif Hat</Text>
-              </View>
-            </View>
-
-            <View style={styles.stageInfoCol}>
-              <Text style={styles.stageHeadsign} numberOfLines={2}>
-                {activeDirection?.headSign || `Hat ${activeLine.code}`}
-              </Text>
-              <Text style={styles.stageMeta}>
-                Toplam {totalStopsCount} Durak • {activeLine.directions?.length || 1} Yön
-              </Text>
-            </View>
-          </View>
-
-          {/* Direction Switcher Tabs */}
-          {activeLine.directions?.length > 1 && (
-            <View style={styles.dirSegmentContainer}>
-              {activeLine.directions.map((dir, dIdx) => {
-                const isSelected = selectedDirIdx === dIdx;
-                return (
-                  <TouchableOpacity
-                    key={dIdx}
-                    style={[styles.dirSegmentTab, isSelected && styles.dirSegmentTabActive]}
-                    onPress={() => setSelectedDirIdx(dIdx)}
-                    activeOpacity={0.7}
-                  >
-                    <Text
-                      style={[styles.dirSegmentText, isSelected && styles.dirSegmentTextActive]}
-                      numberOfLines={1}
-                    >
-                      Yön {dIdx + 1}: {dir.headSign?.split(' - ')[0] || `Yön ${dIdx + 1}`}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-          )}
-
-          {/* Terminal Station Waypoint Ribbon */}
-          <View style={styles.waypointRibbon}>
-            <View style={styles.ribbonItem}>
-              <View style={[styles.terminalIndicator, { backgroundColor: '#10B981' }]} />
-              <View style={styles.ribbonTextCol}>
-                <Text style={styles.ribbonRole}>BAŞLANGIÇ</Text>
-                <Text style={styles.ribbonName} numberOfLines={1}>
-                  {firstStop?.name || 'İlk İstasyon'}
-                </Text>
-              </View>
-            </View>
-
-            <View style={styles.ribbonDividerRow}>
-              <View style={styles.ribbonDividerLine} />
-              <ArrowRight size={13} color="#A78BFA" />
-              <View style={styles.ribbonDividerLine} />
-            </View>
-
-            <View style={styles.ribbonItem}>
-              <View style={[styles.terminalIndicator, { backgroundColor: '#EF4444' }]} />
-              <View style={styles.ribbonTextCol}>
-                <Text style={styles.ribbonRole}>VARIŞ</Text>
-                <Text style={styles.ribbonName} numberOfLines={1}>
-                  {lastStop?.name || 'Son İstasyon'}
-                </Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Primary Action Button: View on Map */}
-          {onSelectLineOnMap && (
-            <TouchableOpacity
-              style={styles.mapActionTrigger}
-              onPress={() => onSelectLineOnMap(activeLine, selectedDirIdx)}
-              activeOpacity={0.85}
-            >
-              <Navigation size={16} color="#FFFFFF" />
-              <Text style={styles.mapActionTriggerText}>
-                {activeLine.code} Hattını Haritada Canlı Gör
-              </Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Stations Runway Sequence */}
-          <View style={styles.runwaySection}>
-            <View style={styles.runwayHeader}>
-              <Text style={styles.runwayHeaderTitle}>
-                Güzergah Durak Listesi ({displayedStopIds.length}/{totalStopsCount})
-              </Text>
-              {totalStopsCount > 8 && (
+              <View key={line.code} style={styles.lineCardItem}>
+                {/* Line Row Summary */}
                 <TouchableOpacity
-                  onPress={() => setShowAllStations(!showAllStations)}
-                  activeOpacity={0.7}
-                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  style={[styles.lineSummaryRow, isExpanded && styles.lineSummaryRowExpanded]}
+                  onPress={() => toggleLine(line.code)}
+                  activeOpacity={0.75}
                 >
-                  <Text style={styles.runwayToggleText}>
-                    {showAllStations ? 'Daha Az Göster' : 'Tümünü Göster'}
-                  </Text>
-                </TouchableOpacity>
-              )}
-            </View>
+                  {/* Badge */}
+                  <View style={[styles.lineBadgeBox, { backgroundColor: line.color || theme.colors.primary }]}>
+                    <Text style={styles.lineBadgeText}>{line.code}</Text>
+                  </View>
 
-            <View style={styles.stationListGrid}>
-              {displayedStopIds.map((stopId, sIdx) => {
-                const stop = allStopsDB[stopId];
-                const isFirst = sIdx === 0;
-                const isLast = sIdx === totalStopsCount - 1;
-
-                return (
-                  <View key={`${stopId}_${sIdx}`} style={styles.stationItem}>
-                    <View style={styles.stationIndexBox}>
-                      <Text style={styles.stationIndexNum}>{sIdx + 1}</Text>
-                    </View>
-                    <View style={styles.stationDotIndicator}>
-                      <View
-                        style={[
-                          styles.dotCore,
-                          isFirst && styles.dotStart,
-                          isLast && styles.dotEnd,
-                          !isFirst && !isLast && { backgroundColor: activeLine.color || '#8B5CF6' }
-                        ]}
-                      />
-                    </View>
-                    <Text
-                      style={[
-                        styles.stationNameLabel,
-                        (isFirst || isLast) && styles.stationNameLabelHighlight
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {stop?.name || `Durak #${stopId}`}
+                  {/* Info */}
+                  <View style={styles.lineInfoCol}>
+                    <Text style={styles.lineHeadSign} numberOfLines={1}>
+                      {line.directions?.[0]?.headSign || `Hat ${line.code}`}
+                    </Text>
+                    <Text style={styles.lineMeta}>
+                      {line.directions?.length || 1} Yön • {line.directions?.[0]?.stopIds?.length || 0} Durak
                     </Text>
                   </View>
-                );
-              })}
-            </View>
-          </View>
-        </View>
-      )}
 
-      {/* 6. Corridor Line Cards Matrix */}
-      <View style={styles.matrixSection}>
-        <Text style={styles.sectionHeaderTitle}>
-          TÜM HATLAR KATALOĞU ({filteredLines.length})
-        </Text>
-
-        <View style={styles.linesMatrixGrid}>
-          {filteredLines.map(l => {
-            const isSelected = l.code === activeLine?.code;
-            const dir1 = l.directions?.[0];
-            const count = dir1?.stopIds?.length || 0;
-
-            return (
-              <TouchableOpacity
-                key={l.code}
-                style={[styles.matrixCard, isSelected && styles.matrixCardSelected]}
-                onPress={() => handleSelectLine(l.code)}
-                activeOpacity={0.75}
-              >
-                <View style={styles.matrixCardTop}>
-                  <View style={[styles.matrixBadge, { backgroundColor: l.color || '#7C3AED' }]}>
-                    <Text style={styles.matrixBadgeText}>{l.code}</Text>
+                  {/* Toggle Arrow */}
+                  <View style={styles.expandChevronBox}>
+                    {isExpanded ? (
+                      <ChevronUp size={16} color={theme.colors.textSecondary} />
+                    ) : (
+                      <ChevronRight size={16} color={theme.colors.textMuted} />
+                    )}
                   </View>
+                </TouchableOpacity>
 
-                  <TouchableOpacity
-                    style={styles.quickMapMiniBtn}
-                    onPress={() => onSelectLineOnMap && onSelectLineOnMap(l, 0)}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <MapIcon size={13} color="#C4B5FD" />
-                  </TouchableOpacity>
-                </View>
+                {/* Expanded Details Section */}
+                {isExpanded && (
+                  <View style={styles.expandedDetailsSection}>
+                    {/* Direction Switcher (if multiple directions) */}
+                    {line.directions?.length > 1 && (
+                      <View style={styles.dirSegmentRow}>
+                        {line.directions.map((dir, dIdx) => {
+                          const isDirActive = selectedDirIdx === dIdx;
+                          return (
+                            <TouchableOpacity
+                              key={dIdx}
+                              style={[styles.dirSegmentBtn, isDirActive && styles.dirSegmentBtnActive]}
+                              onPress={() => {
+                                setSelectedDirIdx(dIdx);
+                                setShowAllStops(false);
+                              }}
+                              activeOpacity={0.7}
+                            >
+                              <Text
+                                style={[styles.dirSegmentText, isDirActive && styles.dirSegmentTextActive]}
+                                numberOfLines={1}
+                              >
+                                {dir.headSign || `Yön ${dIdx + 1}`}
+                              </Text>
+                            </TouchableOpacity>
+                          );
+                        })}
+                      </View>
+                    )}
 
-                <Text style={styles.matrixLineName} numberOfLines={2}>
-                  {dir1?.headSign || `Hat ${l.code}`}
-                </Text>
+                    {/* View on Map CTA */}
+                    {handleSelectOnMap && (
+                      <TouchableOpacity
+                        style={styles.viewOnMapBtn}
+                        onPress={() => handleSelectOnMap(line, selectedDirIdx)}
+                        activeOpacity={0.8}
+                      >
+                        <Navigation size={14} color={theme.colors.textPrimary} />
+                        <Text style={styles.viewOnMapBtnText}>
+                          {line.code} Hattını Haritada Göster
+                        </Text>
+                      </TouchableOpacity>
+                    )}
 
-                <View style={styles.matrixFooter}>
-                  <Text style={styles.matrixStopsCount}>{count} Durak</Text>
-                  <ChevronRight size={13} color="#64748B" />
-                </View>
-              </TouchableOpacity>
+                    {/* Stops List */}
+                    <View style={styles.stopsBlock}>
+                      <View style={styles.stopsHeaderRow}>
+                        <Text style={styles.stopsHeaderTitle}>
+                          Güzergah Durakları ({stopIds.length})
+                        </Text>
+                        {stopIds.length > 6 && (
+                          <TouchableOpacity
+                            onPress={() => setShowAllStops(!showAllStops)}
+                            activeOpacity={0.7}
+                            hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                          >
+                            <Text style={styles.stopsToggleLink}>
+                              {showAllStops ? 'Daha Az' : 'Tümünü Gör'}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      </View>
+
+                      <View style={styles.stopsTimelineContainer}>
+                        {displayedStops.map((stopId, sIdx) => {
+                          const stop = allStopsDB[stopId];
+                          const isFirst = sIdx === 0;
+                          const isLast = sIdx === stopIds.length - 1;
+
+                          return (
+                            <View key={`${stopId}_${sIdx}`} style={styles.stopTimelineItem}>
+                              <View style={styles.stopIndexCol}>
+                                <Text style={styles.stopIndexText}>{sIdx + 1}</Text>
+                              </View>
+                              <View style={styles.stopDotCol}>
+                                <View
+                                  style={[
+                                    styles.stopDotCore,
+                                    isFirst && { backgroundColor: theme.colors.primary },
+                                    isLast && { backgroundColor: theme.colors.error },
+                                    !isFirst && !isLast && { backgroundColor: theme.colors.border }
+                                  ]}
+                                />
+                                {sIdx < displayedStops.length - 1 && <View style={styles.stopDotLine} />}
+                              </View>
+                              <Text
+                                style={[
+                                  styles.stopNameText,
+                                  (isFirst || isLast) && styles.stopNameTextHighlight
+                                ]}
+                                numberOfLines={1}
+                              >
+                                {stop?.name || `Durak #${stopId}`}
+                              </Text>
+                            </View>
+                          );
+                        })}
+                      </View>
+                    </View>
+                  </View>
+                )}
+              </View>
             );
-          })}
-        </View>
-      </View>
+          })
+        )}
+      </ScrollView>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  studioContainer: {
-    paddingBottom: 40,
-    backgroundColor: '#0B0E14',
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
   },
-  heroPanel: {
-    backgroundColor: '#121622',
-    borderRadius: 20,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    marginBottom: 16,
-    shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.25,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  heroHeaderRow: {
+  headerBar: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 8,
+    paddingHorizontal: 16,
+    paddingTop: 16,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.borderSubtle,
   },
-  pulseIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  pulseDot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#10B981',
-  },
-  pulseLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    color: '#10B981',
-    letterSpacing: 0.8,
-  },
-  networkBadge: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#C4B5FD',
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  heroTitle: {
-    fontSize: 20,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
-  },
-  heroSubtitle: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 3,
-    lineHeight: 17,
-  },
-  metricsGrid: {
-    flexDirection: 'row',
-    gap: 10,
-    marginTop: 14,
-  },
-  metricCard: {
-    flex: 1,
-    backgroundColor: '#181F30',
-    borderRadius: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  metricVal: {
-    fontSize: 18,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.4,
-  },
-  metricLabel: {
-    fontSize: 10,
+  headerTitle: {
+    fontSize: 16,
     fontWeight: '700',
-    color: '#64748B',
-    marginTop: 2,
-    textTransform: 'uppercase',
+    color: theme.colors.textPrimary,
+    letterSpacing: -0.2,
   },
-  corridorSection: {
-    marginBottom: 12,
-  },
-  corridorScroll: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  corridorTab: {
-    backgroundColor: '#121622',
-    borderRadius: 14,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  corridorTabActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.2)',
-    borderColor: '#8B5CF6',
-  },
-  corridorTitle: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#94A3B8',
-  },
-  corridorTitleActive: {
-    color: '#C4B5FD',
-  },
-  corridorSubtitle: {
-    fontSize: 10,
-    color: '#64748B',
+  headerSubtitle: {
+    fontSize: 11.5,
+    color: theme.colors.textSecondary,
     marginTop: 2,
   },
-  searchBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#121622',
-    borderRadius: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.25)',
-    paddingHorizontal: 14,
-    height: 44,
-    gap: 10,
-    marginBottom: 14,
-  },
-  searchTextInput: {
-    flex: 1,
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  selectorRailSection: {
-    marginBottom: 14,
-  },
-  sectionHeaderTitle: {
-    fontSize: 10,
-    fontWeight: '900',
-    color: '#64748B',
-    letterSpacing: 0.8,
-    marginBottom: 8,
-    paddingHorizontal: 2,
-  },
-  selectorRailScroll: {
-    gap: 8,
-    paddingVertical: 2,
-  },
-  linePillBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: '#121622',
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  linePillBtnActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.25)',
-    borderColor: '#A78BFA',
-  },
-  linePillDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  linePillText: {
-    fontSize: 13,
-    fontWeight: '800',
-    color: '#94A3B8',
-  },
-  linePillTextActive: {
-    color: '#FFFFFF',
-  },
-  showcaseStage: {
-    backgroundColor: '#121622',
-    borderRadius: 20,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(139, 92, 246, 0.3)',
-    marginBottom: 18,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 4,
-  },
-  stageHeroRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    marginBottom: 14,
-  },
-  stageBadgeCol: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  largeBadge: {
-    width: 52,
-    height: 46,
-    borderRadius: 12,
+  closeBtn: {
+    width: 28,
+    height: 28,
+    borderRadius: theme.radius.sm,
+    backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
-    shadowRadius: 6,
-    elevation: 3,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
-  largeBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.3,
+  searchContainer: {
+    paddingHorizontal: 16,
+    paddingTop: 12,
   },
-  verifiedDot: {
+  searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.sm,
+    height: 40,
+    paddingHorizontal: 12,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
   },
-  verifiedText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#C4B5FD',
-  },
-  stageInfoCol: {
+  searchInput: {
     flex: 1,
+    color: theme.colors.textPrimary,
+    fontSize: 12.5,
+    paddingVertical: 0,
   },
-  stageHeadsign: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#FFFFFF',
-    letterSpacing: -0.3,
-    lineHeight: 22,
+  corridorContainer: {
+    paddingVertical: 8,
   },
-  stageMeta: {
-    fontSize: 12,
-    color: '#94A3B8',
-    marginTop: 4,
+  corridorScroll: {
+    paddingHorizontal: 16,
+    gap: 6,
+  },
+  corridorChip: {
+    backgroundColor: theme.colors.surface,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.xs,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  corridorChipActive: {
+    backgroundColor: theme.colors.surfaceHover,
+    borderColor: theme.colors.border,
+  },
+  corridorChipText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: theme.colors.textMuted,
+  },
+  corridorChipTextActive: {
+    color: theme.colors.textPrimary,
     fontWeight: '600',
   },
-  dirSegmentContainer: {
-    flexDirection: 'row',
+  linesListContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
     gap: 8,
-    marginBottom: 12,
   },
-  dirSegmentTab: {
-    flex: 1,
-    backgroundColor: '#181F30',
-    borderRadius: 10,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
+  emptyResultsBox: {
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
+    paddingVertical: 40,
   },
-  dirSegmentTabActive: {
-    backgroundColor: 'rgba(124, 58, 237, 0.25)',
-    borderColor: '#8B5CF6',
+  emptyResultsTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+    marginBottom: 4,
+  },
+  emptyResultsSub: {
+    fontSize: 12,
+    color: theme.colors.textMuted,
+  },
+  lineCardItem: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    overflow: 'hidden',
+  },
+  lineSummaryRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    gap: 10,
+  },
+  lineSummaryRowExpanded: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.hairline,
+  },
+  lineBadgeBox: {
+    paddingHorizontal: 7,
+    paddingVertical: 4,
+    borderRadius: theme.radius.xs,
+    minWidth: 34,
+    alignItems: 'center',
+  },
+  lineBadgeText: {
+    color: '#FFFFFF',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  lineInfoCol: {
+    flex: 1,
+  },
+  lineHeadSign: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  lineMeta: {
+    fontSize: 11,
+    color: theme.colors.textMuted,
+    marginTop: 2,
+  },
+  expandChevronBox: {
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  expandedDetailsSection: {
+    backgroundColor: theme.colors.surfaceElevated,
+    padding: 12,
+    gap: 10,
+  },
+  dirSegmentRow: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.xs,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+    gap: 2,
+  },
+  dirSegmentBtn: {
+    flex: 1,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 4,
+    alignItems: 'center',
+  },
+  dirSegmentBtnActive: {
+    backgroundColor: theme.colors.surfaceHover,
   },
   dirSegmentText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#64748B',
+    color: theme.colors.textMuted,
+    fontWeight: '500',
   },
   dirSegmentTextActive: {
-    color: '#C4B5FD',
-    fontWeight: '800',
+    color: theme.colors.textPrimary,
+    fontWeight: '600',
   },
-  waypointRibbon: {
-    backgroundColor: '#181F30',
-    borderRadius: 14,
-    padding: 12,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.04)',
-  },
-  ribbonItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  terminalIndicator: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-  },
-  ribbonTextCol: {
-    flex: 1,
-  },
-  ribbonRole: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#64748B',
-    letterSpacing: 0.5,
-  },
-  ribbonName: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#FFFFFF',
-  },
-  ribbonDividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginVertical: 8,
-    paddingLeft: 3,
-  },
-  ribbonDividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.06)',
-  },
-  mapActionTrigger: {
+  viewOnMapBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 6,
+    backgroundColor: theme.colors.surfaceHover,
+    paddingVertical: 8,
+    borderRadius: theme.radius.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  viewOnMapBtnText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: theme.colors.textPrimary,
+  },
+  stopsBlock: {
     gap: 8,
-    backgroundColor: '#7C3AED',
-    paddingVertical: 12,
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#7C3AED',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 4,
   },
-  mapActionTriggerText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '800',
-    letterSpacing: -0.2,
-  },
-  runwaySection: {
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.06)',
-    paddingTop: 12,
-  },
-  runwayHeader: {
+  stopsHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
   },
-  runwayHeaderTitle: {
+  stopsHeaderTitle: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#94A3B8',
-    textTransform: 'uppercase',
+    fontWeight: '700',
+    color: theme.colors.textMuted,
+    letterSpacing: 0.4,
   },
-  runwayToggleText: {
+  stopsToggleLink: {
     fontSize: 11,
-    fontWeight: '800',
-    color: '#C4B5FD',
+    fontWeight: '600',
+    color: theme.colors.primary,
   },
-  stationListGrid: {
-    gap: 6,
+  stopsTimelineContainer: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.radius.sm,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
   },
-  stationItem: {
+  stopTimelineItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    paddingVertical: 5,
+    minHeight: 24,
   },
-  stationIndexBox: {
+  stopIndexCol: {
     width: 20,
+  },
+  stopIndexText: {
+    fontSize: 9.5,
+    color: theme.colors.textMuted,
+    fontWeight: '500',
+  },
+  stopDotCol: {
+    width: 14,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-  stationIndexNum: {
-    fontSize: 10,
-    color: '#64748B',
-    fontWeight: '700',
-  },
-  stationDotIndicator: {
-    width: 12,
-    alignItems: 'center',
-  },
-  dotCore: {
+  stopDotCore: {
     width: 6,
     height: 6,
     borderRadius: 3,
   },
-  dotStart: {
-    backgroundColor: '#10B981',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  stopDotLine: {
+    position: 'absolute',
+    top: 6,
+    bottom: -18,
+    width: 1,
+    backgroundColor: theme.colors.hairline,
   },
-  dotEnd: {
-    backgroundColor: '#EF4444',
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+  stopNameText: {
+    fontSize: 11.5,
+    color: theme.colors.textSecondary,
+    flex: 1,
+    marginLeft: 6,
   },
-  stationNameLabel: {
-    fontSize: 12,
-    color: '#94A3B8',
+  stopNameTextHighlight: {
+    color: theme.colors.textPrimary,
     fontWeight: '600',
-    flex: 1,
-  },
-  stationNameLabelHighlight: {
-    color: '#FFFFFF',
-    fontWeight: '800',
-  },
-  matrixSection: {
-    marginTop: 4,
-  },
-  linesMatrixGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  matrixCard: {
-    width: '48%',
-    backgroundColor: '#121622',
-    borderRadius: 14,
-    padding: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.05)',
-    justifyContent: 'space-between',
-    minHeight: 100,
-  },
-  matrixCardSelected: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#181F30',
-  },
-  matrixCardTop: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-  },
-  matrixBadge: {
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  matrixBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '900',
-  },
-  quickMapMiniBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(139, 92, 246, 0.15)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  matrixLineName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#FFFFFF',
-    lineHeight: 16,
-    flex: 1,
-    marginBottom: 6,
-  },
-  matrixFooter: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(255, 255, 255, 0.04)',
-    paddingTop: 6,
-  },
-  matrixStopsCount: {
-    fontSize: 10,
-    color: '#64748B',
-    fontWeight: '700',
   },
 });

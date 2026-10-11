@@ -68,9 +68,9 @@ export default function SearchModal({
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
-      <SafeAreaView style={styles.sheetContainer}>
+      <SafeAreaView style={styles.container}>
         {/* Top Grabber */}
-        <View style={styles.grabberRow}>
+        <View style={styles.grabberBox}>
           <View style={styles.grabberBar} />
         </View>
 
@@ -78,21 +78,21 @@ export default function SearchModal({
         <View style={styles.header}>
           <TouchableOpacity
             onPress={onClose}
-            style={styles.backCircleBtn}
+            style={styles.backBtn}
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ArrowLeft size={20} color={theme.colors.textPrimary} />
+            <ArrowLeft size={18} color={theme.colors.textPrimary} />
           </TouchableOpacity>
 
-          <View style={styles.inputCapsule}>
-            <Search size={16} color={theme.colors.lavender} />
+          <View style={styles.inputContainer}>
+            <Search size={15} color={theme.colors.textMuted} />
             <TextInput
               ref={inputRef}
               style={styles.textInput}
               placeholder={
                 targetType === 'from'
-                  ? 'Başlangıç durağı veya konum yazın...'
+                  ? 'Başlangıç durağı veya konum...'
                   : 'Nereye gitmek istiyorsunuz?'
               }
               placeholderTextColor={theme.colors.textMuted}
@@ -106,40 +106,40 @@ export default function SearchModal({
                 onPress={() => setQuery('')}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
               >
-                <X size={16} color={theme.colors.textSecondary} />
+                <X size={14} color={theme.colors.textSecondary} />
               </TouchableOpacity>
             )}
           </View>
         </View>
 
-        {/* Filter Tabs */}
-        <View style={styles.filterPillsRow}>
+        {/* Filter Segment Chips */}
+        <View style={styles.filterRow}>
           <TouchableOpacity
-            style={[styles.filterPill, activeTab === 'all' && styles.filterPillActive]}
+            style={[styles.filterChip, activeTab === 'all' && styles.filterChipActive]}
             onPress={() => setActiveTab('all')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterPillText, activeTab === 'all' && styles.filterPillTextActive]}>
+            <Text style={[styles.filterChipText, activeTab === 'all' && styles.filterChipTextActive]}>
               Tümü
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.filterPill, activeTab === 'stops' && styles.filterPillActive]}
+            style={[styles.filterChip, activeTab === 'stops' && styles.filterChipActive]}
             onPress={() => setActiveTab('stops')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterPillText, activeTab === 'stops' && styles.filterPillTextActive]}>
+            <Text style={[styles.filterChipText, activeTab === 'stops' && styles.filterChipTextActive]}>
               ETUS Durakları
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.filterPill, activeTab === 'places' && styles.filterPillActive]}
+            style={[styles.filterChip, activeTab === 'places' && styles.filterChipActive]}
             onPress={() => setActiveTab('places')}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterPillText, activeTab === 'places' && styles.filterPillTextActive]}>
+            <Text style={[styles.filterChipText, activeTab === 'places' && styles.filterChipTextActive]}>
               Önemli Noktalar
             </Text>
           </TouchableOpacity>
@@ -148,7 +148,7 @@ export default function SearchModal({
         {/* Section Heading */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>
-            {query.length < 1 ? 'Önerilen Popüler Yerler' : `Sonuçlar (${filteredResults.length})`}
+            {query.length < 1 ? 'ÖNERİLEN NOKTALAR' : `SONUÇLAR (${filteredResults.length})`}
           </Text>
         </View>
 
@@ -167,11 +167,11 @@ export default function SearchModal({
                 onPress={() => onSelect(item)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.iconCircle, isStop ? styles.iconCircleStop : styles.iconCirclePlace]}>
+                <View style={[styles.iconBox, isStop ? styles.iconBoxStop : styles.iconBoxPlace]}>
                   {isStop ? (
-                    <Bus size={17} color={theme.colors.primaryGlow} />
+                    <Bus size={15} color={theme.colors.primary} />
                   ) : (
-                    <MapPin size={17} color={theme.colors.amber} />
+                    <MapPin size={15} color={theme.colors.fare} />
                   )}
                 </View>
 
@@ -180,7 +180,7 @@ export default function SearchModal({
                     {item.name}
                   </Text>
                   <Text style={styles.itemSubText}>
-                    {isStop ? 'ETUS Otobüs Durağı • Edirne' : item.shortName || 'Popüler Konum'}
+                    {isStop ? 'ETUS Otobüs Durağı' : item.shortName || 'Popüler Konum'}
                   </Text>
                 </View>
               </TouchableOpacity>
@@ -193,93 +193,93 @@ export default function SearchModal({
 }
 
 const styles = StyleSheet.create({
-  sheetContainer: {
+  container: {
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
-  grabberRow: {
+  grabberBox: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   grabberBar: {
-    width: 38,
+    width: 36,
     height: 4,
     borderRadius: 2,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    backgroundColor: theme.colors.border,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 14,
+    paddingHorizontal: 16,
     paddingVertical: 8,
     gap: 10,
   },
-  backCircleBtn: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: theme.radius.sm,
     backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  inputCapsule: {
+  inputContainer: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.pill,
-    paddingHorizontal: 14,
-    height: 44,
+    borderRadius: theme.radius.sm,
+    paddingHorizontal: 12,
+    height: 42,
     gap: 8,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   textInput: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 13.5,
+    color: theme.colors.textPrimary,
+    fontWeight: '500',
+    paddingVertical: 0,
+  },
+  filterRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 6,
+  },
+  filterChip: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.xs,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.borderSubtle,
+  },
+  filterChipActive: {
+    backgroundColor: theme.colors.surfaceHover,
+    borderColor: theme.colors.border,
+  },
+  filterChipText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: theme.colors.textMuted,
+  },
+  filterChipTextActive: {
     color: theme.colors.textPrimary,
     fontWeight: '600',
   },
-  filterPillsRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
-  },
-  filterPill: {
-    paddingVertical: 6,
-    paddingHorizontal: 13,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  filterPillActive: {
-    backgroundColor: theme.colors.lavenderLight,
-    borderColor: theme.colors.lavender,
-  },
-  filterPillText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: theme.colors.textSecondary,
-  },
-  filterPillTextActive: {
-    color: theme.colors.lavender,
-    fontWeight: '800',
-  },
   sectionHeader: {
-    paddingHorizontal: 18,
-    paddingTop: 8,
-    paddingBottom: 6,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    paddingBottom: 4,
   },
   sectionTitle: {
-    fontSize: 11,
-    fontWeight: '800',
+    fontSize: 10,
+    fontWeight: '700',
     color: theme.colors.textMuted,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: 0.5,
   },
   listContent: {
     paddingHorizontal: 16,
@@ -288,38 +288,38 @@ const styles = StyleSheet.create({
   resultItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    gap: 14,
+    paddingVertical: 10,
+    gap: 12,
   },
-  iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  iconBox: {
+    width: 32,
+    height: 32,
+    borderRadius: theme.radius.xs,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconCircleStop: {
+  iconBoxStop: {
     backgroundColor: theme.colors.primaryLight,
   },
-  iconCirclePlace: {
-    backgroundColor: theme.colors.amberLight,
+  iconBoxPlace: {
+    backgroundColor: theme.colors.fareLight,
   },
   itemTextCol: {
     flex: 1,
   },
   itemTitleText: {
-    fontSize: 15,
-    fontWeight: '700',
+    fontSize: 13.5,
+    fontWeight: '600',
     color: theme.colors.textPrimary,
     marginBottom: 2,
   },
   itemSubText: {
-    fontSize: 12,
+    fontSize: 11.5,
     color: theme.colors.textSecondary,
   },
   itemSeparator: {
     height: 1,
-    backgroundColor: theme.colors.border,
-    marginLeft: 54,
+    backgroundColor: theme.colors.hairline,
+    marginLeft: 44,
   },
 });
