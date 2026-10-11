@@ -1188,6 +1188,7 @@ const styles = StyleSheet.create({
   },
   routePillBox: {
     flex: 1,
+    minWidth: 0,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#12161E',
@@ -1234,6 +1235,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 3,
+    flexShrink: 0,
   },
   greetingRow: {
     flexDirection: 'row',
@@ -1327,7 +1329,7 @@ const styles = StyleSheet.create({
   // Floating Right Map Controls (Compass & Layers)
   topFloatingControls: {
     position: 'absolute',
-    right: 18,
+    right: 16,
     gap: 10,
     zIndex: 85,
   },
