@@ -316,7 +316,61 @@ export const fetchWalkingPath = async (fromLat, fromLon, toLat, toLon) => {
   ];
 };
 
-// 3. Reverse Geocoding (When user taps on the map)
+// 3. Mapbox Road-snapped Transit / Bus Route (Driving profile along real streets & roads)
+export const fetchRoadSnappedBusPath = async (stops) => {
+  if (!stops || stops.length < 2) return null;
+  if (!MAPBOX_TOKEN) return null;
+
+  try {
+    // 1. Filter out invalid or duplicate consecutive coordinates
+    const uniqueStops = [];
+    stops.forEach((s) => {
+      const lat = Number(s?.lat !== undefined ? s.lat : s?.[0]);
+      const lon = Number(s?.lon !== undefined ? s.lon : s?.[1]);
+      if (isNaN(lat) || isNaN(lon) || !lat || !lon) return;
+
+      if (uniqueStops.length === 0) {
+        uniqueStops.push({ lat, lon });
+      } else {
+        const prev = uniqueStops[uniqueStops.length - 1];
+        if (Math.abs(prev.lat - lat) > 0.0001 || Math.abs(prev.lon - lon) > 0.0001) {
+          uniqueStops.push({ lat, lon });
+        }
+      }
+    });
+
+    if (uniqueStops.length < 2) return null;
+
+    // 2. Mapbox Directions supports up to 25 waypoints per request
+    let waypoints = uniqueStops;
+    if (waypoints.length > 25) {
+      const step = (waypoints.length - 1) / 24;
+      waypoints = [];
+      for (let i = 0; i < 24; i++) {
+        waypoints.push(uniqueStops[Math.round(i * step)]);
+      }
+      waypoints.push(uniqueStops[uniqueStops.length - 1]);
+    }
+
+    const coordsStr = waypoints
+      .map(s => `${s.lon.toFixed(6)},${s.lat.toFixed(6)}`)
+      .join(';');
+
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsStr}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (data.routes && data.routes[0]?.geometry?.coordinates) {
+      return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); // [latitude, longitude]
+    }
+  } catch (err) {
+    console.warn('Mapbox road-snapping error:', err);
+  }
+
+  return null;
+};
+
+// 4. Reverse Geocoding (When user taps on the map)
 export const reverseGeocodeCoord = async (lat, lon) => {
   try {
     if (TOMTOM_TOKEN) {

@@ -58,7 +58,7 @@ import HistoryView from './src/components/HistoryView';
 import SettingsView from './src/components/SettingsView';
 
 import { calculateSmartRoute } from './src/data/routes';
-import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
+import { fetchWalkingPath, fetchRoadSnappedBusPath, reverseGeocodeCoord } from './src/services/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -81,6 +81,11 @@ function MainScreen() {
   // Pedestrian Walking Polylines (Real Street Sidewalks from Mapbox)
   const [walkingPathStart, setWalkingPathStart] = useState([]);
   const [walkingPathEnd, setWalkingPathEnd] = useState([]);
+
+  // Road-snapped Bus Transit Geometry (Mapbox Driving API)
+  const [roadSnappedBusPath, setRoadSnappedBusPath] = useState(null);
+  const [roadSnappedBusPath1, setRoadSnappedBusPath1] = useState(null);
+  const [roadSnappedBusPath2, setRoadSnappedBusPath2] = useState(null);
 
   // Modals & Panels
   const [searchModalVisible, setSearchModalVisible] = useState(false);
@@ -162,11 +167,14 @@ function MainScreen() {
 
   const activeRoute = searchResults?.routes?.[selectedRouteIdx] || null;
 
-  // Real Mapbox Pedestrian Walking Paths when route is active
+  // Real Mapbox Pedestrian Walking Paths & Road-snapped Bus Geometry
   useEffect(() => {
     if (!activeRoute || !fromLocation?.lat || !toLocation?.lat) {
       setWalkingPathStart([]);
       setWalkingPathEnd([]);
+      setRoadSnappedBusPath(null);
+      setRoadSnappedBusPath1(null);
+      setRoadSnappedBusPath2(null);
       return;
     }
 
@@ -174,6 +182,9 @@ function MainScreen() {
       fetchWalkingPath(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon)
         .then(setWalkingPathStart);
       setWalkingPathEnd([]);
+      setRoadSnappedBusPath(null);
+      setRoadSnappedBusPath1(null);
+      setRoadSnappedBusPath2(null);
     } else {
       if (activeRoute.startStop?.lat) {
         fetchWalkingPath(fromLocation.lat, fromLocation.lon, activeRoute.startStop.lat, activeRoute.startStop.lon)
@@ -182,6 +193,38 @@ function MainScreen() {
       if (activeRoute.endStop?.lat) {
         fetchWalkingPath(activeRoute.endStop.lat, activeRoute.endStop.lon, toLocation.lat, toLocation.lon)
           .then(setWalkingPathEnd);
+      }
+
+      // Snap transit bus polylines to roads via Mapbox Driving API
+      if (activeRoute.isTransfer) {
+        setRoadSnappedBusPath(null);
+        if (activeRoute.startStop && activeRoute.transferStop) {
+          const leg1Stops = [
+            activeRoute.startStop,
+            ...(activeRoute.legs?.[0]?.stops || []),
+            activeRoute.transferStop
+          ].filter(s => s?.lat && s?.lon);
+          fetchRoadSnappedBusPath(leg1Stops).then(setRoadSnappedBusPath1);
+        }
+        if (activeRoute.transferStop && activeRoute.endStop) {
+          const leg2Stops = [
+            activeRoute.transferStop,
+            ...(activeRoute.legs?.[1]?.stops || []),
+            activeRoute.endStop
+          ].filter(s => s?.lat && s?.lon);
+          fetchRoadSnappedBusPath(leg2Stops).then(setRoadSnappedBusPath2);
+        }
+      } else {
+        setRoadSnappedBusPath1(null);
+        setRoadSnappedBusPath2(null);
+        if (activeRoute.startStop && activeRoute.endStop) {
+          const allStops = [
+            activeRoute.startStop,
+            ...(activeRoute.legs?.[0]?.stops || (activeRoute.passedStopCoords || []).map(c => ({ lat: c[0], lon: c[1], name: c[2] }))),
+            activeRoute.endStop
+          ].filter(s => s?.lat && s?.lon);
+          fetchRoadSnappedBusPath(allStops).then(setRoadSnappedBusPath);
+        }
       }
     }
   }, [activeRoute?.id, fromLocation?.lat, fromLocation?.lon, toLocation?.lat, toLocation?.lon]);
@@ -276,9 +319,13 @@ function MainScreen() {
   // Clear current route / back to clean map
   const handleClearRoute = () => {
     setSearchResults(null);
+    setSelectedRouteIdx(0);
     setToLocation({ name: '', lat: null, lon: null });
     setWalkingPathStart([]);
     setWalkingPathEnd([]);
+    setRoadSnappedBusPath(null);
+    setRoadSnappedBusPath1(null);
+    setRoadSnappedBusPath2(null);
   };
 
   // Swap route origin and destination
@@ -388,6 +435,9 @@ function MainScreen() {
             fromLocation={fromLocation}
             toLocation={toLocation}
             activeRoute={previewLine ? null : activeRoute}
+            roadSnappedBusPath={roadSnappedBusPath}
+            roadSnappedBusPath1={roadSnappedBusPath1}
+            roadSnappedBusPath2={roadSnappedBusPath2}
             activeLineData={previewLine?.line}
             activeLineDirIdx={previewLine?.dirIdx}
             userLocation={userLocation}
@@ -423,14 +473,14 @@ function MainScreen() {
               </Text>
             </View>
 
-            {/* 4. En Sağda: Yükseklik ve genişlik eşit, 50% rounded çarpı butonu */}
+            {/* 4. En Sağda: circleMapBtn ile birebir aynı boyut ve stilde çarpı butonu */}
             <TouchableOpacity
               style={styles.routeCloseCircleBtn}
               onPress={handleClearRoute}
               activeOpacity={0.75}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <X size={17} color="#FFFFFF" />
+              <X size={18} color="#E2E8F0" />
             </TouchableOpacity>
           </View>
         </View>
@@ -1140,17 +1190,17 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#121620',
-    borderRadius: 20,
+    backgroundColor: '#12161E',
+    borderRadius: 22,
     borderWidth: 1,
     borderColor: '#1E2538',
     paddingHorizontal: 12,
-    height: 42,
+    height: 44,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 4,
+    elevation: 3,
   },
   routeDotPill: {
     width: 8,
@@ -1171,19 +1221,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 1,
   },
   routeCloseCircleBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
-    backgroundColor: '#121620',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#12161E',
     borderWidth: 1,
     borderColor: '#1E2538',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.35,
+    shadowOpacity: 0.3,
     shadowRadius: 6,
-    elevation: 4,
+    elevation: 3,
   },
   greetingRow: {
     flexDirection: 'row',
