@@ -21,6 +21,8 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
   if (!route) return null;
 
   const isTransfer = route.isTransfer;
+  const hasStartWalk = !route.isWalkOnly && ((route.walkDistanceStart || 0) > 0.04);
+  const hasEndWalk = !route.isWalkOnly && ((route.walkDistanceEnd || 0) > 0.04);
 
   return (
     <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
@@ -50,21 +52,50 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
               {route.isWalkOnly ? (
                 <View style={styles.walkBadge}>
                   <Footprints size={14} color="#38BDF8" />
-                  <Text style={styles.walkBadgeText}>Yürüyüş Rotası</Text>
-                </View>
-              ) : isTransfer ? (
-                <View style={styles.transferChain}>
-                  <View style={[styles.badge, { backgroundColor: route.color || '#3B82F6' }]}>
-                    <Text style={styles.badgeText}>{route.line1}</Text>
-                  </View>
-                  <ArrowRight size={13} color="#94A3B8" />
-                  <View style={[styles.badge, { backgroundColor: route.color2 || '#8B5CF6' }]}>
-                    <Text style={styles.badgeText}>{route.line2}</Text>
-                  </View>
+                  <Text style={styles.walkBadgeText}>
+                    Yürüyüş Rotası ({fmtM(route.walkDistanceStart || route.totalDistance)})
+                  </Text>
                 </View>
               ) : (
-                <View style={[styles.badge, { backgroundColor: route.color || '#3B82F6' }]}>
-                  <Text style={styles.badgeText}>{route.name || route.lineCode}</Text>
+                <View style={styles.flowChainContainer}>
+                  {hasStartWalk && (
+                    <>
+                      <View style={styles.flowWalkPill}>
+                        <Footprints size={12} color="#38BDF8" />
+                        <Text style={styles.flowWalkText}>{fmtM(route.walkDistanceStart)}</Text>
+                      </View>
+                      <ArrowRight size={11} color="#64748B" />
+                    </>
+                  )}
+
+                  {isTransfer ? (
+                    <View style={styles.transferChain}>
+                      <View style={[styles.badge, { backgroundColor: route.color || '#3B82F6' }]}>
+                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 3 }} />
+                        <Text style={styles.badgeText}>{route.line1}</Text>
+                      </View>
+                      <ArrowRight size={11} color="#64748B" />
+                      <View style={[styles.badge, { backgroundColor: route.color2 || '#8B5CF6' }]}>
+                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 3 }} />
+                        <Text style={styles.badgeText}>{route.line2}</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={[styles.badge, { backgroundColor: route.color || '#3B82F6' }]}>
+                      <Bus size={12} color="#FFFFFF" style={{ marginRight: 3 }} />
+                      <Text style={styles.badgeText}>{route.name || route.lineCode}</Text>
+                    </View>
+                  )}
+
+                  {hasEndWalk && (
+                    <>
+                      <ArrowRight size={11} color="#64748B" />
+                      <View style={styles.flowWalkPill}>
+                        <Footprints size={12} color="#38BDF8" />
+                        <Text style={styles.flowWalkText}>{fmtM(route.walkDistanceEnd)}</Text>
+                      </View>
+                    </>
+                  )}
                 </View>
               )}
 
@@ -85,21 +116,23 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
           <View style={styles.timelineSection}>
             <Text style={styles.sectionHeading}>GÜZERGAH AŞAMALARI</Text>
 
-            {/* Step 1: Walk to first stop */}
-            <View style={styles.stepItem}>
-              <View style={styles.stepTrackCol}>
-                <View style={[styles.stepNode, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
-                  <Footprints size={13} color="#38BDF8" />
+            {/* Step 1: Walk to first stop (if applicable) */}
+            {hasStartWalk && (
+              <View style={styles.stepItem}>
+                <View style={styles.stepTrackCol}>
+                  <View style={[styles.stepNode, { backgroundColor: 'rgba(56, 189, 248, 0.15)' }]}>
+                    <Footprints size={13} color="#38BDF8" />
+                  </View>
+                  <View style={styles.trackLine} />
                 </View>
-                <View style={styles.trackLine} />
+                <View style={styles.stepContentCol}>
+                  <Text style={styles.stepTitle}>İlk Durağa Yürüyün</Text>
+                  <Text style={styles.stepSubtitle}>
+                    {fmtM(route.walkDistanceStart)} mesafe (~{Math.max(1, Math.ceil(route.walkDistanceStart * 1.4 * 12))} dk)
+                  </Text>
+                </View>
               </View>
-              <View style={styles.stepContentCol}>
-                <Text style={styles.stepTitle}>İlk Durağa Yürüyün</Text>
-                <Text style={styles.stepSubtitle}>
-                  {fmtM(route.walkDistanceStart)} mesafe (~{Math.max(1, Math.ceil(route.walkDistanceStart * 1.4 * 12))} dk)
-                </Text>
-              </View>
-            </View>
+            )}
 
             {/* Step 2: Board bus */}
             {!route.isWalkOnly && route.startStop && (
@@ -151,7 +184,7 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
                   <View style={[styles.stepNode, { backgroundColor: 'rgba(239, 68, 68, 0.15)' }]}>
                     <MapPin size={13} color="#EF4444" />
                   </View>
-                  {route.walkDistanceEnd > 0 && <View style={styles.trackLine} />}
+                  {hasEndWalk && <View style={styles.trackLine} />}
                 </View>
                 <View style={styles.stepContentCol}>
                   <Text style={styles.stepTitle}>{route.endStop.name} Durağı</Text>
@@ -160,8 +193,8 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
               </View>
             )}
 
-            {/* Step 5: Final walk */}
-            {route.walkDistanceEnd > 0 && (
+            {/* Step 5: Final walk or reached destination */}
+            {hasEndWalk ? (
               <View style={styles.stepItem}>
                 <View style={styles.stepTrackCol}>
                   <View style={[styles.stepNode, { backgroundColor: 'rgba(36, 199, 149, 0.15)' }]}>
@@ -173,6 +206,18 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
                   <Text style={styles.stepSubtitle}>
                     {fmtM(route.walkDistanceEnd)} mesafe (~{Math.max(1, Math.ceil(route.walkDistanceEnd * 1.4 * 12))} dk)
                   </Text>
+                </View>
+              </View>
+            ) : !route.isWalkOnly && (
+              <View style={styles.stepItem}>
+                <View style={styles.stepTrackCol}>
+                  <View style={[styles.stepNode, { backgroundColor: 'rgba(36, 199, 149, 0.15)' }]}>
+                    <Flag size={13} color="#24C795" />
+                  </View>
+                </View>
+                <View style={styles.stepContentCol}>
+                  <Text style={styles.stepTitle}>Hedefe Ulaştınız</Text>
+                  <Text style={styles.stepSubtitle}>İniş durağı varış noktanızdadır.</Text>
                 </View>
               </View>
             )}
@@ -294,13 +339,39 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#38BDF8',
   },
+  flowChainContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+    flex: 1,
+    paddingRight: 8,
+  },
+  flowWalkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    paddingHorizontal: 7,
+    paddingVertical: 3.5,
+    borderRadius: 8,
+  },
+  flowWalkText: {
+    color: '#38BDF8',
+    fontSize: 11.5,
+    fontWeight: '700',
+  },
   transferChain: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 5,
   },
   badge: {
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 9,
     paddingVertical: 4,
     borderRadius: 8,
   },

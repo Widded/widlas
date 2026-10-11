@@ -115,6 +115,9 @@ export default function RouteResultSheet({
   const isDirect = !currentRoute.isTransfer && !currentRoute.isWalkOnly;
   const isFastest = selectedIdx === 0;
 
+  const hasStartWalk = !currentRoute.isWalkOnly && ((currentRoute.walkDistanceStart || 0) > 0.04);
+  const hasEndWalk = !currentRoute.isWalkOnly && ((currentRoute.walkDistanceEnd || 0) > 0.04);
+
   // Split intermediate stops for direct vs transfer
   let leg1Stops = [];
   let leg2Stops = [];
@@ -144,15 +147,34 @@ export default function RouteResultSheet({
           activeOpacity={0.85}
         >
           <View style={styles.minimizedRow}>
-            {/* Line Badge */}
-            <View style={[styles.miniLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-              <Text style={styles.miniLineBadgeText}>
-                {currentRoute.isWalkOnly
-                  ? 'Yürüme'
-                  : currentRoute.isTransfer
-                    ? `${currentRoute.line1}+${currentRoute.line2}`
-                    : currentRoute.name || currentRoute.lineCode}
-              </Text>
+            {/* Minimized Journey Chain */}
+            <View style={styles.miniChainRow}>
+              {hasStartWalk && (
+                <View style={styles.miniWalkPill}>
+                  <Footprints size={11} color="#38BDF8" />
+                  <Text style={styles.miniWalkText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
+                </View>
+              )}
+              {hasStartWalk && <ChevronRight size={10} color="#64748B" />}
+
+              <View style={[styles.miniLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
+                <Bus size={11} color="#FFFFFF" style={{ marginRight: 3 }} />
+                <Text style={styles.miniLineBadgeText}>
+                  {currentRoute.isWalkOnly
+                    ? 'Yürüme'
+                    : currentRoute.isTransfer
+                      ? `${currentRoute.line1}+${currentRoute.line2}`
+                      : currentRoute.name || currentRoute.lineCode}
+                </Text>
+              </View>
+
+              {hasEndWalk && <ChevronRight size={10} color="#64748B" />}
+              {hasEndWalk && (
+                <View style={styles.miniWalkPill}>
+                  <Footprints size={11} color="#38BDF8" />
+                  <Text style={styles.miniWalkText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
+                </View>
+              )}
             </View>
 
             {/* Destination Info */}
@@ -236,6 +258,8 @@ export default function RouteResultSheet({
         >
           {routes.map((r, idx) => {
             const isTabActive = selectedIdx === idx;
+            const tabHasStartWalk = !r.isWalkOnly && ((r.walkDistanceStart || 0) > 0.04);
+            const tabHasEndWalk = !r.isWalkOnly && ((r.walkDistanceEnd || 0) > 0.04);
             return (
               <TouchableOpacity
                 key={idx}
@@ -250,9 +274,17 @@ export default function RouteResultSheet({
                   {r.totalTime} dk
                 </Text>
                 <View style={[styles.routeTabDivider, isTabActive && styles.routeTabDividerActive]} />
-                <Text style={[styles.routeTabCode, isTabActive && styles.routeTabCodeActive]}>
-                  {r.isWalkOnly ? 'Yürüme' : r.isTransfer ? `${r.line1}+${r.line2}` : r.line1 || r.name}
-                </Text>
+                <View style={styles.tabChainRow}>
+                  {tabHasStartWalk && (
+                    <Footprints size={11} color={isTabActive ? '#38BDF8' : '#64748B'} />
+                  )}
+                  <Text style={[styles.routeTabCode, isTabActive && styles.routeTabCodeActive]}>
+                    {r.isWalkOnly ? 'Yürüme' : r.isTransfer ? `${r.line1}+${r.line2}` : r.line1 || r.name}
+                  </Text>
+                  {tabHasEndWalk && (
+                    <Footprints size={11} color={isTabActive ? '#38BDF8' : '#64748B'} />
+                  )}
+                </View>
               </TouchableOpacity>
             );
           })}
@@ -263,45 +295,80 @@ export default function RouteResultSheet({
       <View style={styles.heroPassCard}>
         {/* Pass Top Row: Badges, Tags and Duration */}
         <View style={styles.passTopBar}>
-          <View style={styles.lineBadgesRow}>
-            {currentRoute.isWalkOnly ? (
-              <View style={styles.walkBadgePill}>
-                <Footprints size={15} color="#38BDF8" />
-                <Text style={styles.walkBadgePillText}>Sadece Yürüme</Text>
-              </View>
-            ) : currentRoute.isTransfer ? (
-              <View style={styles.transferBadgesRow}>
-                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-                  <Text style={styles.lineBadgeText}>{currentRoute.line1}</Text>
+          <View style={styles.chainAndTagsCol}>
+            {/* Transit Flow Chain: [Walk] -> [Bus Line(s)] -> [Walk] */}
+            <View style={styles.flowChainContainer}>
+              {currentRoute.isWalkOnly ? (
+                <View style={styles.flowWalkPill}>
+                  <Footprints size={14} color="#38BDF8" />
+                  <Text style={styles.flowWalkText}>
+                    Yürüyüş ({fmtWalk(currentRoute.walkDistanceStart || currentRoute.totalDistance)})
+                  </Text>
                 </View>
-                <ArrowRight size={13} color="#94A3B8" />
-                <View style={[styles.lineBadge, { backgroundColor: currentRoute.color2 || '#8B5CF6' }]}>
-                  <Text style={styles.lineBadgeText}>{currentRoute.line2}</Text>
-                </View>
-              </View>
-            ) : (
-              <View style={[styles.lineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
-                <Text style={styles.lineBadgeText}>{currentRoute.name || currentRoute.lineCode}</Text>
-              </View>
-            )}
+              ) : (
+                <>
+                  {hasStartWalk && (
+                    <>
+                      <View style={styles.flowWalkPill}>
+                        <Footprints size={13} color="#38BDF8" />
+                        <Text style={styles.flowWalkText}>{fmtWalk(currentRoute.walkDistanceStart)}</Text>
+                      </View>
+                      <ChevronRight size={13} color="#64748B" />
+                    </>
+                  )}
 
-            {isFastest && (
-              <View style={styles.fastestTag}>
-                <Zap size={11} color="#24C795" />
-                <Text style={styles.fastestTagText}>EN HIZLI</Text>
-              </View>
-            )}
-            {isDirect && !isFastest && (
-              <View style={styles.directTag}>
-                <Text style={styles.directTagText}>DİREKT</Text>
-              </View>
-            )}
-            {currentRoute.isTransfer && (
-              <View style={styles.transferTag}>
-                <Repeat size={11} color="#F59E0B" />
-                <Text style={styles.transferTagText}>AKTARMA</Text>
-              </View>
-            )}
+                  {currentRoute.isTransfer ? (
+                    <View style={styles.flowTransferRow}>
+                      <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
+                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+                        <Text style={styles.flowLineText}>{currentRoute.line1}</Text>
+                      </View>
+                      <ChevronRight size={12} color="#64748B" />
+                      <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color2 || '#8B5CF6' }]}>
+                        <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+                        <Text style={styles.flowLineText}>{currentRoute.line2}</Text>
+                      </View>
+                    </View>
+                  ) : (
+                    <View style={[styles.flowLineBadge, { backgroundColor: currentRoute.color || '#3B82F6' }]}>
+                      <Bus size={12} color="#FFFFFF" style={{ marginRight: 4 }} />
+                      <Text style={styles.flowLineText}>{currentRoute.name || currentRoute.lineCode}</Text>
+                    </View>
+                  )}
+
+                  {hasEndWalk && (
+                    <>
+                      <ChevronRight size={13} color="#64748B" />
+                      <View style={styles.flowWalkPill}>
+                        <Footprints size={13} color="#38BDF8" />
+                        <Text style={styles.flowWalkText}>{fmtWalk(currentRoute.walkDistanceEnd)}</Text>
+                      </View>
+                    </>
+                  )}
+                </>
+              )}
+            </View>
+
+            {/* Badges / Status Tags */}
+            <View style={styles.tagsRow}>
+              {isFastest && (
+                <View style={styles.fastestTag}>
+                  <Zap size={11} color="#24C795" />
+                  <Text style={styles.fastestTagText}>EN HIZLI</Text>
+                </View>
+              )}
+              {isDirect && !isFastest && (
+                <View style={styles.directTag}>
+                  <Text style={styles.directTagText}>DİREKT</Text>
+                </View>
+              )}
+              {currentRoute.isTransfer && (
+                <View style={styles.transferTag}>
+                  <Repeat size={11} color="#F59E0B" />
+                  <Text style={styles.transferTagText}>AKTARMA</Text>
+                </View>
+              )}
+            </View>
           </View>
 
           {/* Time & ETA Cluster */}
@@ -644,6 +711,11 @@ const styles = StyleSheet.create({
   routeTabCodeActive: {
     color: '#FFFFFF',
   },
+  tabChainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
 
   // Hero Transit Pass Card
   heroPassCard: {
@@ -659,6 +731,55 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
     marginBottom: 12,
+  },
+  chainAndTagsCol: {
+    flex: 1,
+    paddingRight: 6,
+  },
+  flowChainContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  flowWalkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(56, 189, 248, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(56, 189, 248, 0.3)',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  flowWalkText: {
+    color: '#38BDF8',
+    fontSize: 12,
+    fontWeight: '700',
+  },
+  flowTransferRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  flowLineBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  flowLineText: {
+    color: '#FFFFFF',
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  tagsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 7,
   },
   lineBadgesRow: {
     flexDirection: 'row',
@@ -1013,8 +1134,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  miniChainRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  miniWalkPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+    backgroundColor: 'rgba(56, 189, 248, 0.12)',
+    paddingHorizontal: 5,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  miniWalkText: {
+    color: '#38BDF8',
+    fontSize: 10,
+    fontWeight: '700',
+  },
   miniLineBadge: {
-    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 8,
   },
