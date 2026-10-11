@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -8,19 +8,33 @@ import {
   Alert,
   Modal,
   SafeAreaView,
-  StyleSheet
+  StyleSheet,
+  Dimensions,
+  Platform
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import {
   Search,
+  Mic,
+  User,
+  Navigation,
+  Layers,
+  Crosshair,
+  Cloud,
+  Home,
+  Briefcase,
+  GraduationCap,
+  ChevronRight,
+  Bookmark,
+  Clock,
+  Settings,
   Bus,
   CreditCard,
   X,
-  LocateFixed,
-  GraduationCap,
-  User
+  MapPin,
+  Check
 } from 'lucide-react-native';
 
 import { theme } from './src/theme';
@@ -32,11 +46,14 @@ import FaresView from './src/components/FaresView';
 import RouteResultSheet from './src/components/RouteResultSheet';
 
 import { calculateSmartRoute } from './src/data/routes';
-import { QUICK_PLACES } from './src/data/places';
+import { LOCAL_PLACES } from './src/data/places';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
+
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 export default function App() {
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'saved' | 'history' | 'settings'
 
   // Locations
   const [fromLocation, setFromLocation] = useState({ name: 'Konumunuz', lat: null, lon: null });
@@ -58,6 +75,7 @@ export default function App() {
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [linesModalVisible, setLinesModalVisible] = useState(false);
   const [faresModalVisible, setFaresModalVisible] = useState(false);
+  const [profileModalVisible, setProfileModalVisible] = useState(false);
 
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
@@ -197,11 +215,6 @@ export default function App() {
     }
   };
 
-  // 1-Tap Quick Destination Select
-  const handleSelectQuickDestination = (place) => {
-    executeRouteSearch(fromLocation, place);
-  };
-
   // Map Tap / Pin Dropping (Web parity: tap map to pick destination)
   const handleMapPress = async (coord) => {
     if (!coord?.latitude || !coord?.longitude) return;
@@ -234,12 +247,38 @@ export default function App() {
     setWalkingPathEnd([]);
   };
 
+  // Preset quick navigation targets
+  const handleQuickPreset = (presetKey) => {
+    if (presetKey === 'home') {
+      // Ev: Şükrüpaşa Gölet / Yerleşim
+      executeRouteSearch(fromLocation, {
+        name: 'Ev (Şükrüpaşa)',
+        lat: 41.6670,
+        lon: 26.5911
+      });
+    } else if (presetKey === 'work') {
+      // İş: Saraçlar Caddesi / Heykel
+      executeRouteSearch(fromLocation, {
+        name: 'İş (Saraçlar Caddesi)',
+        lat: 41.6735,
+        lon: 26.5537
+      });
+    } else if (presetKey === 'uni') {
+      // Üniversite: Trakya Üni Tıp Fakültesi / Balkan Kampüsü
+      executeRouteSearch(fromLocation, {
+        name: 'Trakya Üniversitesi Balkan Kampüsü',
+        lat: 41.6389,
+        lon: 26.6150
+      });
+    }
+  };
+
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
         <StatusBar style="light" />
 
-        {/* 1. FULL-SCREEN NATIVE MAP (Zero Split, 100% Canvas, Mapbox Walking Polylines & Map Tap) */}
+        {/* 1. FULL-SCREEN DARK NATIVE MAP */}
         <NativeMap
           style={StyleSheet.absoluteFillObject}
           fromLocation={fromLocation}
@@ -253,81 +292,61 @@ export default function App() {
           onMapPress={handleMapPress}
         />
 
-        {/* 2. COMPACT TOP HEADER BAR (Minimal & Apple Maps inspired) */}
-        <SafeAreaView style={styles.topSafeArea}>
-          <View style={styles.topBar}>
-            {/* ETUS Brand */}
-            <View style={styles.brandGroup}>
-              <View style={styles.brandIconBox}>
-                <Bus size={14} color={theme.colors.primary} />
+        {/* 2. TOP GREETING & PILL SEARCH BAR (Exact Match to Reference Design) */}
+        <SafeAreaView style={styles.topSafeArea} pointerEvents="box-none">
+          <View style={styles.topHeaderCard}>
+            {/* Greeting Row with Profile Avatar */}
+            <View style={styles.greetingRow}>
+              <View style={styles.greetingTextCol}>
+                <Text style={styles.greetingTitle}>Merhaba,</Text>
+                <Text style={styles.greetingSubtitle}>Nereye gideceksin?</Text>
               </View>
-              <Text style={styles.brandTitle}>ETUS</Text>
-            </View>
-
-            {/* Clean Segmented Fare Switcher */}
-            <View style={styles.fareSegmentedControl}>
-              <TouchableOpacity
-                style={[styles.fareSegment, fareType === 'ogrenci' && styles.fareSegmentActive]}
-                onPress={() => setFareType('ogrenci')}
-                activeOpacity={0.7}
-              >
-                <GraduationCap
-                  size={12}
-                  color={fareType === 'ogrenci' ? theme.colors.textPrimary : theme.colors.textMuted}
-                />
-                <Text style={[styles.fareSegmentText, fareType === 'ogrenci' && styles.fareSegmentTextActive]}>
-                  Öğrenci 20₺
-                </Text>
-              </TouchableOpacity>
 
               <TouchableOpacity
-                style={[styles.fareSegment, fareType === 'tam' && styles.fareSegmentActive]}
-                onPress={() => setFareType('tam')}
-                activeOpacity={0.7}
+                style={styles.profileBtn}
+                onPress={() => setProfileModalVisible(true)}
+                activeOpacity={0.8}
               >
-                <User
-                  size={12}
-                  color={fareType === 'tam' ? theme.colors.textPrimary : theme.colors.textMuted}
-                />
-                <Text style={[styles.fareSegmentText, fareType === 'tam' && styles.fareSegmentTextActive]}>
-                  Tam 30₺
-                </Text>
+                <User size={18} color="#CBD5E1" />
               </TouchableOpacity>
             </View>
+
+            {/* Pill Search Input Button */}
+            <TouchableOpacity
+              style={styles.searchPill}
+              onPress={() => {
+                setSearchTargetType('to');
+                setSearchModalVisible(true);
+              }}
+              activeOpacity={0.85}
+            >
+              <Search size={17} color="#94A3B8" />
+              <Text style={styles.searchPillPlaceholder}>Varış noktası ara</Text>
+              <Mic size={17} color="#94A3B8" />
+            </TouchableOpacity>
           </View>
         </SafeAreaView>
 
-        {/* 3. MAP CONTROLS STACK (Controlled 40x40px, high-contrast minimal buttons) */}
-        <View style={styles.floatingControlsStack}>
-          {/* Recenter GPS */}
+        {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers) */}
+        <View style={styles.topFloatingControls}>
           <TouchableOpacity
-            style={styles.controlSquareBtn}
+            style={styles.circleMapBtn}
             onPress={handleUseGps}
             activeOpacity={0.8}
           >
-            <LocateFixed size={18} color={theme.colors.primary} />
+            <Navigation size={18} color="#E2E8F0" />
           </TouchableOpacity>
 
-          {/* All Lines Sheet */}
           <TouchableOpacity
-            style={styles.controlSquareBtn}
+            style={styles.circleMapBtn}
             onPress={() => setLinesModalVisible(true)}
             activeOpacity={0.8}
           >
-            <Bus size={18} color={theme.colors.textPrimary} />
-          </TouchableOpacity>
-
-          {/* Fares & Tariffs Sheet */}
-          <TouchableOpacity
-            style={styles.controlSquareBtn}
-            onPress={() => setFaresModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <CreditCard size={18} color={theme.colors.fare} />
+            <Layers size={18} color="#E2E8F0" />
           </TouchableOpacity>
         </View>
 
-        {/* 4. ACTIVE LINE PREVIEW BANNER (When viewing a line from explorer) */}
+        {/* 4. ACTIVE LINE PREVIEW BANNER (When inspecting line from Explorer) */}
         {previewLine && (
           <View style={styles.previewLineBanner}>
             <View style={styles.previewLineInfo}>
@@ -348,68 +367,315 @@ export default function App() {
           </View>
         )}
 
-        {/* 5. MINIMAL BOTTOM SEARCH BAR (Idle Map State) */}
-        {!searchResults && !loading && (
-          <View style={styles.bottomSearchContainer}>
-            {/* The Main "Nereye?" Search Bar */}
-            <TouchableOpacity
-              style={styles.searchBarInput}
-              onPress={() => {
-                setSearchTargetType('to');
-                setSearchModalVisible(true);
-              }}
-              activeOpacity={0.85}
-            >
-              <Search size={16} color={theme.colors.textMuted} />
-              <Text style={styles.searchBarPlaceholder}>
-                Nereye gitmek istiyorsunuz?
-              </Text>
-            </TouchableOpacity>
-
-            {/* Quick Destination Chips (Compact, minimal 10px radius) */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.quickChipsScroll}
-            >
-              {QUICK_PLACES.map((place) => (
-                <TouchableOpacity
-                  key={place.name}
-                  style={styles.quickChip}
-                  onPress={() => handleSelectQuickDestination(place)}
-                  activeOpacity={0.75}
-                >
-                  <Text style={styles.quickChipText}>{place.shortName}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+        {/* 5. WEATHER & LIVE TRANSIT WIDGET (Bottom-Left above sheet) */}
+        {!searchResults && (
+          <View style={styles.weatherWidget}>
+            <View style={styles.weatherTempRow}>
+              <Cloud size={15} color="#E2E8F0" />
+              <Text style={styles.weatherTempText}>18°</Text>
+            </View>
+            <View style={styles.weatherStatusRow}>
+              <View style={styles.weatherAqiDot} />
+              <Text style={styles.weatherAqiText}>AQI 42</Text>
+            </View>
           </View>
         )}
 
-        {/* 6. LOADING SPINNER OVERLAY */}
+        {/* 6. BOTTOM-RIGHT RECENTER BUTTON */}
+        {!searchResults && (
+          <View style={styles.bottomRecenterContainer}>
+            <TouchableOpacity
+              style={styles.circleMapBtn}
+              onPress={handleUseGps}
+              activeOpacity={0.8}
+            >
+              <Crosshair size={18} color="#E2E8F0" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* 7. LOADING SPINNER OVERLAY */}
         {loading && (
           <View style={styles.loadingBanner}>
-            <ActivityIndicator size="small" color={theme.colors.primary} />
+            <ActivityIndicator size="small" color="#3B82F6" />
             <Text style={styles.loadingBannerText}>En uygun ETUS rotaları hesaplanıyor...</Text>
           </View>
         )}
 
-        {/* 7. ROUTE RESULTS FLOATING SHEET (Digital Boarding Pass) */}
-        {searchResults && !loading && (
-          <RouteResultSheet
-            routes={searchResults.routes}
-            selectedIdx={selectedRouteIdx}
-            onSelectIdx={setSelectedRouteIdx}
-            toLocation={toLocation}
-            fromLocation={fromLocation}
-            fareType={fareType}
-            onFareTypeChange={setFareType}
-            onOpenDetails={() => setDetailsModalVisible(true)}
-            onClose={handleClearRoute}
-          />
+        {/* 8. BOTTOM SHEET: PRESET DESTINATIONS OR ROUTE RESULT SHEET */}
+        {searchResults && !loading ? (
+          <View style={styles.routeResultSheetWrapper}>
+            <RouteResultSheet
+              routes={searchResults.routes}
+              selectedIdx={selectedRouteIdx}
+              onSelectIdx={setSelectedRouteIdx}
+              toLocation={toLocation}
+              fromLocation={fromLocation}
+              fareType={fareType}
+              onFareTypeChange={setFareType}
+              onOpenDetails={() => setDetailsModalVisible(true)}
+              onClose={handleClearRoute}
+            />
+          </View>
+        ) : (
+          !loading && (
+            <View style={styles.presetSheetContainer}>
+              {/* Grabber Handle */}
+              <View style={styles.sheetGrabberBar} />
+
+              {/* Destination Preset Items */}
+              <View style={styles.presetList}>
+                {/* 1. Ev */}
+                <TouchableOpacity
+                  style={styles.presetItem}
+                  onPress={() => handleQuickPreset('home')}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.presetIconBox}>
+                    <Home size={18} color="#E2E8F0" />
+                  </View>
+                  <View style={styles.presetTextCol}>
+                    <Text style={styles.presetTitle}>Ev</Text>
+                    <Text style={styles.presetSubtitle}>Tahmini süre · 22 dk</Text>
+                  </View>
+                  <ChevronRight size={18} color="#475569" />
+                </TouchableOpacity>
+
+                {/* 2. İş */}
+                <TouchableOpacity
+                  style={styles.presetItem}
+                  onPress={() => handleQuickPreset('work')}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.presetIconBox}>
+                    <Briefcase size={18} color="#E2E8F0" />
+                  </View>
+                  <View style={styles.presetTextCol}>
+                    <Text style={styles.presetTitle}>İş</Text>
+                    <Text style={styles.presetSubtitle}>Tahmini süre · 35 dk</Text>
+                  </View>
+                  <ChevronRight size={18} color="#475569" />
+                </TouchableOpacity>
+
+                {/* 3. Trakya Üniversitesi */}
+                <TouchableOpacity
+                  style={styles.presetItem}
+                  onPress={() => handleQuickPreset('uni')}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.presetIconBox}>
+                    <GraduationCap size={18} color="#E2E8F0" />
+                  </View>
+                  <View style={styles.presetTextCol}>
+                    <Text style={styles.presetTitle}>Trakya Üniversitesi</Text>
+                    <Text style={styles.presetSubtitle}>Balkan Kampüsü · 18 dk</Text>
+                  </View>
+                  <ChevronRight size={18} color="#475569" />
+                </TouchableOpacity>
+              </View>
+            </View>
+          )
         )}
 
-        {/* 8. SEARCH MODAL (TomTom + Nominatim + 745 Stops Live Search) */}
+        {/* 9. FIXED BOTTOM NAVIGATION BAR (Exact Match to Reference Design) */}
+        <SafeAreaView style={styles.bottomNavSafeArea} edges={['bottom']}>
+          <View style={styles.bottomNav}>
+            {/* Tab 1: Keşfet */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => {
+                setActiveTab('explore');
+                handleClearRoute();
+              }}
+              activeOpacity={0.75}
+            >
+              <Navigation
+                size={20}
+                color={activeTab === 'explore' ? '#3B82F6' : '#64748B'}
+              />
+              <Text
+                style={[
+                  styles.navTabLabel,
+                  activeTab === 'explore' && styles.navTabLabelActive
+                ]}
+              >
+                Keşfet
+              </Text>
+            </TouchableOpacity>
+
+            {/* Tab 2: Kaydedilenler */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => {
+                setActiveTab('saved');
+                setSearchTargetType('to');
+                setSearchModalVisible(true);
+              }}
+              activeOpacity={0.75}
+            >
+              <Bookmark
+                size={20}
+                color={activeTab === 'saved' ? '#3B82F6' : '#64748B'}
+              />
+              <Text
+                style={[
+                  styles.navTabLabel,
+                  activeTab === 'saved' && styles.navTabLabelActive
+                ]}
+              >
+                Kaydedilenler
+              </Text>
+            </TouchableOpacity>
+
+            {/* Tab 3: Geçmiş */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => {
+                setActiveTab('history');
+                setSearchTargetType('to');
+                setSearchModalVisible(true);
+              }}
+              activeOpacity={0.75}
+            >
+              <Clock
+                size={20}
+                color={activeTab === 'history' ? '#3B82F6' : '#64748B'}
+              />
+              <Text
+                style={[
+                  styles.navTabLabel,
+                  activeTab === 'history' && styles.navTabLabelActive
+                ]}
+              >
+                Geçmiş
+              </Text>
+            </TouchableOpacity>
+
+            {/* Tab 4: Ayarlar */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => {
+                setActiveTab('settings');
+                setProfileModalVisible(true);
+              }}
+              activeOpacity={0.75}
+            >
+              <Settings
+                size={20}
+                color={activeTab === 'settings' ? '#3B82F6' : '#64748B'}
+              />
+              <Text
+                style={[
+                  styles.navTabLabel,
+                  activeTab === 'settings' && styles.navTabLabelActive
+                ]}
+              >
+                Ayarlar
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
+
+        {/* 10. MODAL: PROFILE & FARE SETTINGS */}
+        <Modal
+          visible={profileModalVisible}
+          animationType="slide"
+          presentationStyle="pageSheet"
+          onRequestClose={() => setProfileModalVisible(false)}
+        >
+          <SafeAreaView style={styles.profileModalContainer}>
+            <View style={styles.profileModalHeader}>
+              <Text style={styles.profileModalTitle}>Tercihler & Tarife</Text>
+              <TouchableOpacity
+                onPress={() => setProfileModalVisible(false)}
+                style={styles.profileModalClose}
+              >
+                <X size={18} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={styles.profileModalContent}>
+              {/* Fare Segment Selection */}
+              <Text style={styles.profileSectionTitle}>ETUS BİLET TARİFESİ</Text>
+              <View style={styles.profileFareGroup}>
+                <TouchableOpacity
+                  style={[styles.profileFareCard, fareType === 'ogrenci' && styles.profileFareCardActive]}
+                  onPress={() => setFareType('ogrenci')}
+                  activeOpacity={0.75}
+                >
+                  <View style={styles.profileFareIconBox}>
+                    <GraduationCap size={20} color={fareType === 'ogrenci' ? '#3B82F6' : '#94A3B8'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.profileFareCardTitle}>Öğrenci Tarifesi</Text>
+                    <Text style={styles.profileFareCardSub}>Geçerli Kentkart ile 20,00 ₺</Text>
+                  </View>
+                  {fareType === 'ogrenci' && <Check size={18} color="#3B82F6" />}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.profileFareCard, fareType === 'tam' && styles.profileFareCardActive]}
+                  onPress={() => setFareType('tam')}
+                  activeOpacity={0.75}
+                >
+                  <View style={styles.profileFareIconBox}>
+                    <User size={20} color={fareType === 'tam' ? '#3B82F6' : '#94A3B8'} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.profileFareCardTitle}>Tam / Sivil Tarifesi</Text>
+                    <Text style={styles.profileFareCardSub}>Standart Kentkart ile 30,00 ₺</Text>
+                  </View>
+                  {fareType === 'tam' && <Check size={18} color="#3B82F6" />}
+                </TouchableOpacity>
+              </View>
+
+              {/* Transit Tools Quick Links */}
+              <Text style={styles.profileSectionTitle}>ULAŞIM ARAÇLARI</Text>
+              <TouchableOpacity
+                style={styles.profileActionRow}
+                onPress={() => {
+                  setProfileModalVisible(false);
+                  setLinesModalVisible(true);
+                }}
+                activeOpacity={0.75}
+              >
+                <View style={styles.profileActionIconBox}>
+                  <Bus size={18} color="#24C795" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.profileActionTitle}>ETUS Hat Rehberi</Text>
+                  <Text style={styles.profileActionSub}>Tüm güzergahlar ve kalkış saatleri</Text>
+                </View>
+                <ChevronRight size={18} color="#475569" />
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.profileActionRow}
+                onPress={() => {
+                  setProfileModalVisible(false);
+                  setFaresModalVisible(true);
+                }}
+                activeOpacity={0.75}
+              >
+                <View style={styles.profileActionIconBox}>
+                  <CreditCard size={18} color="#F59E0B" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.profileActionTitle}>Ücret Tarifeleri & Aktarma</Text>
+                  <Text style={styles.profileActionSub}>Detaylı tarife tablosu ve aktarma kuralları</Text>
+                </View>
+                <ChevronRight size={18} color="#475569" />
+              </TouchableOpacity>
+
+              <View style={styles.appVersionBox}>
+                <Text style={styles.appVersionText}>ETUS Edirne Toplu Taşıma · v2.4</Text>
+                <Text style={styles.appVersionSub}>Canlı TomTom ve Mapbox ile güçlendirilmiştir.</Text>
+              </View>
+            </ScrollView>
+          </SafeAreaView>
+        </Modal>
+
+        {/* 11. SEARCH MODAL (TomTom + Mapbox + Nominatim + 745 Stops Live Search) */}
         <SearchModal
           visible={searchModalVisible}
           onClose={() => setSearchModalVisible(false)}
@@ -418,14 +684,14 @@ export default function App() {
           onSelect={handleModalSelect}
         />
 
-        {/* 9. ROUTE DETAILS TURN-BY-TURN MODAL */}
+        {/* 12. ROUTE DETAILS TURN-BY-TURN MODAL */}
         <RouteDetailsModal
           visible={detailsModalVisible}
           route={activeRoute}
           onClose={() => setDetailsModalVisible(false)}
         />
 
-        {/* 10. LINES EXPLORER MODAL */}
+        {/* 13. LINES EXPLORER MODAL */}
         <Modal
           visible={linesModalVisible}
           animationType="slide"
@@ -443,7 +709,7 @@ export default function App() {
           </View>
         </Modal>
 
-        {/* 11. FARES & TARIFFS MODAL */}
+        {/* 14. FARES & TARIFFS MODAL */}
         <Modal
           visible={faresModalVisible}
           animationType="slide"
@@ -469,8 +735,9 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: '#090B0F',
   },
+  // Top Header Area (Greeting + Pill Search Bar)
   topSafeArea: {
     position: 'absolute',
     top: 0,
@@ -478,100 +745,143 @@ const styles = StyleSheet.create({
     right: 0,
     zIndex: 90,
   },
-  topBar: {
+  topHeaderCard: {
+    paddingHorizontal: 20,
+    paddingTop: Platform.OS === 'android' ? 16 : 8,
+    paddingBottom: 6,
+  },
+  greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginHorizontal: 16,
-    marginTop: 8,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
+    marginBottom: 14,
   },
-  brandGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  greetingTextCol: {
+    flex: 1,
   },
-  brandIconBox: {
-    width: 26,
-    height: 26,
-    borderRadius: theme.radius.xs,
-    backgroundColor: theme.colors.primaryLight,
+  greetingTitle: {
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    letterSpacing: -0.4,
+  },
+  greetingSubtitle: {
+    fontSize: 14.5,
+    fontWeight: '400',
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  profileBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(22, 27, 34, 0.92)',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  brandTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: theme.colors.textPrimary,
-    letterSpacing: 0.2,
-  },
-  fareSegmentedControl: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: theme.radius.sm,
-    padding: 2,
     borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
   },
-  fareSegment: {
+  searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    paddingVertical: 4,
-    paddingHorizontal: 8,
-    borderRadius: theme.radius.xs,
+    backgroundColor: 'rgba(22, 27, 34, 0.94)',
+    height: 48,
+    borderRadius: 24,
+    paddingHorizontal: 16,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.09)',
   },
-  fareSegmentActive: {
-    backgroundColor: theme.colors.surfaceHover,
+  searchPillPlaceholder: {
+    flex: 1,
+    fontSize: 14.5,
+    color: '#94A3B8',
+    fontWeight: '400',
   },
-  fareSegmentText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: theme.colors.textMuted,
+
+  // Floating Right Map Controls (Compass & Layers)
+  topFloatingControls: {
+    position: 'absolute',
+    right: 18,
+    top: Platform.OS === 'ios' ? 154 : 144,
+    gap: 10,
+    zIndex: 85,
   },
-  fareSegmentTextActive: {
-    color: theme.colors.textPrimary,
+  circleMapBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(22, 27, 34, 0.92)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+
+  // Weather & Air Quality Widget (Bottom-Left above sheet)
+  weatherWidget: {
+    position: 'absolute',
+    left: 18,
+    bottom: 250,
+    backgroundColor: 'rgba(22, 27, 34, 0.94)',
+    borderRadius: 16,
+    paddingVertical: 9,
+    paddingHorizontal: 13,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    zIndex: 85,
+    gap: 3,
+  },
+  weatherTempRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  weatherTempText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 14.5,
+  },
+  weatherStatusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  weatherAqiDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#24C795',
+  },
+  weatherAqiText: {
+    color: '#24C795',
+    fontSize: 10.5,
     fontWeight: '600',
   },
-  floatingControlsStack: {
+
+  // Recenter GPS Button (Bottom-Right above sheet)
+  bottomRecenterContainer: {
     position: 'absolute',
-    right: 16,
-    bottom: 146,
-    gap: 8,
-    zIndex: 90,
+    right: 18,
+    bottom: 250,
+    zIndex: 85,
   },
-  controlSquareBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-  },
+
+  // Preview Line Banner
   previewLineBanner: {
     position: 'absolute',
-    top: 76,
-    left: 16,
-    right: 16,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    top: 154,
+    left: 18,
+    right: 70,
+    backgroundColor: '#161B24',
+    borderRadius: 12,
     paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
+    borderColor: '#252C36',
     zIndex: 95,
   },
   previewLineInfo: {
@@ -583,7 +893,7 @@ const styles = StyleSheet.create({
   previewLineBadge: {
     paddingHorizontal: 7,
     paddingVertical: 2,
-    borderRadius: theme.radius.xs,
+    borderRadius: 6,
   },
   previewLineBadgeText: {
     color: '#FFFFFF',
@@ -591,7 +901,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
   },
   previewLineName: {
-    color: theme.colors.textPrimary,
+    color: '#FFFFFF',
     fontSize: 12.5,
     fontWeight: '600',
     flex: 1,
@@ -599,62 +909,87 @@ const styles = StyleSheet.create({
   previewLineClose: {
     width: 24,
     height: 24,
-    borderRadius: theme.radius.xs,
-    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: 12,
+    backgroundColor: '#1E2530',
     alignItems: 'center',
     justifyContent: 'center',
     marginLeft: 8,
   },
-  bottomSearchContainer: {
+
+  // Preset Bottom Sheet Card (Matching screenshot)
+  presetSheetContainer: {
     position: 'absolute',
-    left: 16,
-    right: 16,
-    bottom: 24,
-    zIndex: 90,
+    left: 0,
+    right: 0,
+    bottom: 64, // sits right on top of bottom nav bar
+    backgroundColor: '#11151B',
+    borderTopLeftRadius: 26,
+    borderTopRightRadius: 26,
+    borderTopWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 20,
+    paddingBottom: 16,
+    zIndex: 80,
+  },
+  sheetGrabberBar: {
+    width: 38,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#333C4D',
+    alignSelf: 'center',
+    marginTop: 10,
+    marginBottom: 12,
+  },
+  presetList: {
     gap: 8,
   },
-  searchBarInput: {
+  presetItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
-    height: 46,
-    paddingHorizontal: 14,
-    gap: 10,
+    paddingVertical: 10,
+    gap: 14,
+  },
+  presetIconBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#181E29',
+    alignItems: 'center',
+    justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
+    borderColor: 'rgba(255, 255, 255, 0.04)',
   },
-  searchBarPlaceholder: {
-    fontSize: 13.5,
-    fontWeight: '500',
-    color: theme.colors.textSecondary,
-    letterSpacing: -0.1,
+  presetTextCol: {
+    flex: 1,
   },
-  quickChipsScroll: {
-    gap: 6,
-    paddingVertical: 2,
-  },
-  quickChip: {
-    backgroundColor: theme.colors.surface,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: theme.radius.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  quickChipText: {
-    fontSize: 11.5,
+  presetTitle: {
+    fontSize: 15,
     fontWeight: '600',
-    color: theme.colors.textSecondary,
+    color: '#FFFFFF',
+    marginBottom: 2,
   },
+  presetSubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+
+  // Active Route Sheet Wrapper
+  routeResultSheetWrapper: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 64,
+    zIndex: 90,
+  },
+
+  // Loading Banner
   loadingBanner: {
     position: 'absolute',
     left: 20,
     right: 20,
-    bottom: 34,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    bottom: 90,
+    backgroundColor: '#161B24',
+    borderRadius: 14,
     paddingVertical: 12,
     paddingHorizontal: 16,
     flexDirection: 'row',
@@ -662,17 +997,168 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    ...theme.shadows.subtle,
-    zIndex: 90,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    zIndex: 95,
   },
   loadingBannerText: {
-    color: theme.colors.textPrimary,
-    fontSize: 12.5,
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '500',
+  },
+
+  // Bottom Fixed Navigation Bar (Exact Match)
+  bottomNavSafeArea: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#090B0F',
+    zIndex: 100,
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    height: 64,
+    backgroundColor: '#090B0F',
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(255, 255, 255, 0.06)',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+    paddingHorizontal: 8,
+  },
+  navTab: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+    gap: 4,
+    paddingVertical: 6,
+  },
+  navTabLabel: {
+    fontSize: 10.5,
+    fontWeight: '500',
+    color: '#64748B',
+  },
+  navTabLabelActive: {
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+
+  // Profile & Tariffs Modal
+  profileModalContainer: {
+    flex: 1,
+    backgroundColor: '#090B0F',
+  },
+  profileModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+  },
+  profileModalTitle: {
+    fontSize: 17,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  profileModalClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1E2530',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileModalContent: {
+    padding: 20,
+    gap: 16,
+  },
+  profileSectionTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#64748B',
+    letterSpacing: 0.8,
+    marginTop: 8,
+  },
+  profileFareGroup: {
+    gap: 10,
+  },
+  profileFareCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#12161E',
+    borderRadius: 14,
+    padding: 16,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  profileFareCardActive: {
+    borderColor: '#3B82F6',
+    backgroundColor: 'rgba(59, 130, 246, 0.08)',
+  },
+  profileFareIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#181E29',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileFareCardTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  profileFareCardSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  profileActionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#12161E',
+    borderRadius: 14,
+    padding: 16,
+    gap: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.06)',
+  },
+  profileActionIconBox: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#181E29',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  profileActionTitle: {
+    fontSize: 14.5,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    marginBottom: 2,
+  },
+  profileActionSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+  appVersionBox: {
+    alignItems: 'center',
+    marginTop: 24,
+    gap: 4,
+  },
+  appVersionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#64748B',
+  },
+  appVersionSub: {
+    fontSize: 11,
+    color: '#475569',
   },
   modalBody: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: '#090B0F',
   },
 });
