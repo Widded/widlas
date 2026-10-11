@@ -50,27 +50,27 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             <View style={styles.heroBadgesRow}>
               {route.isWalkOnly ? (
                 <View style={styles.walkTag}>
-                  <Footprints size={14} color={theme.colors.success} />
+                  <Footprints size={14} color={theme.colors.emerald} />
                   <Text style={styles.walkTagText}>Yürüyerek Ulaşım</Text>
                 </View>
               ) : isTransfer ? (
                 <View style={styles.transferTagChain}>
-                  <View style={[styles.badge, { backgroundColor: route.color || theme.colors.primary }]}>
+                  <View style={[styles.badge, { backgroundColor: route.color || theme.colors.violet }]}>
                     <Text style={styles.badgeText}>{route.line1}</Text>
                   </View>
                   <Text style={styles.chainArrow}>➔</Text>
-                  <View style={[styles.badge, { backgroundColor: route.color2 || theme.colors.warning }]}>
+                  <View style={[styles.badge, { backgroundColor: route.color2 || theme.colors.amber }]}>
                     <Text style={styles.badgeText}>{route.line2}</Text>
                   </View>
                 </View>
               ) : (
-                <View style={[styles.badge, { backgroundColor: route.color || theme.colors.primary }]}>
+                <View style={[styles.badge, { backgroundColor: route.color || theme.colors.violet }]}>
                   <Text style={styles.badgeText}>{route.name || route.lineCode}</Text>
                 </View>
               )}
 
               <View style={styles.timeTag}>
-                <Clock size={12} color={theme.colors.primaryGlow} />
+                <Clock size={12} color={theme.colors.lavender} />
                 <Text style={styles.timeTagText}>~{route.totalTime} dk</Text>
               </View>
             </View>
@@ -89,8 +89,8 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             {/* Step 1: Walk to first stop */}
             <View style={styles.stepBlock}>
               <View style={styles.stepRailCol}>
-                <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.successLight }]}>
-                  <Footprints size={15} color={theme.colors.success} />
+                <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.emeraldLight }]}>
+                  <Footprints size={15} color={theme.colors.emerald} />
                 </View>
                 <View style={styles.railLine} />
               </View>
@@ -113,7 +113,7 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
                 </View>
                 <View style={styles.stepContentCol}>
                   <View style={styles.lineTagInline}>
-                    <View style={[styles.miniBadge, { backgroundColor: route.color || theme.colors.primary }]}>
+                    <View style={[styles.miniBadge, { backgroundColor: route.color || theme.colors.violet }]}>
                       <Text style={styles.miniBadgeText}>{route.line1 || route.name}</Text>
                     </View>
                     <Text style={styles.stepTitle}>{route.startStop.name} Durağı</Text>
@@ -129,13 +129,13 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             {isTransfer && route.transferStop && (
               <View style={styles.stepBlock}>
                 <View style={styles.stepRailCol}>
-                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.warningLight }]}>
-                    <Repeat size={15} color={theme.colors.warning} />
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.amberLight }]}>
+                    <Repeat size={15} color={theme.colors.amber} />
                   </View>
                   <View style={styles.railLine} />
                 </View>
                 <View style={styles.stepContentCol}>
-                  <Text style={[styles.stepTitle, { color: theme.colors.warning }]}>
+                  <Text style={[styles.stepTitle, { color: theme.colors.amber }]}>
                     {route.transferStop.name} (Aktarma Noktası)
                   </Text>
                   <Text style={styles.stepSubtitle}>
@@ -149,8 +149,8 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             {!route.isWalkOnly && route.endStop && (
               <View style={styles.stepBlock}>
                 <View style={styles.stepRailCol}>
-                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.dangerLight }]}>
-                    <MapPin size={15} color={theme.colors.danger} />
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.roseLight }]}>
+                    <MapPin size={15} color={theme.colors.rose} />
                   </View>
                   {route.walkDistanceEnd > 0 && <View style={styles.railLine} />}
                 </View>
@@ -165,8 +165,8 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
             {route.walkDistanceEnd > 0 && (
               <View style={styles.stepBlock}>
                 <View style={styles.stepRailCol}>
-                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.successLight }]}>
-                    <Flag size={15} color={theme.colors.success} />
+                  <View style={[styles.stepIconBubble, { backgroundColor: theme.colors.emeraldLight }]}>
+                    <Flag size={15} color={theme.colors.emerald} />
                   </View>
                 </View>
                 <View style={styles.stepContentCol}>
@@ -183,14 +183,14 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
           {!route.isWalkOnly && (
             <View style={styles.fareTicketSection}>
               <View style={styles.fareTitleRow}>
-                <ShieldCheck size={16} color={theme.colors.primaryGlow} />
+                <ShieldCheck size={16} color={theme.colors.lavender} />
                 <Text style={styles.sectionHeading}>RESMİ BİLET ÜCRETİ (2026)</Text>
               </View>
 
               <View style={styles.fareCardsRow}>
                 <View style={styles.fareTicketBox}>
                   <Text style={styles.fareRole}>Öğrenci</Text>
-                  <Text style={[styles.farePriceValue, { color: theme.colors.success }]}>
+                  <Text style={[styles.farePriceValue, { color: theme.colors.emerald }]}>
                     {formatFare(calculateFare('ogrenci', isTransfer))}
                   </Text>
                 </View>
@@ -204,7 +204,7 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
 
                 <View style={styles.fareTicketBox}>
                   <Text style={styles.fareRole}>Temassız / QR</Text>
-                  <Text style={[styles.farePriceValue, { color: theme.colors.warning }]}>
+                  <Text style={[styles.farePriceValue, { color: theme.colors.amber }]}>
                     {formatFare(calculateFare('temassiz', isTransfer))}
                   </Text>
                 </View>
@@ -226,7 +226,7 @@ export default function RouteDetailsModal({ visible, route, onClose }) {
 const styles = StyleSheet.create({
   sheetContainer: {
     flex: 1,
-    backgroundColor: theme.colors.sheetBg,
+    backgroundColor: theme.colors.bg,
   },
   grabberBox: {
     alignItems: 'center',
@@ -245,12 +245,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.hairline,
+    borderBottomColor: theme.colors.border,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: '900',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
   headerSubtitle: {
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   scrollContent: {
     padding: 16,
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -295,13 +295,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.successLight,
+    backgroundColor: theme.colors.emeraldLight,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: theme.radius.pill,
   },
   walkTagText: {
-    color: theme.colors.success,
+    color: theme.colors.emerald,
     fontSize: 12,
     fontWeight: '700',
   },
@@ -321,14 +321,14 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   chainArrow: {
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     fontSize: 13,
   },
   timeTag: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.lavenderLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: theme.radius.pill,
@@ -336,12 +336,12 @@ const styles = StyleSheet.create({
   timeTagText: {
     fontSize: 12,
     fontWeight: '800',
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
   },
   heroDestination: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
   timelineSection: {
@@ -349,13 +349,13 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     marginBottom: 16,
   },
   sectionHeading: {
     fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     letterSpacing: 0.6,
     marginBottom: 14,
   },
@@ -379,7 +379,7 @@ const styles = StyleSheet.create({
   railLine: {
     width: 2,
     flex: 1,
-    backgroundColor: theme.colors.hairline,
+    backgroundColor: theme.colors.border,
     marginVertical: 4,
   },
   stepContentCol: {
@@ -406,7 +406,7 @@ const styles = StyleSheet.create({
   stepTitle: {
     fontSize: 14,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   stepSubtitle: {
     fontSize: 12,
@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   fareTitleRow: {
     flexDirection: 'row',
@@ -449,7 +449,7 @@ const styles = StyleSheet.create({
   },
   transferDiscountHint: {
     fontSize: 11,
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     marginTop: 10,
     textAlign: 'center',
   },

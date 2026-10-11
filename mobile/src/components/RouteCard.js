@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { ArrowRight, Footprints, ChevronRight, Check, Clock, Bus } from 'lucide-react-native';
+import { ArrowRight, Footprints, ChevronRight, Check } from 'lucide-react-native';
 import { theme } from '../theme';
 import { calculateFare, formatFare } from '../data/fares';
 
@@ -34,21 +34,21 @@ export default function RouteCard({
         <View style={styles.chainBox}>
           {route.isWalkOnly ? (
             <View style={styles.walkBadgePill}>
-              <Footprints size={14} color={theme.colors.success} />
+              <Footprints size={14} color={theme.colors.emerald} />
               <Text style={styles.walkBadgePillText}>Yürüyerek Ulaşım</Text>
             </View>
           ) : route.isTransfer ? (
             <View style={styles.transferChain}>
-              <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.primary }]}>
+              <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.violet }]}>
                 <Text style={styles.lineBadgeText}>{route.line1}</Text>
               </View>
-              <ArrowRight size={13} color={theme.colors.textTertiary} />
-              <View style={[styles.lineBadge, { backgroundColor: route.color2 || theme.colors.warning }]}>
+              <ArrowRight size={13} color={theme.colors.textMuted} />
+              <View style={[styles.lineBadge, { backgroundColor: route.color2 || theme.colors.amber }]}>
                 <Text style={styles.lineBadgeText}>{route.line2}</Text>
               </View>
             </View>
           ) : (
-            <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.primary }]}>
+            <View style={[styles.lineBadge, { backgroundColor: route.color || theme.colors.violet }]}>
               <Text style={styles.lineBadgeText}>{route.name || route.lineCode}</Text>
             </View>
           )}
@@ -81,11 +81,11 @@ export default function RouteCard({
             <View style={styles.railLine} />
             {route.isTransfer && (
               <>
-                <View style={[styles.railDot, { backgroundColor: theme.colors.warning }]} />
+                <View style={[styles.railDot, { backgroundColor: theme.colors.amber }]} />
                 <View style={styles.railLine} />
               </>
             )}
-            <View style={[styles.railDot, { backgroundColor: theme.colors.danger }]} />
+            <View style={[styles.railDot, { backgroundColor: theme.colors.rose }]} />
           </View>
 
           {/* Stop names */}
@@ -99,7 +99,7 @@ export default function RouteCard({
 
             {route.isTransfer && (
               <View style={styles.stopRow}>
-                <Text style={[styles.stopNameText, { color: theme.colors.warning }]} numberOfLines={1}>
+                <Text style={[styles.stopNameText, { color: theme.colors.amber }]} numberOfLines={1}>
                   {route.transferStop?.name || 'Aktarma Noktası'}
                 </Text>
                 <Text style={styles.stopRoleText}>Aktarma</Text>
@@ -124,7 +124,7 @@ export default function RouteCard({
         <View style={styles.footerLeft}>
           {route.walkDistanceStart > 0 && (
             <View style={styles.walkMeta}>
-              <Footprints size={12} color={theme.colors.success} />
+              <Footprints size={12} color={theme.colors.emerald} />
               <Text style={styles.walkMetaText}>{fmtWalk(route.walkDistanceStart)} yürüme</Text>
             </View>
           )}
@@ -141,7 +141,7 @@ export default function RouteCard({
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
           <Text style={styles.detailsActionText}>Tüm Adımlar</Text>
-          <ChevronRight size={14} color={theme.colors.primaryGlow} />
+          <ChevronRight size={14} color={theme.colors.lavender} />
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
@@ -154,20 +154,20 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 14,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 3,
   },
   ticketCardActive: {
-    borderColor: theme.colors.primaryGlow,
+    borderColor: theme.colors.lavender,
     backgroundColor: theme.colors.surfaceElevated,
-    shadowColor: theme.colors.primary,
+    shadowColor: theme.colors.violet,
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
+    shadowOpacity: 0.45,
     shadowRadius: 12,
     elevation: 5,
   },
@@ -195,11 +195,6 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.xs,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 3,
-    elevation: 2,
   },
   lineBadgeText: {
     color: '#FFFFFF',
@@ -211,36 +206,36 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.successLight,
+    backgroundColor: theme.colors.emeraldLight,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderRadius: theme.radius.pill,
   },
   walkBadgePillText: {
-    color: theme.colors.success,
+    color: theme.colors.emerald,
     fontSize: 12,
     fontWeight: '700',
   },
   fastestTag: {
-    backgroundColor: theme.colors.successLight,
+    backgroundColor: theme.colors.emeraldLight,
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
   },
   fastestTagText: {
-    color: theme.colors.success,
+    color: theme.colors.emerald,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
   },
   directTag: {
-    backgroundColor: theme.colors.primaryLight,
+    backgroundColor: theme.colors.lavenderLight,
     paddingHorizontal: 6,
     paddingVertical: 3,
     borderRadius: 4,
   },
   directTagText: {
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
     fontSize: 9,
     fontWeight: '900',
     letterSpacing: 0.5,
@@ -254,7 +249,7 @@ const styles = StyleSheet.create({
   timeValue: {
     fontSize: 26,
     fontWeight: '900',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.5,
   },
   timeUnit: {
@@ -286,7 +281,7 @@ const styles = StyleSheet.create({
   railLine: {
     width: 2,
     flex: 1,
-    backgroundColor: theme.colors.hairline,
+    backgroundColor: theme.colors.border,
     marginVertical: 2,
   },
   stopsCol: {
@@ -302,19 +297,19 @@ const styles = StyleSheet.create({
   stopNameText: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     flex: 1,
     paddingRight: 8,
   },
   stopRoleText: {
     fontSize: 10,
     fontWeight: '700',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     textTransform: 'uppercase',
   },
   perforatedLine: {
     height: 1,
-    backgroundColor: theme.colors.hairline,
+    backgroundColor: theme.colors.border,
     marginVertical: 4,
   },
   footerRow: {
@@ -347,7 +342,7 @@ const styles = StyleSheet.create({
   fareTagText: {
     fontSize: 12,
     fontWeight: '800',
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
   },
   detailsAction: {
     flexDirection: 'row',
@@ -357,6 +352,6 @@ const styles = StyleSheet.create({
   detailsActionText: {
     fontSize: 12,
     fontWeight: '800',
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
   },
 });

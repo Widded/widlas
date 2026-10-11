@@ -21,8 +21,7 @@ import {
   AlertCircle,
   RefreshCw,
   X,
-  MapPin,
-  Sparkles
+  MapPin
 } from 'lucide-react-native';
 
 import { theme } from './src/theme';
@@ -241,7 +240,7 @@ export default function App() {
             {previewLine && (
               <View style={styles.linePreviewPill}>
                 <View style={styles.linePreviewContent}>
-                  <View style={[styles.lineBadgePill, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
+                  <View style={[styles.lineBadgePill, { backgroundColor: previewLine.line.color || theme.colors.violet }]}>
                     <Text style={styles.lineBadgePillText}>{previewLine.line.code}</Text>
                   </View>
                   <Text style={styles.linePreviewName} numberOfLines={1}>
@@ -304,9 +303,9 @@ export default function App() {
                               {fromLocation.name || 'Konumunuz'}
                             </Text>
                           </View>
-                          <ArrowRight size={13} color={theme.colors.textTertiary} />
+                          <ArrowRight size={13} color={theme.colors.textMuted} />
                           <View style={styles.summaryNode}>
-                            <View style={[styles.nodeDot, { backgroundColor: theme.colors.danger }]} />
+                            <View style={[styles.nodeDot, { backgroundColor: theme.colors.rose }]} />
                             <Text style={styles.nodeText} numberOfLines={1}>
                               {toLocation.name || 'Hedef'}
                             </Text>
@@ -314,7 +313,7 @@ export default function App() {
                         </View>
 
                         <View style={styles.editAction}>
-                          <Edit3 size={13} color={theme.colors.primaryGlow} />
+                          <Edit3 size={13} color={theme.colors.lavender} />
                           <Text style={styles.editActionText}>Değiştir</Text>
                         </View>
                       </TouchableOpacity>
@@ -356,7 +355,7 @@ export default function App() {
                       {/* Empty Route Result */}
                       {!loading && (!searchResults?.routes || searchResults.routes.length === 0) && (
                         <View style={styles.emptyCard}>
-                          <AlertCircle size={32} color={theme.colors.warning} />
+                          <AlertCircle size={32} color={theme.colors.amber} />
                           <Text style={styles.emptyTitle}>Uygun Rota Bulunamadı</Text>
                           <Text style={styles.emptyDesc}>
                             Bu iki nokta arasında doğrudan veya aktarmalı bir hat tespit edilemedi. Lütfen duraklara daha yakın bir nokta seçin.
@@ -414,7 +413,7 @@ export default function App() {
               >
                 <Compass
                   size={22}
-                  color={activeTab === 'search' ? theme.colors.primaryGlow : theme.colors.textTertiary}
+                  color={activeTab === 'search' ? theme.colors.lavender : theme.colors.textMuted}
                 />
                 <Text style={[styles.bottomNavText, activeTab === 'search' && styles.bottomNavTextActive]}>
                   Yol Tarifi
@@ -428,7 +427,7 @@ export default function App() {
               >
                 <Bus
                   size={22}
-                  color={activeTab === 'lines' ? theme.colors.primaryGlow : theme.colors.textTertiary}
+                  color={activeTab === 'lines' ? theme.colors.lavender : theme.colors.textMuted}
                 />
                 <Text style={[styles.bottomNavText, activeTab === 'lines' && styles.bottomNavTextActive]}>
                   Hatlar
@@ -442,7 +441,7 @@ export default function App() {
               >
                 <CreditCard
                   size={22}
-                  color={activeTab === 'fares' ? theme.colors.primaryGlow : theme.colors.textTertiary}
+                  color={activeTab === 'fares' ? theme.colors.lavender : theme.colors.textMuted}
                 />
                 <Text style={[styles.bottomNavText, activeTab === 'fares' && styles.bottomNavTextActive]}>
                   Tarifeler
@@ -487,11 +486,11 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     maxHeight: SCREEN_HEIGHT * 0.54,
-    backgroundColor: theme.colors.sheetBg,
+    backgroundColor: theme.colors.bgElevated,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     borderTopWidth: 1,
-    borderTopColor: theme.colors.hairline,
+    borderTopColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: -8 },
     shadowOpacity: 0.5,
@@ -529,7 +528,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.md,
     padding: 12,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     marginBottom: 12,
   },
   summaryWaypoints: {
@@ -552,7 +551,7 @@ const styles = StyleSheet.create({
   nodeText: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     flexShrink: 1,
   },
   editAction: {
@@ -564,7 +563,7 @@ const styles = StyleSheet.create({
   editActionText: {
     fontSize: 12,
     fontWeight: '800',
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
   },
   resultsHeader: {
     flexDirection: 'row',
@@ -575,13 +574,13 @@ const styles = StyleSheet.create({
   resultsTitle: {
     fontSize: 15,
     fontWeight: '900',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.3,
   },
   newSearchBtn: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
   },
   loadingBox: {
     paddingVertical: 32,
@@ -597,7 +596,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     padding: 24,
     alignItems: 'center',
     gap: 10,
@@ -606,7 +605,7 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   emptyDesc: {
     fontSize: 13,
@@ -618,7 +617,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.violet,
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: theme.radius.sm,
@@ -634,7 +633,7 @@ const styles = StyleSheet.create({
     top: 70,
     left: 14,
     right: 14,
-    backgroundColor: 'rgba(18, 25, 41, 0.96)',
+    backgroundColor: 'rgba(15, 23, 42, 0.96)',
     borderRadius: theme.radius.pill,
     paddingVertical: 8,
     paddingHorizontal: 12,
@@ -666,7 +665,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
   },
   linePreviewName: {
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     fontSize: 13,
     fontWeight: '700',
     flex: 1,
@@ -685,7 +684,7 @@ const styles = StyleSheet.create({
     top: 20,
     left: 16,
     right: 16,
-    backgroundColor: 'rgba(18, 25, 41, 0.96)',
+    backgroundColor: 'rgba(15, 23, 42, 0.96)',
     borderRadius: theme.radius.lg,
     padding: 14,
     flexDirection: 'row',
@@ -709,7 +708,7 @@ const styles = StyleSheet.create({
   pickerHudTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   pickerHudSub: {
     fontSize: 12,
@@ -722,12 +721,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: theme.radius.sm,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   pickerHudCancelText: {
     fontSize: 13,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   tabScroll: {
     flex: 1,
@@ -749,7 +748,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.35,
@@ -765,10 +764,10 @@ const styles = StyleSheet.create({
   bottomNavText: {
     fontSize: 10,
     fontWeight: '700',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
   },
   bottomNavTextActive: {
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
     fontWeight: '800',
   },
 });

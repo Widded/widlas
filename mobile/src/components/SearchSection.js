@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { LocateFixed, MapPin, ArrowUpDown, Sparkles, Navigation, ChevronRight } from 'lucide-react-native';
+import { LocateFixed, MapPin, ArrowUpDown, ChevronRight, Navigation, Compass } from 'lucide-react-native';
 import { theme } from '../theme';
 import { QUICK_PLACES } from '../data/places';
 
@@ -16,34 +16,32 @@ export default function SearchSection({
   hasSearched,
   loading
 }) {
-  const isFromGps = fromLocation?.name === 'Konumunuz' || !fromLocation?.lat;
-
   return (
-    <View style={styles.sheetContainer}>
-      {/* Drawer Drag Grabber */}
-      <View style={styles.grabberBox}>
-        <View style={styles.grabberBar} />
+    <View style={styles.composerWrapper}>
+      {/* Drawer Grabber Handle */}
+      <View style={styles.handleContainer}>
+        <View style={styles.handleIndicator} />
       </View>
 
-      {/* Main Journey Planner Chamber */}
-      <View style={styles.journeyChamber}>
-        {/* Origin field */}
+      {/* Main Waypoint Stage */}
+      <View style={styles.waypointBox}>
+        {/* Origin Field */}
         <TouchableOpacity
-          style={styles.locationField}
+          style={styles.fieldTouch}
           onPress={() => onOpenSearch('from')}
           activeOpacity={0.7}
         >
-          <View style={styles.originBeacon}>
-            <View style={styles.originBeaconInner} />
+          <View style={styles.cyanBeacon}>
+            <View style={styles.cyanBeaconCore} />
           </View>
 
-          <View style={styles.fieldTextCol}>
-            <Text style={styles.fieldLabel}>BAŞLANGIÇ</Text>
+          <View style={styles.fieldInfo}>
+            <Text style={styles.fieldMicroTitle}>BAŞLANGIÇ NOKTASI</Text>
             <Text
-              style={[styles.fieldValue, !fromLocation?.name && styles.placeholderValue]}
+              style={[styles.fieldName, !fromLocation?.name && styles.placeholderName]}
               numberOfLines={1}
             >
-              {fromLocation?.name || 'Mevcut konumunuz...'}
+              {fromLocation?.name || 'Konumunuz tespit ediliyor...'}
             </Text>
           </View>
 
@@ -53,92 +51,88 @@ export default function SearchSection({
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <LocateFixed size={16} color={theme.colors.primaryGlow} />
+            <LocateFixed size={15} color={theme.colors.primaryGlow} />
           </TouchableOpacity>
         </TouchableOpacity>
 
-        {/* Floating Swap Junction */}
+        {/* Junction & Swap Button */}
         <View style={styles.junctionRow}>
-          <View style={styles.junctionLine} />
+          <View style={styles.junctionRail} />
           <TouchableOpacity
-            style={styles.swapJunctionBtn}
+            style={styles.swapFloatingBtn}
             onPress={onSwap}
             activeOpacity={0.8}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ArrowUpDown size={14} color={theme.colors.textMain} />
+            <ArrowUpDown size={13} color={theme.colors.textPrimary} />
           </TouchableOpacity>
         </View>
 
-        {/* Destination field */}
+        {/* Destination Field */}
         <TouchableOpacity
-          style={styles.locationField}
+          style={styles.fieldTouch}
           onPress={() => onOpenSearch('to')}
           activeOpacity={0.7}
         >
-          <View style={styles.destBeacon}>
-            <MapPin size={16} color={theme.colors.danger} />
+          <View style={styles.roseBeacon}>
+            <MapPin size={15} color={theme.colors.rose} />
           </View>
 
-          <View style={styles.fieldTextCol}>
-            <Text style={styles.fieldLabel}>VARIŞ NOKTASI</Text>
+          <View style={styles.fieldInfo}>
+            <Text style={styles.fieldMicroTitle}>VARIŞ NOKTASI</Text>
             <Text
-              style={[styles.fieldValue, !toLocation?.name && styles.placeholderValue]}
+              style={[styles.fieldName, !toLocation?.name && styles.placeholderName]}
               numberOfLines={1}
             >
               {toLocation?.name || 'Nereye gitmek istiyorsunuz?'}
             </Text>
           </View>
 
-          <ChevronRight size={18} color={theme.colors.textTertiary} />
+          <ChevronRight size={16} color={theme.colors.textMuted} />
         </TouchableOpacity>
       </View>
 
-      {/* Quick Location Shortcuts */}
-      <View style={styles.shortcutsRow}>
+      {/* Quick Action Shortcuts */}
+      <View style={styles.actionsBar}>
         <TouchableOpacity
-          style={styles.shortcutPill}
+          style={styles.actionChip}
           onPress={onPickOnMap}
-          activeOpacity={0.7}
+          activeOpacity={0.75}
         >
-          <MapPin size={13} color={theme.colors.warning} />
-          <Text style={styles.shortcutPillText}>Haritada İşaretle</Text>
+          <MapPin size={13} color={theme.colors.amber} />
+          <Text style={styles.actionChipLabel}>Haritada Seç</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.shortcutPill}
+          style={styles.actionChip}
           onPress={onUseGps}
-          activeOpacity={0.7}
+          activeOpacity={0.75}
         >
-          <LocateFixed size={13} color={theme.colors.primaryGlow} />
-          <Text style={styles.shortcutPillText}>GPS Konumumu Al</Text>
+          <Compass size={13} color={theme.colors.primaryGlow} />
+          <Text style={styles.actionChipLabel}>Mevcut Konumum</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Popular Edirne Destinations */}
-      <View style={styles.popularSection}>
-        <View style={styles.sectionTitleRow}>
-          <Sparkles size={13} color={theme.colors.primaryGlow} />
-          <Text style={styles.sectionTitleText}>Popüler Varış Noktaları</Text>
-        </View>
-
+      {/* Curated Fast-Pick Destinations */}
+      <View style={styles.fastPicksSection}>
+        <Text style={styles.fastPicksTitle}>SIK GİDİLEN DURAKLAR & HEDEFLER</Text>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.popularScroll}
+          contentContainerStyle={styles.fastPicksScroll}
         >
           {QUICK_PLACES.map((place) => {
             const isSelected = toLocation?.name === place.name;
             return (
               <TouchableOpacity
                 key={place.name}
-                style={[styles.placePill, isSelected && styles.placePillActive]}
+                style={[styles.stationChip, isSelected && styles.stationChipActive]}
                 onPress={() => onSelectQuickPlace(place)}
                 activeOpacity={0.7}
               >
-                <Text style={styles.placePillIcon}>{place.icon}</Text>
+                <Text style={styles.stationChipIcon}>{place.icon}</Text>
                 <Text
-                  style={[styles.placePillText, isSelected && styles.placePillTextActive]}
+                  style={[styles.stationChipText, isSelected && styles.stationChipTextActive]}
                   numberOfLines={1}
                 >
                   {place.shortName}
@@ -149,16 +143,16 @@ export default function SearchSection({
         </ScrollView>
       </View>
 
-      {/* CTA Button */}
+      {/* Execute Route Search CTA */}
       <TouchableOpacity
-        style={[styles.ctaButton, loading && styles.ctaButtonDisabled]}
+        style={[styles.searchCtaBtn, loading && styles.searchCtaDisabled]}
         onPress={onSearch}
         activeOpacity={0.85}
         disabled={loading}
       >
-        <Navigation size={18} color="#FFFFFF" />
-        <Text style={styles.ctaButtonText}>
-          {loading ? 'En Uygun Güzergah Aranıyor...' : hasSearched ? 'Rotayı Yenile' : 'En İyi Rotaları Bul'}
+        <Navigation size={17} color="#FFFFFF" />
+        <Text style={styles.searchCtaText}>
+          {loading ? 'En Uygun Güzergah Aranıyor...' : hasSearched ? 'Rotayı Güncelle' : 'En Uygun Rotaları Hesapla'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -166,34 +160,34 @@ export default function SearchSection({
 }
 
 const styles = StyleSheet.create({
-  sheetContainer: {
+  composerWrapper: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: 6,
     paddingBottom: 20,
   },
-  grabberBox: {
+  handleContainer: {
     alignItems: 'center',
     paddingVertical: 8,
   },
-  grabberBar: {
-    width: 38,
+  handleIndicator: {
+    width: 36,
     height: 4,
     borderRadius: 2,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
   },
-  journeyChamber: {
+  waypointBox: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
     padding: 10,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
+    shadowOpacity: 0.35,
     shadowRadius: 10,
     elevation: 4,
   },
-  locationField: {
+  fieldTouch: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: theme.colors.inputBg,
@@ -202,7 +196,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     gap: 12,
   },
-  originBeacon: {
+  cyanBeacon: {
     width: 22,
     height: 22,
     borderRadius: 11,
@@ -210,35 +204,35 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  originBeaconInner: {
+  cyanBeaconCore: {
     width: 10,
     height: 10,
     borderRadius: 5,
     backgroundColor: theme.colors.primaryGlow,
   },
-  destBeacon: {
+  roseBeacon: {
     width: 22,
     height: 22,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  fieldTextCol: {
+  fieldInfo: {
     flex: 1,
   },
-  fieldLabel: {
+  fieldMicroTitle: {
     fontSize: 9,
     fontWeight: '800',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     letterSpacing: 0.6,
     marginBottom: 2,
   },
-  fieldValue: {
-    fontSize: 15,
+  fieldName: {
+    fontSize: 14,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
-  placeholderValue: {
-    color: theme.colors.textTertiary,
+  placeholderName: {
+    color: theme.colors.textMuted,
     fontWeight: '500',
   },
   gpsSnapBtn: {
@@ -250,43 +244,38 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   junctionRow: {
-    position: 'relative',
-    height: 20,
+    height: 18,
     alignItems: 'center',
     justifyContent: 'center',
+    position: 'relative',
   },
-  junctionLine: {
+  junctionRail: {
     position: 'absolute',
     left: 20,
     top: -4,
     bottom: -4,
     width: 2,
-    backgroundColor: theme.colors.hairline,
+    backgroundColor: theme.colors.border,
   },
-  swapJunctionBtn: {
+  swapFloatingBtn: {
     position: 'absolute',
     right: 14,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     zIndex: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
   },
-  shortcutsRow: {
+  actionsBar: {
     flexDirection: 'row',
     gap: 8,
     marginTop: 10,
   },
-  shortcutPill: {
+  actionChip: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
@@ -296,82 +285,76 @@ const styles = StyleSheet.create({
     paddingVertical: 9,
     borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
-  shortcutPillText: {
+  actionChipLabel: {
     fontSize: 12,
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
-  popularSection: {
+  fastPicksSection: {
     marginTop: 14,
   },
-  sectionTitleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
+  fastPicksTitle: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: theme.colors.textMuted,
+    letterSpacing: 0.6,
     marginBottom: 8,
     paddingHorizontal: 2,
   },
-  sectionTitleText: {
-    fontSize: 12,
-    fontWeight: '800',
-    color: theme.colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  popularScroll: {
+  fastPicksScroll: {
     gap: 8,
     paddingVertical: 2,
   },
-  placePill: {
+  stationChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: theme.colors.surface,
     paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingHorizontal: 13,
     borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
-  placePillActive: {
+  stationChipActive: {
     backgroundColor: theme.colors.primaryLight,
     borderColor: theme.colors.primaryGlow,
   },
-  placePillIcon: {
+  stationChipIcon: {
     fontSize: 13,
   },
-  placePillText: {
+  stationChipText: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
-  placePillTextActive: {
+  stationChipTextActive: {
     color: theme.colors.primaryGlow,
     fontWeight: '800',
   },
-  ctaButton: {
+  searchCtaBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.violet,
     borderRadius: theme.radius.md,
     paddingVertical: 14,
     marginTop: 14,
-    shadowColor: theme.colors.primary,
+    shadowColor: theme.colors.violet,
     shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.45,
     shadowRadius: 10,
     elevation: 5,
   },
-  ctaButtonDisabled: {
+  searchCtaDisabled: {
     opacity: 0.6,
   },
-  ctaButtonText: {
+  searchCtaText: {
     color: '#FFFFFF',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     letterSpacing: -0.2,
   },

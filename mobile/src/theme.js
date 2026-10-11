@@ -1,48 +1,50 @@
-// 2026 Next-Gen Transit Mobile Design System (Edirne Ulaşım - ETUS)
+// Modern Transit Design Tokens for Edirne Ulaşım (ETUS)
 export const theme = {
   colors: {
-    // Deep Obsidian & Midnight Surfaces
+    // Canvas & Layering
     bg: '#080C14',
-    bgSecondary: '#0E1422',
-    sheetBg: '#121929',
-    surface: '#172033',
-    surfaceElevated: '#1E2940',
-    surfacePressed: '#263450',
-    inputBg: 'rgba(255, 255, 255, 0.06)',
+    bgElevated: '#0F172A',
+    surface: '#141E33',
+    surfaceElevated: '#1C2942',
+    surfaceHighlight: '#243352',
+    inputBg: 'rgba(255, 255, 255, 0.05)',
     
-    // Glassmorphism & Translucent Overlays
-    glassBg: 'rgba(18, 25, 41, 0.88)',
+    // Glassmorphism & Hairlines
+    glass: 'rgba(15, 23, 42, 0.92)',
     glassBorder: 'rgba(255, 255, 255, 0.08)',
-    hairline: 'rgba(255, 255, 255, 0.06)',
+    border: 'rgba(255, 255, 255, 0.07)',
     
-    // High-Contrast Typography Hierarchy
-    textMain: '#FFFFFF',
+    // Typography Hierarchy
+    textPrimary: '#FFFFFF',
     textSecondary: '#94A3B8',
-    textTertiary: '#64748B',
+    textMuted: '#64748B',
     textDim: '#475569',
     
-    // Vibrant Transit Accents
+    // Controlled Accents: Studio Violet & Lavender
+    violet: '#8B5CF6',
+    violetDark: '#6D28D9',
+    lavender: '#C4B5FD',
+    lavenderLight: 'rgba(139, 92, 246, 0.16)',
+    
+    // Functional Transit Accents
     primary: '#0084FF',
     primaryGlow: '#00D2FF',
-    primaryLight: 'rgba(0, 132, 255, 0.16)',
+    primaryLight: 'rgba(0, 132, 255, 0.15)',
     
-    success: '#00E676',
-    successLight: 'rgba(0, 230, 118, 0.14)',
+    emerald: '#10B981',
+    emeraldLight: 'rgba(16, 185, 129, 0.15)',
     
-    warning: '#FF9100',
-    warningLight: 'rgba(255, 145, 0, 0.14)',
+    amber: '#F59E0B',
+    amberLight: 'rgba(245, 158, 11, 0.15)',
     
-    danger: '#FF3366',
-    dangerLight: 'rgba(255, 51, 102, 0.14)',
-    
-    accentPurple: '#7C4DFF',
-    accentPurpleLight: 'rgba(124, 77, 255, 0.14)',
+    rose: '#F43F5E',
+    roseLight: 'rgba(244, 63, 94, 0.15)',
   },
   radius: {
-    xs: 8,
-    sm: 12,
-    md: 16,
-    lg: 22,
+    xs: 6,
+    sm: 10,
+    md: 14,
+    lg: 20,
     xl: 28,
     pill: 9999,
   },

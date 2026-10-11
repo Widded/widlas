@@ -5,40 +5,46 @@ import { theme } from '../theme';
 
 export default function Header({ fareType, setFareType }) {
   return (
-    <View style={styles.floatingContainer}>
-      <View style={styles.glassBar}>
+    <View style={styles.floatingWrapper}>
+      <View style={styles.islandPill}>
         {/* Brand identity */}
-        <View style={styles.brandCapsule}>
-          <View style={styles.busIconBubble}>
-            <Bus size={16} color="#FFFFFF" />
+        <View style={styles.brandRow}>
+          <View style={styles.brandIconBox}>
+            <Bus size={15} color="#FFFFFF" />
           </View>
           <View>
-            <Text style={styles.brandName}>EDİRNE ULAŞIM</Text>
-            <Text style={styles.brandTag}>ETUS Canlı Rehber</Text>
+            <Text style={styles.brandTitle}>EDİRNE ETUS</Text>
+            <Text style={styles.brandSub}>Akıllı Ulaşım Ağı</Text>
           </View>
         </View>
 
-        {/* Micro Fare Segment Switcher */}
-        <View style={styles.fareSwitch}>
+        {/* Micro Segmented Tariff Switcher */}
+        <View style={styles.tariffSwitcher}>
           <TouchableOpacity
-            style={[styles.fareTab, fareType === 'ogrenci' && styles.fareTabActiveStudent]}
+            style={[styles.tariffBtn, fareType === 'ogrenci' && styles.tariffBtnActiveStudent]}
             onPress={() => setFareType('ogrenci')}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
-            <GraduationCap size={13} color={fareType === 'ogrenci' ? '#FFFFFF' : theme.colors.textSecondary} />
-            <Text style={[styles.fareTabText, fareType === 'ogrenci' && styles.fareTabTextActive]}>
-              Öğrenci
+            <GraduationCap
+              size={12}
+              color={fareType === 'ogrenci' ? '#FFFFFF' : theme.colors.textSecondary}
+            />
+            <Text style={[styles.tariffText, fareType === 'ogrenci' && styles.tariffTextActive]}>
+              Öğrenci 20₺
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.fareTab, fareType === 'tam' && styles.fareTabActiveAdult]}
+            style={[styles.tariffBtn, fareType === 'tam' && styles.tariffBtnActiveAdult]}
             onPress={() => setFareType('tam')}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
-            <User size={13} color={fareType === 'tam' ? '#FFFFFF' : theme.colors.textSecondary} />
-            <Text style={[styles.fareTabText, fareType === 'tam' && styles.fareTabTextActive]}>
-              Tam
+            <User
+              size={12}
+              color={fareType === 'tam' ? '#FFFFFF' : theme.colors.textSecondary}
+            />
+            <Text style={[styles.tariffText, fareType === 'tam' && styles.tariffTextActive]}>
+              Tam 30₺
             </Text>
           </TouchableOpacity>
         </View>
@@ -48,17 +54,17 @@ export default function Header({ fareType, setFareType }) {
 }
 
 const styles = StyleSheet.create({
-  floatingContainer: {
-    paddingHorizontal: 14,
-    paddingTop: 4,
+  floatingWrapper: {
+    paddingHorizontal: 16,
+    paddingTop: 6,
     paddingBottom: 6,
     zIndex: 999,
   },
-  glassBar: {
+  islandPill: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: theme.colors.glassBg,
+    backgroundColor: theme.colors.glass,
     borderRadius: theme.radius.pill,
     paddingVertical: 7,
     paddingHorizontal: 12,
@@ -66,68 +72,63 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.glassBorder,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    shadowOpacity: 0.4,
+    shadowRadius: 10,
     elevation: 6,
   },
-  brandCapsule: {
+  brandRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
   },
-  busIconBubble: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: theme.colors.primary,
+  brandIconBox: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.violet,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: theme.colors.primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 2,
   },
-  brandName: {
-    fontSize: 13,
+  brandTitle: {
+    fontSize: 12,
     fontWeight: '900',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: 0.5,
   },
-  brandTag: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: theme.colors.primaryGlow,
+  brandSub: {
+    fontSize: 9,
+    fontWeight: '700',
+    color: theme.colors.lavender,
     letterSpacing: -0.2,
   },
-  fareSwitch: {
+  tariffSwitcher: {
     flexDirection: 'row',
     backgroundColor: theme.colors.surfaceElevated,
     borderRadius: theme.radius.pill,
-    padding: 3,
+    padding: 2,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
-  fareTab: {
+  tariffBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingVertical: 4,
-    paddingHorizontal: 9,
+    paddingHorizontal: 8,
     borderRadius: theme.radius.pill,
   },
-  fareTabActiveStudent: {
-    backgroundColor: theme.colors.success,
+  tariffBtnActiveStudent: {
+    backgroundColor: theme.colors.emerald,
   },
-  fareTabActiveAdult: {
+  tariffBtnActiveAdult: {
     backgroundColor: theme.colors.primary,
   },
-  fareTabText: {
+  tariffText: {
     fontSize: 11,
     fontWeight: '700',
     color: theme.colors.textSecondary,
   },
-  fareTabTextActive: {
+  tariffTextActive: {
     color: '#FFFFFF',
     fontWeight: '800',
   },

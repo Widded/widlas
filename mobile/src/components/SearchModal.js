@@ -9,7 +9,7 @@ import {
   SafeAreaView,
   StyleSheet
 } from 'react-native';
-import { ArrowLeft, X, MapPin, Bus, Search, Sparkles } from 'lucide-react-native';
+import { ArrowLeft, X, MapPin, Bus, Search } from 'lucide-react-native';
 import { theme } from '../theme';
 import { LOCAL_PLACES, normalizeTr } from '../data/places';
 import { allStopsDB } from '../data/db';
@@ -82,11 +82,11 @@ export default function SearchModal({
             activeOpacity={0.7}
             hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           >
-            <ArrowLeft size={20} color={theme.colors.textMain} />
+            <ArrowLeft size={20} color={theme.colors.textPrimary} />
           </TouchableOpacity>
 
           <View style={styles.inputCapsule}>
-            <Search size={16} color={theme.colors.primaryGlow} />
+            <Search size={16} color={theme.colors.lavender} />
             <TextInput
               ref={inputRef}
               style={styles.textInput}
@@ -95,7 +95,7 @@ export default function SearchModal({
                   ? 'Başlangıç durağı veya konum yazın...'
                   : 'Nereye gitmek istiyorsunuz?'
               }
-              placeholderTextColor={theme.colors.textTertiary}
+              placeholderTextColor={theme.colors.textMuted}
               value={query}
               onChangeText={setQuery}
               autoFocus
@@ -171,7 +171,7 @@ export default function SearchModal({
                   {isStop ? (
                     <Bus size={17} color={theme.colors.primaryGlow} />
                   ) : (
-                    <MapPin size={17} color={theme.colors.warning} />
+                    <MapPin size={17} color={theme.colors.amber} />
                   )}
                 </View>
 
@@ -195,7 +195,7 @@ export default function SearchModal({
 const styles = StyleSheet.create({
   sheetContainer: {
     flex: 1,
-    backgroundColor: theme.colors.sheetBg,
+    backgroundColor: theme.colors.bg,
   },
   grabberRow: {
     alignItems: 'center',
@@ -222,7 +222,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   inputCapsule: {
     flex: 1,
@@ -234,12 +234,12 @@ const styles = StyleSheet.create({
     height: 44,
     gap: 8,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   textInput: {
     flex: 1,
     fontSize: 14,
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     fontWeight: '600',
   },
   filterPillsRow: {
@@ -254,11 +254,11 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
   },
   filterPillActive: {
-    backgroundColor: theme.colors.primaryLight,
-    borderColor: theme.colors.primaryGlow,
+    backgroundColor: theme.colors.lavenderLight,
+    borderColor: theme.colors.lavender,
   },
   filterPillText: {
     fontSize: 12,
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
   },
   filterPillTextActive: {
-    color: theme.colors.primaryGlow,
+    color: theme.colors.lavender,
     fontWeight: '800',
   },
   sectionHeader: {
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 11,
     fontWeight: '800',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     textTransform: 'uppercase',
     letterSpacing: 0.6,
   },
@@ -302,7 +302,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLight,
   },
   iconCirclePlace: {
-    backgroundColor: theme.colors.warningLight,
+    backgroundColor: theme.colors.amberLight,
   },
   itemTextCol: {
     flex: 1,
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   itemTitleText: {
     fontSize: 15,
     fontWeight: '700',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     marginBottom: 2,
   },
   itemSubText: {
@@ -319,7 +319,7 @@ const styles = StyleSheet.create({
   },
   itemSeparator: {
     height: 1,
-    backgroundColor: theme.colors.hairline,
+    backgroundColor: theme.colors.border,
     marginLeft: 54,
   },
 });

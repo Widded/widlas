@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Linking } from 'react-native';
-import { CreditCard, GraduationCap, User, Clock, Moon, Phone, ShieldCheck, Zap } from 'lucide-react-native';
+import { CreditCard, GraduationCap, User, Clock, Moon, Phone, Zap } from 'lucide-react-native';
 import { theme } from '../theme';
 
 export default function FaresView({ fareType, setFareType }) {
@@ -25,14 +25,14 @@ export default function FaresView({ fareType, setFareType }) {
           activeOpacity={0.8}
         >
           <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.successLight }]}>
-              <GraduationCap size={20} color={theme.colors.success} />
+            <View style={[styles.passIconBox, { backgroundColor: theme.colors.emeraldLight }]}>
+              <GraduationCap size={20} color={theme.colors.emerald} />
             </View>
             <View style={styles.passBadgeCol}>
               <Text style={styles.passCategory}>İNDİRİMLİ TARİFE</Text>
               <Text style={styles.passTitle}>Öğrenci Kentkart</Text>
             </View>
-            <Text style={[styles.passPrice, { color: theme.colors.success }]}>20,00 ₺</Text>
+            <Text style={[styles.passPrice, { color: theme.colors.emerald }]}>20,00 ₺</Text>
           </View>
           <Text style={styles.passDetail}>
             Trakya Üniversitesi ve tüm örgün lise/ortaokul öğrencileri için geçerlidir.
@@ -52,14 +52,14 @@ export default function FaresView({ fareType, setFareType }) {
           activeOpacity={0.8}
         >
           <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.primaryLight }]}>
-              <User size={20} color={theme.colors.primaryGlow} />
+            <View style={[styles.passIconBox, { backgroundColor: theme.colors.lavenderLight }]}>
+              <User size={20} color={theme.colors.lavender} />
             </View>
             <View style={styles.passBadgeCol}>
               <Text style={styles.passCategory}>STANDART TARİFE</Text>
               <Text style={styles.passTitle}>Sivil Kentkart</Text>
             </View>
-            <Text style={[styles.passPrice, { color: theme.colors.primaryGlow }]}>30,00 ₺</Text>
+            <Text style={[styles.passPrice, { color: theme.colors.lavender }]}>30,00 ₺</Text>
           </View>
           <Text style={styles.passDetail}>
             Tüm vatandaşlar için standart şehir içi ETUS biniş tarifesi.
@@ -75,14 +75,14 @@ export default function FaresView({ fareType, setFareType }) {
         {/* Contactless / QR Pass Card */}
         <View style={styles.passCard}>
           <View style={styles.passTopRow}>
-            <View style={[styles.passIconBox, { backgroundColor: theme.colors.warningLight }]}>
-              <CreditCard size={20} color={theme.colors.warning} />
+            <View style={[styles.passIconBox, { backgroundColor: theme.colors.amberLight }]}>
+              <CreditCard size={20} color={theme.colors.amber} />
             </View>
             <View style={styles.passBadgeCol}>
               <Text style={styles.passCategory}>KARTSIZ / TEMASSIZ</Text>
               <Text style={styles.passTitle}>Kredi Kartı & QR</Text>
             </View>
-            <Text style={[styles.passPrice, { color: theme.colors.warning }]}>33,00 ₺</Text>
+            <Text style={[styles.passPrice, { color: theme.colors.amber }]}>33,00 ₺</Text>
           </View>
           <Text style={styles.passDetail}>
             Kentkart olmadan temassız banka/kredi kartı veya mobil QR ile binişlerde geçerlidir.
@@ -93,7 +93,7 @@ export default function FaresView({ fareType, setFareType }) {
       {/* 45 Min Transfer Discount Rule */}
       <View style={styles.infoBox}>
         <View style={styles.infoTitleRow}>
-          <Clock size={16} color={theme.colors.primaryGlow} />
+          <Clock size={16} color={theme.colors.lavender} />
           <Text style={styles.infoBoxTitle}>45 Dakika Aktarma Kuralı</Text>
         </View>
         <Text style={styles.infoBoxBody}>
@@ -102,11 +102,11 @@ export default function FaresView({ fareType, setFareType }) {
         <View style={styles.transferRatesRow}>
           <View style={styles.transferRatePill}>
             <Text style={styles.rateRole}>Öğrenci 2. Biniş</Text>
-            <Text style={[styles.rateValue, { color: theme.colors.success }]}>10,00 ₺</Text>
+            <Text style={[styles.rateValue, { color: theme.colors.emerald }]}>10,00 ₺</Text>
           </View>
           <View style={styles.transferRatePill}>
             <Text style={styles.rateRole}>Sivil 2. Biniş</Text>
-            <Text style={[styles.rateValue, { color: theme.colors.primaryGlow }]}>15,00 ₺</Text>
+            <Text style={[styles.rateValue, { color: theme.colors.lavender }]}>15,00 ₺</Text>
           </View>
         </View>
       </View>
@@ -114,7 +114,7 @@ export default function FaresView({ fareType, setFareType }) {
       {/* Night Owl Service Notice */}
       <View style={styles.infoBox}>
         <View style={styles.infoTitleRow}>
-          <Moon size={16} color={theme.colors.warning} />
+          <Moon size={16} color={theme.colors.amber} />
           <Text style={styles.infoBoxTitle}>Gece Nöbetçi Seferleri (00:00 - 06:00)</Text>
         </View>
         <Text style={styles.infoBoxBody}>
@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: '900',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
     letterSpacing: -0.4,
   },
   subtitle: {
@@ -169,7 +169,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
@@ -177,11 +177,11 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   passCardActiveStudent: {
-    borderColor: theme.colors.success,
+    borderColor: theme.colors.emerald,
     backgroundColor: theme.colors.surfaceElevated,
   },
   passCardActiveAdult: {
-    borderColor: theme.colors.primaryGlow,
+    borderColor: theme.colors.lavender,
     backgroundColor: theme.colors.surfaceElevated,
   },
   passTopRow: {
@@ -203,13 +203,13 @@ const styles = StyleSheet.create({
   passCategory: {
     fontSize: 9,
     fontWeight: '800',
-    color: theme.colors.textTertiary,
+    color: theme.colors.textMuted,
     letterSpacing: 0.5,
   },
   passTitle: {
     fontSize: 16,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   passPrice: {
     fontSize: 20,
@@ -225,7 +225,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: theme.colors.success,
+    backgroundColor: theme.colors.emerald,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: theme.radius.sm,
@@ -236,7 +236,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.violet,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: theme.radius.sm,
@@ -253,7 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     marginBottom: 14,
   },
   infoTitleRow: {
@@ -265,7 +265,7 @@ const styles = StyleSheet.create({
   infoBoxTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   infoBoxBody: {
     fontSize: 13,
@@ -299,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.lg,
     padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.hairline,
+    borderColor: theme.colors.border,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   hotlineTitle: {
     fontSize: 14,
     fontWeight: '800',
-    color: theme.colors.textMain,
+    color: theme.colors.textPrimary,
   },
   hotlineSub: {
     fontSize: 11,
@@ -322,7 +322,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.primary,
+    backgroundColor: theme.colors.violet,
     paddingVertical: 9,
     paddingHorizontal: 13,
     borderRadius: theme.radius.sm,
