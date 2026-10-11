@@ -77,7 +77,6 @@ function MainScreen() {
   const [linesModalVisible, setLinesModalVisible] = useState(false);
   const [faresModalVisible, setFaresModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
-  const [savedModalVisible, setSavedModalVisible] = useState(false);
 
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
@@ -292,12 +291,30 @@ function MainScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {/* 1. FULL-SCREEN DARK NATIVE MAP */}
-      <NativeMap
-        style={StyleSheet.absoluteFillObject}
-        fromLocation={fromLocation}
-        toLocation={toLocation}
-        activeRoute={previewLine ? null : activeRoute}
+      {activeTab === 'saved' ? (
+        <SavedView
+          topPadding={topPadding}
+          bottomPadding={bottomNavHeight}
+          onSelectPlace={(place) => {
+            setActiveTab('explore');
+            executeRouteSearch(fromLocation, place);
+          }}
+          onOpenSearch={() => {
+            setSearchTargetType('to');
+            setSearchModalVisible(true);
+          }}
+          onBack={() => {
+            setActiveTab('explore');
+          }}
+        />
+      ) : (
+        <>
+          {/* 1. FULL-SCREEN DARK NATIVE MAP */}
+          <NativeMap
+            style={StyleSheet.absoluteFillObject}
+            fromLocation={fromLocation}
+            toLocation={toLocation}
+            activeRoute={previewLine ? null : activeRoute}
         activeLineData={previewLine?.line}
         activeLineDirIdx={previewLine?.dirIdx}
         userLocation={userLocation}
@@ -488,6 +505,8 @@ function MainScreen() {
           </View>
         )
       )}
+      </>
+      )}
 
       {/* 9. FIXED BOTTOM NAVIGATION BAR (Exact Match to Reference Design) */}
       <View style={[styles.bottomNav, { height: bottomNavHeight, paddingBottom: bottomPadding }]}>
@@ -519,7 +538,6 @@ function MainScreen() {
           style={styles.navTab}
           onPress={() => {
             setActiveTab('saved');
-            setSavedModalVisible(true);
           }}
           activeOpacity={0.75}
         >
@@ -733,41 +751,6 @@ function MainScreen() {
               setFaresModalVisible(false);
             }}
             onClose={() => setFaresModalVisible(false)}
-          />
-        </View>
-      </Modal>
-
-      {/* 15. SAVED PLACES & FAVORITES MODAL */}
-      <Modal
-        visible={savedModalVisible}
-        animationType="slide"
-        presentationStyle="pageSheet"
-        onRequestClose={() => {
-          setSavedModalVisible(false);
-          setActiveTab('explore');
-        }}
-      >
-        <View style={styles.modalBody}>
-          <SavedView
-            onSelectPlace={(place) => {
-              setSavedModalVisible(false);
-              setActiveTab('explore');
-              executeRouteSearch(fromLocation, place);
-            }}
-            onSelectLine={(line, dirIdx) => {
-              setSavedModalVisible(false);
-              setActiveTab('explore');
-              setPreviewLine({ line, dirIdx });
-            }}
-            onOpenSearch={() => {
-              setSavedModalVisible(false);
-              setSearchTargetType('to');
-              setSearchModalVisible(true);
-            }}
-            onClose={() => {
-              setSavedModalVisible(false);
-              setActiveTab('explore');
-            }}
           />
         </View>
       </Modal>
