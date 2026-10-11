@@ -11,7 +11,18 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
-import { Search, Map as MapIcon, ArrowRight, Edit3, MapPin, X, Moon, AlertCircle, RefreshCw } from 'lucide-react-native';
+import {
+  Navigation as NavIcon,
+  MapPin,
+  X,
+  Compass,
+  Bus,
+  CreditCard,
+  Edit3,
+  ArrowRight,
+  AlertCircle,
+  RefreshCw
+} from 'lucide-react-native';
 
 import { theme } from './src/theme';
 import Header from './src/components/Header';
@@ -21,12 +32,13 @@ import RouteCard from './src/components/RouteCard';
 import RouteDetailsModal from './src/components/RouteDetailsModal';
 import LinesExplorer from './src/components/LinesExplorer';
 import SearchModal from './src/components/SearchModal';
+import FaresView from './src/components/FaresView';
 
 import { calculateSmartRoute } from './src/data/routes';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'lines'
-  const [fareType, setFareType] = useState('tam'); // 'tam' | 'ogrenci'
+  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'lines' | 'fares'
+  const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' default for student city Edirne
 
   const [fromLocation, setFromLocation] = useState({ name: 'Konumunuz', lat: null, lon: null });
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
@@ -45,9 +57,6 @@ export default function App() {
   const [searchTargetType, setSearchTargetType] = useState('to'); // 'from' | 'to'
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [mapSelectionMode, setMapSelectionMode] = useState(null); // 'from' | 'to' | null
-
-  const currentHour = new Date().getHours();
-  const isNightTime = currentHour >= 0 && currentHour < 6;
 
   // Auto-get user GPS on launch
   useEffect(() => {
@@ -79,7 +88,7 @@ export default function App() {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Konum İzni', 'Lütfen telefon ayarlarından konum izni verin.');
+        Alert.alert('Konum İzni Gerekli', 'Lütfen telefon ayarlarından konum erişimine izin verin.');
         return;
       }
       const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
@@ -91,7 +100,7 @@ export default function App() {
       setUserLocation(userCoords);
       setFromLocation(userCoords);
     } catch (err) {
-      Alert.alert('Hata', 'Konumunuz alınamadı.');
+      Alert.alert('Hata', 'Konumunuz tespit edilemedi.');
     }
   };
 
@@ -105,11 +114,11 @@ export default function App() {
   // Execute Route Search
   const runRouteSearch = async (from, to) => {
     if (!from?.lat || !to?.lat) {
-      Alert.alert('Bilgi', 'Lütfen geçerli bir başlangıç ve varış noktası seçin.');
+      Alert.alert('Eksik Bilgi', 'Lütfen başlangıç ve varış noktasını belirleyin.');
       return;
     }
 
-    setPreviewLine(null); // Clear line preview when searching custom route
+    setPreviewLine(null); // Clear line preview when searching route
     setLoading(true);
     try {
       const res = await calculateSmartRoute(from.lat, from.lon, to.lat, to.lon);
@@ -179,222 +188,265 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="light" />
 
-        {/* Header */}
-        <Header fareType={fareType} setFareType={setFareType} />
-
-        {/* Tab switch bar */}
+        {/* Sleek Native Header */}
         {!mapSelectionMode && (
-          <View style={styles.tabBar}>
-            <TouchableOpacity
-              style={[styles.tabBtn, activeTab === 'search' && styles.tabBtnActive]}
-              onPress={() => setActiveTab('search')}
-              activeOpacity={0.7}
-            >
-              <Search size={16} color={activeTab === 'search' ? '#fff' : theme.colors.textMuted} />
-              <Text style={[styles.tabBtnText, activeTab === 'search' && styles.tabBtnTextActive]}>
-                Rota Bul
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.tabBtn, activeTab === 'lines' && styles.tabBtnActive]}
-              onPress={() => setActiveTab('lines')}
-              activeOpacity={0.7}
-            >
-              <MapIcon size={16} color={activeTab === 'lines' ? '#fff' : theme.colors.textMuted} />
-              <Text style={[styles.tabBtnText, activeTab === 'lines' && styles.tabBtnTextActive]}>
-                Tüm Hatlar
-              </Text>
-            </TouchableOpacity>
-          </View>
+          <Header
+            fareType={fareType}
+            setFareType={setFareType}
+            title="Edirne Ulaşım"
+            subtitle="ETUS Akıllı Rehber"
+          />
         )}
 
-        {/* Full-screen map picker banner */}
+        {/* Map Selection HUD Banner */}
         {mapSelectionMode && (
-          <View style={styles.pickerBanner}>
-            <View style={styles.pickerInfo}>
-              <MapPin size={22} color={theme.colors.primary} />
+          <View style={styles.pickerHud}>
+            <View style={styles.pickerHudInfo}>
+              <MapPin size={20} color={theme.colors.primary} />
               <View>
-                <Text style={styles.pickerTitle}>
-                  {mapSelectionMode === 'from' ? 'Başlangıç Noktası Seç' : 'Varış Noktası Seç'}
+                <Text style={styles.pickerHudTitle}>
+                  {mapSelectionMode === 'from' ? 'Başlangıç Noktası Seçin' : 'Varış Noktası Seçin'}
                 </Text>
-                <Text style={styles.pickerSub}>Haritada istediğin noktaya dokun</Text>
+                <Text style={styles.pickerHudSub}>Haritada istediğiniz konuma dokunun</Text>
               </View>
             </View>
             <TouchableOpacity
-              style={styles.pickerCancel}
+              style={styles.pickerHudCancel}
               onPress={() => setMapSelectionMode(null)}
               activeOpacity={0.7}
             >
-              <Text style={styles.pickerCancelText}>Vazgeç</Text>
+              <Text style={styles.pickerHudCancelText}>Vazgeç</Text>
             </TouchableOpacity>
           </View>
         )}
 
-        {/* Main Content */}
-        {activeTab === 'search' ? (
-          <View style={styles.mainContent}>
-            {/* Native Map */}
-            <View style={mapSelectionMode ? styles.mapFullScreen : styles.mapSplit}>
-              <NativeMap
-                style={StyleSheet.absoluteFillObject}
-                fromLocation={fromLocation}
-                toLocation={toLocation}
-                activeRoute={previewLine ? null : activeRoute}
-                activeLineData={previewLine?.line}
-                activeLineDirIdx={previewLine?.dirIdx}
-                userLocation={userLocation}
-                mapSelectionMode={mapSelectionMode}
-                onMapPress={handleMapPress}
-              />
+        {/* Main Content Area */}
+        <View style={styles.mainContainer}>
+          {activeTab === 'search' && (
+            <View style={styles.searchTabContainer}>
+              {/* Map Canvas */}
+              <View style={mapSelectionMode ? styles.mapFullScreen : styles.mapSplit}>
+                <NativeMap
+                  style={StyleSheet.absoluteFillObject}
+                  fromLocation={fromLocation}
+                  toLocation={toLocation}
+                  activeRoute={previewLine ? null : activeRoute}
+                  activeLineData={previewLine?.line}
+                  activeLineDirIdx={previewLine?.dirIdx}
+                  userLocation={userLocation}
+                  mapSelectionMode={mapSelectionMode}
+                  onMapPress={handleMapPress}
+                />
 
-              {/* Floating Line Preview Pill on Map */}
-              {previewLine && (
-                <View style={styles.linePreviewPill}>
-                  <View style={styles.linePreviewInfo}>
-                    <View style={[styles.lineBadgeMini, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
-                      <Text style={styles.lineBadgeText}>{previewLine.line.code}</Text>
+                {/* Floating Line Preview Pill on Map */}
+                {previewLine && (
+                  <View style={styles.linePreviewCapsule}>
+                    <View style={styles.linePreviewContent}>
+                      <View style={[styles.lineBadgePill, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
+                        <Text style={styles.lineBadgePillText}>{previewLine.line.code}</Text>
+                      </View>
+                      <Text style={styles.linePreviewName} numberOfLines={1}>
+                        {previewLine.line.directions?.[previewLine.dirIdx]?.headSign || 'Hat Güzergahı'}
+                      </Text>
                     </View>
-                    <Text style={styles.linePreviewText} numberOfLines={1}>
-                      {previewLine.line.directions?.[previewLine.dirIdx]?.headSign || 'Hat Güzergahı'}
-                    </Text>
-                  </View>
-                  <TouchableOpacity
-                    style={styles.linePreviewClose}
-                    onPress={() => setPreviewLine(null)}
-                    activeOpacity={0.7}
-                  >
-                    <X size={16} color="#fff" />
-                  </TouchableOpacity>
-                </View>
-              )}
-            </View>
-
-            {/* Bottom Scroll Area (Hidden during map selection) */}
-            {!mapSelectionMode && (
-              <ScrollView
-                style={styles.bottomScroll}
-                contentContainerStyle={styles.bottomScrollContent}
-                showsVerticalScrollIndicator={false}
-              >
-                {/* Night service notice */}
-                {isNightTime && (
-                  <View style={styles.nightBanner}>
-                    <Moon size={16} color="#f59e0b" />
-                    <Text style={styles.nightBannerText}>
-                      Gece Seferi: 00:00 - 06:00 saatleri arasında otobüsler sınırlıdır.
-                    </Text>
+                    <TouchableOpacity
+                      style={styles.linePreviewCloseBtn}
+                      onPress={() => setPreviewLine(null)}
+                      activeOpacity={0.7}
+                    >
+                      <X size={15} color="#FFFFFF" />
+                    </TouchableOpacity>
                   </View>
                 )}
+              </View>
 
-                {/* Search inputs widget (shown if not searched yet) */}
-                {!hasSearched ? (
-                  <SearchSection
-                    fromLocation={fromLocation}
-                    toLocation={toLocation}
-                    onOpenSearch={(type) => {
-                      setSearchTargetType(type);
-                      setSearchModalVisible(true);
-                    }}
-                    onSwap={handleSwap}
-                    onUseGps={handleUseGps}
-                    onPickOnMap={() => setMapSelectionMode(fromLocation.lat ? 'to' : 'from')}
-                    onSelectQuickPlace={handleSelectQuickPlace}
-                    onSearch={() => runRouteSearch(fromLocation, toLocation)}
-                    hasSearched={hasSearched}
-                  />
-                ) : (
-                  <>
-                    {/* Journey Summary Bar */}
-                    <TouchableOpacity
-                      style={styles.summaryBar}
-                      onPress={() => setHasSearched(false)}
-                      activeOpacity={0.8}
-                    >
-                      <View style={styles.summaryPath}>
-                        <View style={styles.summaryNode}>
-                          <View style={[styles.summaryDot, { backgroundColor: theme.colors.primary }]} />
-                          <Text style={styles.summaryText} numberOfLines={1}>
-                            {fromLocation.name || 'Konumunuz'}
-                          </Text>
+              {/* Bottom Interactive Content (Hidden during full-screen map picker) */}
+              {!mapSelectionMode && (
+                <ScrollView
+                  style={styles.bottomScroll}
+                  contentContainerStyle={styles.bottomScrollContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {!hasSearched ? (
+                    /* Initial Search Composer */
+                    <SearchSection
+                      fromLocation={fromLocation}
+                      toLocation={toLocation}
+                      onOpenSearch={(type) => {
+                        setSearchTargetType(type);
+                        setSearchModalVisible(true);
+                      }}
+                      onSwap={handleSwap}
+                      onUseGps={handleUseGps}
+                      onPickOnMap={() => setMapSelectionMode(fromLocation.lat ? 'to' : 'from')}
+                      onSelectQuickPlace={handleSelectQuickPlace}
+                      onSearch={() => runRouteSearch(fromLocation, toLocation)}
+                      hasSearched={hasSearched}
+                      loading={loading}
+                    />
+                  ) : (
+                    /* Search Results State */
+                    <>
+                      {/* Active Journey Capsule */}
+                      <TouchableOpacity
+                        style={styles.journeyCapsule}
+                        onPress={() => setHasSearched(false)}
+                        activeOpacity={0.8}
+                      >
+                        <View style={styles.journeyWaypoints}>
+                          <View style={styles.waypointItem}>
+                            <View style={[styles.waypointDot, { backgroundColor: theme.colors.primary }]} />
+                            <Text style={styles.waypointText} numberOfLines={1}>
+                              {fromLocation.name || 'Konumunuz'}
+                            </Text>
+                          </View>
+                          <ArrowRight size={13} color={theme.colors.textTertiary} />
+                          <View style={styles.waypointItem}>
+                            <View style={[styles.waypointDot, { backgroundColor: theme.colors.danger }]} />
+                            <Text style={styles.waypointText} numberOfLines={1}>
+                              {toLocation.name || 'Hedef'}
+                            </Text>
+                          </View>
                         </View>
-                        <ArrowRight size={14} color={theme.colors.textDim} />
-                        <View style={styles.summaryNode}>
-                          <View style={[styles.summaryDot, { backgroundColor: theme.colors.danger }]} />
-                          <Text style={styles.summaryText} numberOfLines={1}>
-                            {toLocation.name || 'Hedef'}
-                          </Text>
+
+                        <View style={styles.editAction}>
+                          <Edit3 size={14} color={theme.colors.primary} />
+                          <Text style={styles.editActionText}>Değiştir</Text>
                         </View>
-                      </View>
-
-                      <View style={styles.editBtn}>
-                        <Edit3 size={15} color={theme.colors.primary} />
-                        <Text style={styles.editBtnText}>Değiştir</Text>
-                      </View>
-                    </TouchableOpacity>
-
-                    {/* Results header */}
-                    <View style={styles.resultsHeader}>
-                      <Text style={styles.resultsTitle}>
-                        {searchResults?.routes?.length > 0 ? 'Önerilen Rotalar' : 'Arama Sonucu'}
-                      </Text>
-                      <TouchableOpacity onPress={() => setHasSearched(false)}>
-                        <Text style={styles.newSearchBtn}>Yeni Arama</Text>
                       </TouchableOpacity>
-                    </View>
 
-                    {/* Loading spinner */}
-                    {loading && (
-                      <View style={styles.loadingBox}>
-                        <ActivityIndicator size="large" color={theme.colors.primary} />
-                        <Text style={styles.loadingText}>Rotalar hesaplanıyor...</Text>
-                      </View>
-                    )}
-
-                    {/* Routes List */}
-                    {!loading && searchResults?.routes?.map((route, idx) => (
-                      <RouteCard
-                        key={idx}
-                        route={route}
-                        isSelected={selectedRouteIdx === idx}
-                        onSelect={() => setSelectedRouteIdx(idx)}
-                        onOpenDetails={() => {
-                          setSelectedRouteIdx(idx);
-                          setDetailsModalVisible(true);
-                        }}
-                        fareType={fareType}
-                      />
-                    ))}
-
-                    {/* Empty Result Card */}
-                    {!loading && (!searchResults?.routes || searchResults.routes.length === 0) && (
-                      <View style={styles.emptyCard}>
-                        <AlertCircle size={32} color={theme.colors.warning} />
-                        <Text style={styles.emptyTitle}>Uygun Rota Bulunamadı</Text>
-                        <Text style={styles.emptySub}>
-                          Seçtiğiniz konumlar arasında doğrudan veya aktarmalı bir hat bulunamadı. Lütfen duraklara daha yakın bir nokta seçin veya haritadan işaretleyin.
+                      {/* Results Header */}
+                      <View style={styles.resultsHeaderRow}>
+                        <Text style={styles.resultsHeaderTitle}>
+                          {searchResults?.routes?.length > 0 ? 'Önerilen Rotalar' : 'Arama Sonucu'}
                         </Text>
-                        <TouchableOpacity style={styles.retryBtn} onPress={() => setHasSearched(false)} activeOpacity={0.8}>
-                          <RefreshCw size={15} color="#fff" />
-                          <Text style={styles.retryBtnText}>Yeni Arama Yap</Text>
+                        <TouchableOpacity onPress={() => setHasSearched(false)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                          <Text style={styles.newSearchAction}>Yeni Arama</Text>
                         </TouchableOpacity>
                       </View>
-                    )}
-                  </>
-                )}
-              </ScrollView>
-            )}
-          </View>
-        ) : (
-          /* Lines Explorer Tab */
-          <ScrollView style={styles.linesTab} contentContainerStyle={styles.linesTabContent}>
-            <LinesExplorer
-              onSelectLineOnMap={(line, dirIdx) => {
-                setPreviewLine({ line, dirIdx });
-                setActiveTab('search');
-              }}
+
+                      {/* Loading State */}
+                      {loading && (
+                        <View style={styles.loadingContainer}>
+                          <ActivityIndicator size="large" color={theme.colors.primary} />
+                          <Text style={styles.loadingLabel}>En uygun rotalar hesaplanıyor...</Text>
+                        </View>
+                      )}
+
+                      {/* Route Cards List */}
+                      {!loading && searchResults?.routes?.map((route, idx) => (
+                        <RouteCard
+                          key={idx}
+                          index={idx}
+                          route={route}
+                          isSelected={selectedRouteIdx === idx}
+                          onSelect={() => setSelectedRouteIdx(idx)}
+                          onOpenDetails={() => {
+                            setSelectedRouteIdx(idx);
+                            setDetailsModalVisible(true);
+                          }}
+                          fareType={fareType}
+                        />
+                      ))}
+
+                      {/* Empty Route Result */}
+                      {!loading && (!searchResults?.routes || searchResults.routes.length === 0) && (
+                        <View style={styles.emptyContainer}>
+                          <AlertCircle size={34} color={theme.colors.warning} />
+                          <Text style={styles.emptyTitle}>Uygun Rota Bulunamadı</Text>
+                          <Text style={styles.emptyDesc}>
+                            Seçilen noktalar arasında doğrudan veya aktarmalı bir ETUS hattı bulunamadı. Lütfen daha yakın bir durak seçin veya haritadan işaretleyin.
+                          </Text>
+                          <TouchableOpacity
+                            style={styles.emptyRetryBtn}
+                            onPress={() => setHasSearched(false)}
+                            activeOpacity={0.8}
+                          >
+                            <RefreshCw size={14} color="#FFFFFF" />
+                            <Text style={styles.emptyRetryText}>Aramayı Düzenle</Text>
+                          </TouchableOpacity>
+                        </View>
+                      )}
+                    </>
+                  )}
+                </ScrollView>
+              )}
+            </View>
+          )}
+
+          {/* Tab 2: All ETUS Lines */}
+          {activeTab === 'lines' && (
+            <ScrollView
+              style={styles.tabScrollContainer}
+              contentContainerStyle={styles.tabScrollContent}
+              showsVerticalScrollIndicator={false}
+            >
+              <LinesExplorer
+                onSelectLineOnMap={(line, dirIdx) => {
+                  setPreviewLine({ line, dirIdx });
+                  setActiveTab('search');
+                }}
+              />
+            </ScrollView>
+          )}
+
+          {/* Tab 3: Fares & Rules */}
+          {activeTab === 'fares' && (
+            <FaresView
+              fareType={fareType}
+              setFareType={setFareType}
             />
-          </ScrollView>
+          )}
+        </View>
+
+        {/* Native Bottom Navigation Bar */}
+        {!mapSelectionMode && (
+          <View style={styles.bottomNav}>
+            {/* Tab 1 */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => setActiveTab('search')}
+              activeOpacity={0.7}
+            >
+              <Compass
+                size={22}
+                color={activeTab === 'search' ? theme.colors.primary : theme.colors.textTertiary}
+              />
+              <Text style={[styles.navText, activeTab === 'search' && styles.navTextActive]}>
+                Yol Tarifi
+              </Text>
+            </TouchableOpacity>
+
+            {/* Tab 2 */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => setActiveTab('lines')}
+              activeOpacity={0.7}
+            >
+              <Bus
+                size={22}
+                color={activeTab === 'lines' ? theme.colors.primary : theme.colors.textTertiary}
+              />
+              <Text style={[styles.navText, activeTab === 'lines' && styles.navTextActive]}>
+                Hatlar
+              </Text>
+            </TouchableOpacity>
+
+            {/* Tab 3 */}
+            <TouchableOpacity
+              style={styles.navTab}
+              onPress={() => setActiveTab('fares')}
+              activeOpacity={0.7}
+            >
+              <CreditCard
+                size={22}
+                color={activeTab === 'fares' ? theme.colors.primary : theme.colors.textTertiary}
+              />
+              <Text style={[styles.navText, activeTab === 'fares' && styles.navTextActive]}>
+                Tarifeler
+              </Text>
+            </TouchableOpacity>
+          </View>
         )}
 
         {/* Search Modal */}
@@ -422,42 +474,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
-  tabBar: {
-    flexDirection: 'row',
-    backgroundColor: theme.colors.surface,
-    paddingHorizontal: 16,
-    paddingBottom: 10,
-    gap: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-  },
-  tabBtn: {
+  mainContainer: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 9,
-    borderRadius: theme.radius.md,
-    backgroundColor: theme.colors.surfaceHover,
   },
-  tabBtnActive: {
-    backgroundColor: theme.colors.primary,
-  },
-  tabBtnText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: theme.colors.textMuted,
-  },
-  tabBtnTextActive: {
-    color: '#fff',
-    fontWeight: '700',
-  },
-  mainContent: {
+  searchTabContainer: {
     flex: 1,
   },
   mapSplit: {
-    height: '42%',
+    height: '44%',
     width: '100%',
     position: 'relative',
   },
@@ -465,50 +489,50 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
   },
-  linePreviewPill: {
+  linePreviewCapsule: {
     position: 'absolute',
     top: 14,
     left: 14,
     right: 14,
-    backgroundColor: 'rgba(15, 23, 42, 0.94)',
-    borderRadius: theme.radius.md,
+    backgroundColor: 'rgba(28, 28, 30, 0.96)',
+    borderRadius: theme.radius.pill,
     paddingVertical: 8,
     paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
     elevation: 6,
   },
-  linePreviewInfo: {
+  linePreviewContent: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flex: 1,
   },
-  lineBadgeMini: {
+  lineBadgePill: {
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 6,
+    borderRadius: theme.radius.xs,
   },
-  lineBadgeText: {
-    color: '#fff',
+  lineBadgePillText: {
+    color: '#FFFFFF',
     fontSize: 12,
     fontWeight: '800',
   },
-  linePreviewText: {
+  linePreviewName: {
     color: theme.colors.textMain,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
     flex: 1,
   },
-  linePreviewClose: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+  linePreviewCloseBtn: {
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 12,
     width: 24,
     height: 24,
@@ -522,27 +546,9 @@ const styles = StyleSheet.create({
   },
   bottomScrollContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingBottom: 24,
   },
-  nightBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#78350f25',
-    borderWidth: 1,
-    borderColor: '#f59e0b50',
-    borderRadius: theme.radius.sm,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 12,
-  },
-  nightBannerText: {
-    color: '#fbbf24',
-    fontSize: 12,
-    fontWeight: '500',
-    flex: 1,
-  },
-  summaryBar: {
+  journeyCapsule: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -550,73 +556,75 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.md,
     padding: 12,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 12,
+    borderColor: theme.colors.hairline,
+    marginBottom: 14,
   },
-  summaryPath: {
+  journeyWaypoints: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
     flex: 1,
   },
-  summaryNode: {
+  waypointItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     flex: 1,
   },
-  summaryDot: {
+  waypointDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
   },
-  summaryText: {
+  waypointText: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textMain,
     flexShrink: 1,
   },
-  editBtn: {
+  editAction: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     paddingLeft: 8,
   },
-  editBtnText: {
+  editActionText: {
     fontSize: 13,
     fontWeight: '700',
     color: theme.colors.primary,
   },
-  resultsHeader: {
+  resultsHeaderRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 12,
   },
-  resultsTitle: {
+  resultsHeaderTitle: {
     fontSize: 16,
     fontWeight: '800',
     color: theme.colors.textMain,
+    letterSpacing: -0.3,
   },
-  newSearchBtn: {
+  newSearchAction: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.primary,
   },
-  loadingBox: {
-    paddingVertical: 32,
+  loadingContainer: {
+    paddingVertical: 36,
     alignItems: 'center',
     gap: 12,
   },
-  loadingText: {
-    color: theme.colors.textMuted,
+  loadingLabel: {
+    color: theme.colors.textSecondary,
     fontSize: 14,
+    fontWeight: '500',
   },
-  emptyCard: {
+  emptyContainer: {
     backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.md,
+    borderRadius: theme.radius.lg,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
     padding: 24,
     alignItems: 'center',
     gap: 10,
@@ -627,74 +635,105 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: theme.colors.textMain,
   },
-  emptySub: {
+  emptyDesc: {
     fontSize: 13,
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
     textAlign: 'center',
     lineHeight: 18,
   },
-  retryBtn: {
+  emptyRetryBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     backgroundColor: theme.colors.primary,
     paddingVertical: 10,
-    paddingHorizontal: 18,
+    paddingHorizontal: 16,
     borderRadius: theme.radius.sm,
     marginTop: 6,
   },
-  retryBtnText: {
-    color: '#fff',
+  emptyRetryText: {
+    color: '#FFFFFF',
     fontSize: 13,
     fontWeight: '700',
   },
-  pickerBanner: {
+  pickerHud: {
     position: 'absolute',
-    top: 60,
+    top: 55,
     left: 16,
     right: 16,
-    backgroundColor: 'rgba(24, 24, 27, 0.94)',
-    borderRadius: theme.radius.md,
+    backgroundColor: 'rgba(28, 28, 30, 0.96)',
+    borderRadius: theme.radius.lg,
     padding: 14,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     zIndex: 1000,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 6,
   },
-  pickerInfo: {
+  pickerHudInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
+    flex: 1,
   },
-  pickerTitle: {
+  pickerHudTitle: {
     fontSize: 14,
     fontWeight: '700',
     color: theme.colors.textMain,
   },
-  pickerSub: {
+  pickerHudSub: {
     fontSize: 12,
-    color: theme.colors.textDim,
+    color: theme.colors.textSecondary,
+    marginTop: 1,
   },
-  pickerCancel: {
-    backgroundColor: theme.colors.surfaceHover,
+  pickerHudCancel: {
+    backgroundColor: theme.colors.surfaceElevated,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 8,
+    borderRadius: theme.radius.sm,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
   },
-  pickerCancelText: {
+  pickerHudCancelText: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textMain,
   },
-  linesTab: {
+  tabScrollContainer: {
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
-  linesTabContent: {
+  tabScrollContent: {
     padding: 16,
+  },
+  bottomNav: {
+    flexDirection: 'row',
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.hairline,
+    paddingTop: 8,
+    paddingBottom: 10,
+    paddingHorizontal: 16,
+  },
+  navTab: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 4,
+  },
+  navText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: theme.colors.textTertiary,
+  },
+  navTextActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
   },
 });

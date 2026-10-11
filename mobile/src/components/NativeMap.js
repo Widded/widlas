@@ -6,48 +6,48 @@ import { theme } from '../theme';
 import { allStopsDB } from '../data/db';
 
 const darkMapStyle = [
-  { elementType: "geometry", stylers: [{ color: "#1e293b" }] },
-  { elementType: "labels.text.stroke", stylers: [{ color: "#0f172a" }] },
-  { elementType: "labels.text.fill", stylers: [{ color: "#94a3b8" }] },
+  { elementType: "geometry", stylers: [{ color: "#121214" }] },
+  { elementType: "labels.text.stroke", stylers: [{ color: "#000000" }] },
+  { elementType: "labels.text.fill", stylers: [{ color: "#8e8e93" }] },
   {
     featureType: "administrative.locality",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#cbd5e1" }]
+    stylers: [{ color: "#aeaeb2" }]
   },
   {
     featureType: "poi",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#94a3b8" }]
+    stylers: [{ color: "#636366" }]
   },
   {
     featureType: "poi.park",
     elementType: "geometry",
-    stylers: [{ color: "#164e63" }]
+    stylers: [{ color: "#14261d" }]
   },
   {
     featureType: "road",
     elementType: "geometry",
-    stylers: [{ color: "#334155" }]
+    stylers: [{ color: "#242426" }]
   },
   {
     featureType: "road",
     elementType: "geometry.stroke",
-    stylers: [{ color: "#1e293b" }]
+    stylers: [{ color: "#1c1c1e" }]
   },
   {
     featureType: "road",
     elementType: "labels.text.fill",
-    stylers: [{ color: "#cbd5e1" }]
+    stylers: [{ color: "#aeaeb2" }]
   },
   {
     featureType: "road.highway",
     elementType: "geometry",
-    stylers: [{ color: "#475569" }]
+    stylers: [{ color: "#3a3a3c" }]
   },
   {
     featureType: "transit",
     elementType: "geometry",
-    stylers: [{ color: "#1e293b" }]
+    stylers: [{ color: "#1c1c1e" }]
   },
   {
     featureType: "water",
@@ -79,7 +79,7 @@ export default function NativeMap({
       const coords = dir?.path?.map(c => ({ latitude: c[0], longitude: c[1] })) || [];
       if (coords.length > 1) {
         mapRef.current.fitToCoordinates(coords, {
-          edgePadding: { top: 70, right: 70, bottom: 70, left: 70 },
+          edgePadding: { top: 90, right: 60, bottom: 90, left: 60 },
           animated: true
         });
       }
@@ -116,7 +116,7 @@ export default function NativeMap({
 
       if (coords.length > 1) {
         mapRef.current.fitToCoordinates(coords, {
-          edgePadding: { top: 80, right: 60, bottom: 80, left: 60 },
+          edgePadding: { top: 90, right: 60, bottom: 100, left: 60 },
           animated: true
         });
       }
@@ -130,7 +130,7 @@ export default function NativeMap({
         longitude: fromLocation.lon,
         latitudeDelta: 0.03,
         longitudeDelta: 0.03
-      }, 800);
+      }, 700);
     }
   }, [activeRoute, activeLineData, activeLineDirIdx, fromLocation?.lat, fromLocation?.lon]);
 
@@ -141,7 +141,7 @@ export default function NativeMap({
         longitude: userLocation.lon,
         latitudeDelta: 0.015,
         longitudeDelta: 0.015
-      }, 600);
+      }, 500);
     }
   };
 
@@ -173,7 +173,7 @@ export default function NativeMap({
           }
         }}
       >
-        {/* Start Point Marker */}
+        {/* Origin Marker */}
         {fromLocation?.lat && (
           <Marker
             coordinate={{ latitude: fromLocation.lat, longitude: fromLocation.lon }}
@@ -183,11 +183,11 @@ export default function NativeMap({
           />
         )}
 
-        {/* End Point Marker */}
+        {/* Destination Marker */}
         {toLocation?.lat && (
           <Marker
             coordinate={{ latitude: toLocation.lat, longitude: toLocation.lon }}
-            title="Hedef"
+            title="Varış Noktası"
             description={toLocation.name}
             pinColor={theme.colors.danger}
           />
@@ -202,7 +202,7 @@ export default function NativeMap({
                 coordinate={{ latitude: activeRoute.startStop.lat, longitude: activeRoute.startStop.lon }}
                 title={`Biniş: ${activeRoute.startStop.name}`}
                 description={`${activeRoute.line1 || activeRoute.name} Hattı`}
-                pinColor="#3b82f6"
+                pinColor="#0A84FF"
               />
             )}
 
@@ -212,7 +212,7 @@ export default function NativeMap({
                 coordinate={{ latitude: activeRoute.transferStop.lat, longitude: activeRoute.transferStop.lon }}
                 title={`Aktarma: ${activeRoute.transferStop.name}`}
                 description={`${activeRoute.line2 || ''} Hattına Geçiş`}
-                pinColor="#f59e0b"
+                pinColor="#FF9F0A"
               />
             )}
 
@@ -221,24 +221,24 @@ export default function NativeMap({
               <Marker
                 coordinate={{ latitude: activeRoute.endStop.lat, longitude: activeRoute.endStop.lon }}
                 title={`İniş: ${activeRoute.endStop.name}`}
-                pinColor="#ef4444"
+                pinColor="#FF453A"
               />
             )}
 
-            {/* Bus Polylines */}
+            {/* Polylines */}
             {activeRoute.isTransfer ? (
               <>
                 {activeRoute.routeGeometry1 && (
                   <Polyline
                     coordinates={toCoords(activeRoute.routeGeometry1)}
-                    strokeColor={activeRoute.color || '#3b82f6'}
+                    strokeColor={activeRoute.color || '#0A84FF'}
                     strokeWidth={5}
                   />
                 )}
                 {activeRoute.routeGeometry2 && (
                   <Polyline
                     coordinates={toCoords(activeRoute.routeGeometry2)}
-                    strokeColor={activeRoute.color2 || '#f59e0b'}
+                    strokeColor={activeRoute.color2 || '#FF9F0A'}
                     strokeWidth={5}
                   />
                 )}
@@ -247,7 +247,7 @@ export default function NativeMap({
               activeRoute.routeGeometry && (
                 <Polyline
                   coordinates={toCoords(activeRoute.routeGeometry)}
-                  strokeColor={activeRoute.color || '#3b82f6'}
+                  strokeColor={activeRoute.color || '#0A84FF'}
                   strokeWidth={5}
                 />
               )
@@ -274,7 +274,7 @@ export default function NativeMap({
                   coordinate={{ latitude: stop.lat, longitude: stop.lon }}
                   title={stop.name}
                   description={`Durak #${sIdx + 1}`}
-                  pinColor={activeLineData.color || '#3b82f6'}
+                  pinColor={activeLineData.color || '#0A84FF'}
                 />
               );
             })}
@@ -282,10 +282,10 @@ export default function NativeMap({
         )}
       </MapView>
 
-      {/* Recenter Button */}
+      {/* Sleek Floating GPS Recenter Button */}
       {userLocation?.lat && (
         <TouchableOpacity style={styles.recenterBtn} onPress={recenterUser} activeOpacity={0.8}>
-          <Navigation size={20} color={theme.colors.primary} />
+          <Navigation size={18} color={theme.colors.primary} />
         </TouchableOpacity>
       )}
     </View>
@@ -299,19 +299,19 @@ const styles = StyleSheet.create({
   },
   recenterBtn: {
     position: 'absolute',
-    top: 16,
-    right: 16,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    top: 14,
+    right: 14,
+    width: 42,
+    height: 42,
+    borderRadius: 21,
     backgroundColor: theme.colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.35,
     shadowRadius: 6,
     elevation: 4,
   },

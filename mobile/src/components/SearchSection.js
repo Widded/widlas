@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
-import { LocateFixed, Map as MapIcon, ArrowUpDown } from 'lucide-react-native';
+import { LocateFixed, MapPin, ArrowUpDown, Navigation, ChevronRight } from 'lucide-react-native';
 import { theme } from '../theme';
 import { QUICK_PLACES } from '../data/places';
 
@@ -13,87 +13,138 @@ export default function SearchSection({
   onPickOnMap,
   onSelectQuickPlace,
   onSearch,
-  hasSearched
+  hasSearched,
+  loading
 }) {
+  const isFromGps = fromLocation?.name === 'Konumunuz' || !fromLocation?.lat;
+
   return (
-    <View style={styles.card}>
-      {/* Timeline inputs widget */}
-      <View style={styles.searchWidget}>
-        <View style={styles.timeline}>
-          <View style={styles.dotFrom} />
-          <View style={styles.timelineLine} />
-          <View style={styles.dotTo} />
+    <View style={styles.container}>
+      {/* Search Input Box */}
+      <View style={styles.card}>
+        <View style={styles.inputsRow}>
+          {/* Vertical visual connector */}
+          <View style={styles.indicatorCol}>
+            <View style={styles.originDot} />
+            <View style={styles.connectorLine} />
+            <View style={styles.destDot} />
+          </View>
+
+          {/* Location touch targets */}
+          <View style={styles.fieldsCol}>
+            {/* Origin row */}
+            <TouchableOpacity
+              style={styles.fieldTouch}
+              onPress={() => onOpenSearch('from')}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[styles.fieldText, !fromLocation?.name && styles.placeholderText]}
+                numberOfLines={1}
+              >
+                {fromLocation?.name || 'Başlangıç noktası seçin'}
+              </Text>
+              {isFromGps && (
+                <View style={styles.gpsPill}>
+                  <Text style={styles.gpsPillText}>GPS</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <View style={styles.hairlineDivider} />
+
+            {/* Destination row */}
+            <TouchableOpacity
+              style={styles.fieldTouch}
+              onPress={() => onOpenSearch('to')}
+              activeOpacity={0.7}
+            >
+              <Text
+                style={[styles.fieldText, !toLocation?.name && styles.placeholderText]}
+                numberOfLines={1}
+              >
+                {toLocation?.name || 'Nereye gitmek istiyorsunuz?'}
+              </Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Swap Button */}
+          <TouchableOpacity
+            style={styles.swapBtn}
+            onPress={onSwap}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <ArrowUpDown size={15} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.inputsColumn}>
+        {/* Action Shortcuts: Konumum & Haritadan Seç */}
+        <View style={styles.shortcutsRow}>
           <TouchableOpacity
-            style={styles.inputRow}
-            onPress={() => onOpenSearch('from')}
+            style={styles.shortcutBtn}
+            onPress={onUseGps}
             activeOpacity={0.7}
           >
-            <Text style={[styles.inputText, !fromLocation.name && styles.placeholderText]} numberOfLines={1}>
-              {fromLocation.name || 'Başlangıç noktası...'}
-            </Text>
+            <LocateFixed size={14} color={theme.colors.primary} />
+            <Text style={styles.shortcutText}>Mevcut Konum</Text>
           </TouchableOpacity>
 
-          <View style={styles.divider} />
+          <View style={styles.verticalSeparator} />
 
           <TouchableOpacity
-            style={styles.inputRow}
-            onPress={() => onOpenSearch('to')}
+            style={styles.shortcutBtn}
+            onPress={onPickOnMap}
             activeOpacity={0.7}
           >
-            <Text style={[styles.inputText, !toLocation.name && styles.placeholderText]} numberOfLines={1}>
-              {toLocation.name || 'Nereye gitmek istiyorsunuz?'}
-            </Text>
+            <MapPin size={14} color={theme.colors.warning} />
+            <Text style={styles.shortcutText}>Haritadan İşaretle</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Swap button */}
-        <TouchableOpacity style={styles.swapBtn} onPress={onSwap} activeOpacity={0.7}>
-          <ArrowUpDown size={16} color={theme.colors.textMuted} />
-        </TouchableOpacity>
       </View>
 
-      {/* Quick Action Pills */}
-      <View style={styles.quickActions}>
-        <TouchableOpacity style={styles.pill} onPress={onUseGps} activeOpacity={0.7}>
-          <LocateFixed size={15} color={theme.colors.primary} />
-          <Text style={styles.pillText}>Konumum</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.pill} onPress={onPickOnMap} activeOpacity={0.7}>
-          <MapIcon size={15} color={theme.colors.primary} />
-          <Text style={styles.pillText}>Haritadan Seç</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Quick Destinations (1-Tap) */}
-      <View style={styles.quickDestSection}>
-        <Text style={styles.quickDestTitle}>Hızlı Hedefler</Text>
+      {/* Quick Destinations Carousel */}
+      <View style={styles.quickSection}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Sık Gidilen Noktalar</Text>
+        </View>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.quickDestScroll}
+          contentContainerStyle={styles.quickScroll}
         >
-          {QUICK_PLACES.map((place) => (
-            <TouchableOpacity
-              key={place.name}
-              style={styles.chip}
-              onPress={() => onSelectQuickPlace(place)}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.chipIcon}>{place.icon}</Text>
-              <Text style={styles.chipText}>{place.shortName}</Text>
-            </TouchableOpacity>
-          ))}
+          {QUICK_PLACES.map((place) => {
+            const isSelected = toLocation?.name === place.name;
+            return (
+              <TouchableOpacity
+                key={place.name}
+                style={[styles.quickChip, isSelected && styles.quickChipActive]}
+                onPress={() => onSelectQuickPlace(place)}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.chipIcon}>{place.icon}</Text>
+                <Text
+                  style={[styles.chipLabel, isSelected && styles.chipLabelActive]}
+                  numberOfLines={1}
+                >
+                  {place.shortName}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
         </ScrollView>
       </View>
 
-      {/* Search CTA */}
-      <TouchableOpacity style={styles.searchCta} onPress={onSearch} activeOpacity={0.8}>
+      {/* Search Route Action */}
+      <TouchableOpacity
+        style={[styles.searchCta, loading && styles.searchCtaDisabled]}
+        onPress={onSearch}
+        activeOpacity={0.8}
+        disabled={loading}
+      >
+        <Navigation size={18} color="#FFFFFF" />
         <Text style={styles.searchCtaText}>
-          {hasSearched ? 'Rotayı Güncelle' : 'Rotayı Bul'}
+          {loading ? 'Rotalar Hesaplanıyor...' : hasSearched ? 'Rotayı Güncelle' : 'Rotaları Bul'}
         </Text>
       </TouchableOpacity>
     </View>
@@ -101,150 +152,185 @@ export default function SearchSection({
 }
 
 const styles = StyleSheet.create({
+  container: {
+    marginBottom: 16,
+  },
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.lg,
-    padding: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: 12,
+    borderColor: theme.colors.hairline,
+    overflow: 'hidden',
   },
-  searchWidget: {
+  inputsRow: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.bg,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    alignItems: 'center',
     paddingVertical: 4,
-    paddingHorizontal: 8,
+    paddingHorizontal: 12,
+  },
+  indicatorCol: {
     alignItems: 'center',
-    position: 'relative',
+    justifyContent: 'center',
+    width: 22,
+    marginRight: 6,
   },
-  timeline: {
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+  originDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: theme.colors.primary,
   },
-  dotFrom: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    borderWidth: 3,
-    borderColor: theme.colors.primary,
-    backgroundColor: theme.colors.bg,
-  },
-  timelineLine: {
+  connectorLine: {
     width: 2,
-    height: 24,
-    backgroundColor: theme.colors.borderFocus,
+    height: 28,
+    backgroundColor: theme.colors.hairline,
     marginVertical: 4,
   },
-  dotTo: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+  destDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
     backgroundColor: theme.colors.danger,
   },
-  inputsColumn: {
+  fieldsCol: {
     flex: 1,
-    paddingVertical: 2,
-    paddingRight: 36,
+    paddingRight: 8,
   },
-  inputRow: {
-    height: 38,
-    justifyContent: 'center',
-    paddingHorizontal: 8,
+  fieldTouch: {
+    height: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
   },
-  inputText: {
+  fieldText: {
     fontSize: 15,
     fontWeight: '600',
     color: theme.colors.textMain,
+    flex: 1,
   },
   placeholderText: {
-    color: theme.colors.textDim,
+    color: theme.colors.textTertiary,
     fontWeight: '500',
   },
-  divider: {
+  hairlineDivider: {
     height: 1,
-    backgroundColor: theme.colors.border,
-    marginHorizontal: 8,
+    backgroundColor: theme.colors.hairline,
+  },
+  gpsPill: {
+    backgroundColor: theme.colors.primaryLight,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 6,
+  },
+  gpsPillText: {
+    color: theme.colors.primary,
+    fontSize: 10,
+    fontWeight: '800',
   },
   swapBtn: {
-    position: 'absolute',
-    right: 10,
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surfaceHover,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: theme.colors.surfaceElevated,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
   },
-  quickActions: {
-    flexDirection: 'row',
-    gap: 8,
-    marginTop: 12,
-  },
-  pill: {
+  shortcutsRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.hairline,
+    backgroundColor: theme.colors.surfaceElevated,
+  },
+  shortcutBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     gap: 6,
-    backgroundColor: theme.colors.surfaceHover,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    paddingVertical: 10,
   },
-  pillText: {
-    fontSize: 13,
+  shortcutText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.textMain,
+    color: theme.colors.textSecondary,
   },
-  quickDestSection: {
+  verticalSeparator: {
+    width: 1,
+    height: 18,
+    backgroundColor: theme.colors.hairline,
+  },
+  quickSection: {
     marginTop: 14,
   },
-  quickDestTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: theme.colors.textDim,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
+  sectionHeader: {
     marginBottom: 8,
+    paddingHorizontal: 2,
   },
-  quickDestScroll: {
+  sectionTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: theme.colors.textSecondary,
+    textTransform: 'uppercase',
+    letterSpacing: 0.6,
+  },
+  quickScroll: {
     gap: 8,
+    paddingVertical: 2,
   },
-  chip: {
+  quickChip: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: theme.colors.surfaceHover,
+    backgroundColor: theme.colors.surface,
+    paddingVertical: 8,
+    paddingHorizontal: 13,
+    borderRadius: theme.radius.pill,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    paddingVertical: 7,
-    paddingHorizontal: 12,
-    borderRadius: 16,
+    borderColor: theme.colors.hairline,
+  },
+  quickChipActive: {
+    backgroundColor: theme.colors.primaryLight,
+    borderColor: theme.colors.primary,
   },
   chipIcon: {
     fontSize: 14,
   },
-  chipText: {
+  chipLabel: {
     fontSize: 13,
     fontWeight: '600',
     color: theme.colors.textMain,
   },
+  chipLabelActive: {
+    color: theme.colors.primary,
+    fontWeight: '700',
+  },
   searchCta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.radius.md,
-    paddingVertical: 13,
-    alignItems: 'center',
+    paddingVertical: 14,
     marginTop: 14,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.35,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  searchCtaDisabled: {
+    opacity: 0.6,
   },
   searchCtaText: {
-    color: '#fff',
+    color: '#FFFFFF',
     fontSize: 15,
     fontWeight: '700',
+    letterSpacing: -0.2,
   },
 });

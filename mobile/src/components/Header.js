@@ -1,35 +1,39 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { Bus } from 'lucide-react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Platform } from 'react-native';
+import { Bus, GraduationCap, User } from 'lucide-react-native';
 import { theme } from '../theme';
 
-export default function Header({ fareType, setFareType }) {
+export default function Header({ fareType, setFareType, title = 'Edirne Ulaşım', subtitle = 'ETUS Akıllı Rehber' }) {
   return (
-    <View style={styles.header}>
-      <View style={styles.brand}>
-        <View style={styles.logoBadge}>
-          <Bus size={22} color="#fff" />
+    <View style={styles.container}>
+      <View style={styles.brandRow}>
+        <View style={styles.logoPill}>
+          <Bus size={18} color="#FFFFFF" />
+          <Text style={styles.appName}>{title}</Text>
         </View>
-        <Text style={styles.title}>Edirne Ulaşım</Text>
+        <Text style={styles.subText}>{subtitle}</Text>
       </View>
 
-      {/* Fare Selector */}
-      <View style={styles.fareSwitch}>
+      {/* Segmented Fare Toggle (Tam / Öğrenci) */}
+      <View style={styles.segmentedContainer}>
         <TouchableOpacity
-          style={[styles.fareBtn, fareType === 'tam' && styles.fareBtnActive]}
+          style={[styles.segmentBtn, fareType === 'tam' && styles.segmentBtnActive]}
           onPress={() => setFareType('tam')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.fareBtnText, fareType === 'tam' && styles.fareBtnTextActive]}>
+          <User size={13} color={fareType === 'tam' ? '#FFFFFF' : theme.colors.textSecondary} />
+          <Text style={[styles.segmentText, fareType === 'tam' && styles.segmentTextActive]}>
             Tam
           </Text>
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.fareBtn, fareType === 'ogrenci' && styles.fareBtnActive]}
+          style={[styles.segmentBtn, fareType === 'ogrenci' && styles.segmentBtnActive]}
           onPress={() => setFareType('ogrenci')}
           activeOpacity={0.7}
         >
-          <Text style={[styles.fareBtnText, fareType === 'ogrenci' && styles.fareBtnTextActive]}>
+          <GraduationCap size={14} color={fareType === 'ogrenci' ? '#FFFFFF' : theme.colors.textSecondary} />
+          <Text style={[styles.segmentText, fareType === 'ogrenci' && styles.segmentTextActive]}>
             Öğrenci
           </Text>
         </TouchableOpacity>
@@ -39,57 +43,62 @@ export default function Header({ fareType, setFareType }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
+    backgroundColor: theme.colors.bg,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.surface,
+    borderBottomColor: theme.colors.hairline,
   },
-  brand: {
+  brandRow: {
+    flex: 1,
+  },
+  logoPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 7,
   },
-  logoBadge: {
-    backgroundColor: theme.colors.primary,
-    padding: 8,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 19,
+  appName: {
+    fontSize: 18,
     fontWeight: '800',
     color: theme.colors.textMain,
-    letterSpacing: -0.3,
+    letterSpacing: -0.4,
   },
-  fareSwitch: {
+  subText: {
+    fontSize: 11,
+    fontWeight: '500',
+    color: theme.colors.textTertiary,
+    marginTop: 1,
+  },
+  segmentedContainer: {
     flexDirection: 'row',
-    backgroundColor: theme.colors.surfaceHover,
-    borderRadius: 10,
+    backgroundColor: theme.colors.surfaceElevated,
+    borderRadius: theme.radius.pill,
     padding: 3,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.hairline,
   },
-  fareBtn: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: 7,
+  segmentBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: theme.radius.pill,
   },
-  fareBtnActive: {
+  segmentBtnActive: {
     backgroundColor: theme.colors.primary,
   },
-  fareBtnText: {
-    fontSize: 13,
+  segmentText: {
+    fontSize: 12,
     fontWeight: '600',
-    color: theme.colors.textMuted,
+    color: theme.colors.textSecondary,
   },
-  fareBtnTextActive: {
-    color: '#fff',
+  segmentTextActive: {
+    color: '#FFFFFF',
     fontWeight: '700',
   },
 });
