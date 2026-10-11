@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { View, StyleSheet, Platform, Dimensions } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, UrlTile } from 'react-native-maps';
 import { theme } from '../theme';
 import { allStopsDB } from '../data/db';
 
@@ -189,7 +189,7 @@ export default function NativeMap({
     );
   }
 
-  // Native Mobile (iOS & Android)
+  // Native Mobile (iOS & Android) with Web Google Maps Tile Layer
   return (
     <View style={[styles.container, style]}>
       <MapView
@@ -203,9 +203,8 @@ export default function NativeMap({
         }}
         showsUserLocation={true}
         showsCompass={false}
-        mapType={mapType === 'Uydu' ? 'satellite' : 'standard'}
-        customMapStyle={mapType === 'Uydu' ? undefined : (Platform.OS === 'android' ? darkMapStyle : undefined)}
-        userInterfaceStyle="dark"
+        mapType={mapType === 'Uydu' && Platform.OS === 'android' ? 'satellite' : 'none'}
+        userInterfaceStyle="light"
         onLongPress={(e) => {
           if (onMapLongPress && e.nativeEvent?.coordinate) {
             onMapLongPress(e.nativeEvent.coordinate);
@@ -217,6 +216,20 @@ export default function NativeMap({
           }
         }}
       >
+        {/* Web Google Maps Tile Layer (replaces Apple Maps with Google Maps Street & Satellite) */}
+        <UrlTile
+          urlTemplate={
+            mapType === 'Uydu'
+              ? 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+              : 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}'
+          }
+          maximumZ={20}
+          minimumZ={1}
+          flipY={false}
+          tileSize={256}
+          shouldReplaceMapContent={true}
+          zIndex={-1}
+        />
         {/* Origin / GPS Start Pin (Show only if custom location, don't duplicate native GPS puck) */}
         {fromLocation?.lat && fromLocation.name !== 'Konumunuz' && fromLocation.name !== 'Mevcut Konumunuz' && (
           <Marker
