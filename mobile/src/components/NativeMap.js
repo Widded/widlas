@@ -194,8 +194,8 @@ export default function NativeMap({
           }
         }}
       >
-        {/* Origin / GPS Start Pin (Primary Accent Green) */}
-        {fromLocation?.lat && (
+        {/* Origin / GPS Start Pin (Show only if custom location, don't duplicate native GPS puck) */}
+        {fromLocation?.lat && fromLocation.name !== 'Konumunuz' && fromLocation.name !== 'Mevcut Konumunuz' && (
           <Marker
             coordinate={{ latitude: fromLocation.lat, longitude: fromLocation.lon }}
             title="Başlangıç"

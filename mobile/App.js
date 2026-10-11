@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,7 +12,7 @@ import {
   Dimensions,
   Platform
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import * as Location from 'expo-location';
 import {
@@ -33,7 +33,6 @@ import {
   Bus,
   CreditCard,
   X,
-  MapPin,
   Check
 } from 'lucide-react-native';
 
@@ -46,12 +45,13 @@ import FaresView from './src/components/FaresView';
 import RouteResultSheet from './src/components/RouteResultSheet';
 
 import { calculateSmartRoute } from './src/data/routes';
-import { LOCAL_PLACES } from './src/data/places';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-export default function App() {
+function MainScreen() {
+  const insets = useSafeAreaInsets();
+
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
   const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'saved' | 'history' | 'settings'
 
@@ -250,21 +250,18 @@ export default function App() {
   // Preset quick navigation targets
   const handleQuickPreset = (presetKey) => {
     if (presetKey === 'home') {
-      // Ev: Şükrüpaşa Gölet / Yerleşim
       executeRouteSearch(fromLocation, {
         name: 'Ev (Şükrüpaşa)',
         lat: 41.6670,
         lon: 26.5911
       });
     } else if (presetKey === 'work') {
-      // İş: Saraçlar Caddesi / Heykel
       executeRouteSearch(fromLocation, {
         name: 'İş (Saraçlar Caddesi)',
         lat: 41.6735,
         lon: 26.5537
       });
     } else if (presetKey === 'uni') {
-      // Üniversite: Trakya Üni Tıp Fakültesi / Balkan Kampüsü
       executeRouteSearch(fromLocation, {
         name: 'Trakya Üniversitesi Balkan Kampüsü',
         lat: 41.6389,
@@ -273,461 +270,479 @@ export default function App() {
     }
   };
 
+  // Safe area metrics & dynamic collision-free positioning
+  const topPadding = insets.top > 0 ? insets.top : (Platform.OS === 'android' ? 16 : 10);
+  const bottomPadding = insets.bottom > 0 ? insets.bottom : 8;
+
+  // Bottom nav bar total height (including home bar safe area)
+  const bottomNavHeight = 56 + bottomPadding;
+
+  // Height of the preset bottom drawer
+  const sheetHeight = 224;
+
+  // Positioning floating widgets cleanly ABOVE the bottom drawer with 14px breathing room
+  const floatingWidgetsBottom = bottomNavHeight + sheetHeight + 14;
+
+  // Positioning top compass & layer buttons cleanly BELOW the search bar pill
+  const topFloatingTop = topPadding + 132;
+
   return (
-    <SafeAreaProvider>
-      <View style={styles.container}>
-        <StatusBar style="light" />
+    <View style={styles.container}>
+      <StatusBar style="light" />
 
-        {/* 1. FULL-SCREEN DARK NATIVE MAP */}
-        <NativeMap
-          style={StyleSheet.absoluteFillObject}
-          fromLocation={fromLocation}
-          toLocation={toLocation}
-          activeRoute={previewLine ? null : activeRoute}
-          activeLineData={previewLine?.line}
-          activeLineDirIdx={previewLine?.dirIdx}
-          userLocation={userLocation}
-          walkingPathStart={walkingPathStart}
-          walkingPathEnd={walkingPathEnd}
-          onMapPress={handleMapPress}
-        />
+      {/* 1. FULL-SCREEN DARK NATIVE MAP */}
+      <NativeMap
+        style={StyleSheet.absoluteFillObject}
+        fromLocation={fromLocation}
+        toLocation={toLocation}
+        activeRoute={previewLine ? null : activeRoute}
+        activeLineData={previewLine?.line}
+        activeLineDirIdx={previewLine?.dirIdx}
+        userLocation={userLocation}
+        walkingPathStart={walkingPathStart}
+        walkingPathEnd={walkingPathEnd}
+        onMapPress={handleMapPress}
+      />
 
-        {/* 2. TOP GREETING & PILL SEARCH BAR (Exact Match to Reference Design) */}
-        <SafeAreaView style={styles.topSafeArea} pointerEvents="box-none">
-          <View style={styles.topHeaderCard}>
-            {/* Greeting Row with Profile Avatar */}
-            <View style={styles.greetingRow}>
-              <View style={styles.greetingTextCol}>
-                <Text style={styles.greetingTitle}>Merhaba,</Text>
-                <Text style={styles.greetingSubtitle}>Nereye gideceksin?</Text>
-              </View>
-
-              <TouchableOpacity
-                style={styles.profileBtn}
-                onPress={() => setProfileModalVisible(true)}
-                activeOpacity={0.8}
-              >
-                <User size={18} color="#CBD5E1" />
-              </TouchableOpacity>
-            </View>
-
-            {/* Pill Search Input Button */}
-            <TouchableOpacity
-              style={styles.searchPill}
-              onPress={() => {
-                setSearchTargetType('to');
-                setSearchModalVisible(true);
-              }}
-              activeOpacity={0.85}
-            >
-              <Search size={17} color="#94A3B8" />
-              <Text style={styles.searchPillPlaceholder}>Varış noktası ara</Text>
-              <Mic size={17} color="#94A3B8" />
-            </TouchableOpacity>
+      {/* 2. TOP GREETING & PILL SEARCH BAR (Safe Area Protected) */}
+      <View style={[styles.topHeaderCard, { paddingTop: topPadding + 4 }]} pointerEvents="box-none">
+        {/* Greeting Row with Profile Avatar */}
+        <View style={styles.greetingRow}>
+          <View style={styles.greetingTextCol}>
+            <Text style={styles.greetingTitle}>Merhaba,</Text>
+            <Text style={styles.greetingSubtitle}>Nereye gideceksin?</Text>
           </View>
-        </SafeAreaView>
 
-        {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers) */}
-        <View style={styles.topFloatingControls}>
+          <TouchableOpacity
+            style={styles.profileBtn}
+            onPress={() => setProfileModalVisible(true)}
+            activeOpacity={0.8}
+          >
+            <User size={18} color="#CBD5E1" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Pill Search Input Button */}
+        <TouchableOpacity
+          style={styles.searchPill}
+          onPress={() => {
+            setSearchTargetType('to');
+            setSearchModalVisible(true);
+          }}
+          activeOpacity={0.85}
+        >
+          <Search size={17} color="#94A3B8" />
+          <Text style={styles.searchPillPlaceholder}>Varış noktası ara</Text>
+          <Mic size={17} color="#94A3B8" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers - Placed below search bar) */}
+      <View style={[styles.topFloatingControls, { top: topFloatingTop }]}>
+        <TouchableOpacity
+          style={styles.circleMapBtn}
+          onPress={handleUseGps}
+          activeOpacity={0.8}
+        >
+          <Navigation size={18} color="#E2E8F0" />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.circleMapBtn}
+          onPress={() => setLinesModalVisible(true)}
+          activeOpacity={0.8}
+        >
+          <Layers size={18} color="#E2E8F0" />
+        </TouchableOpacity>
+      </View>
+
+      {/* 4. ACTIVE LINE PREVIEW BANNER (When inspecting line from Explorer) */}
+      {previewLine && (
+        <View style={[styles.previewLineBanner, { top: topFloatingTop }]}>
+          <View style={styles.previewLineInfo}>
+            <View style={[styles.previewLineBadge, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
+              <Text style={styles.previewLineBadgeText}>{previewLine.line.code}</Text>
+            </View>
+            <Text style={styles.previewLineName} numberOfLines={1}>
+              {previewLine.line.directions?.[previewLine.dirIdx]?.headSign || 'Hat Güzergahı'}
+            </Text>
+          </View>
+          <TouchableOpacity
+            style={styles.previewLineClose}
+            onPress={() => setPreviewLine(null)}
+            activeOpacity={0.7}
+          >
+            <X size={14} color={theme.colors.textSecondary} />
+          </TouchableOpacity>
+        </View>
+      )}
+
+      {/* 5. WEATHER & LIVE TRANSIT WIDGET (Bottom-Left - Positioned cleanly ABOVE the sheet) */}
+      {!searchResults && (
+        <View style={[styles.weatherWidget, { bottom: floatingWidgetsBottom }]}>
+          <View style={styles.weatherTempRow}>
+            <Cloud size={15} color="#E2E8F0" />
+            <Text style={styles.weatherTempText}>18°</Text>
+          </View>
+          <View style={styles.weatherStatusRow}>
+            <View style={styles.weatherAqiDot} />
+            <Text style={styles.weatherAqiText}>AQI 42</Text>
+          </View>
+        </View>
+      )}
+
+      {/* 6. BOTTOM-RIGHT RECENTER BUTTON (Positioned cleanly ABOVE the sheet) */}
+      {!searchResults && (
+        <View style={[styles.bottomRecenterContainer, { bottom: floatingWidgetsBottom }]}>
           <TouchableOpacity
             style={styles.circleMapBtn}
             onPress={handleUseGps}
             activeOpacity={0.8}
           >
-            <Navigation size={18} color="#E2E8F0" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.circleMapBtn}
-            onPress={() => setLinesModalVisible(true)}
-            activeOpacity={0.8}
-          >
-            <Layers size={18} color="#E2E8F0" />
+            <Crosshair size={18} color="#E2E8F0" />
           </TouchableOpacity>
         </View>
+      )}
 
-        {/* 4. ACTIVE LINE PREVIEW BANNER (When inspecting line from Explorer) */}
-        {previewLine && (
-          <View style={styles.previewLineBanner}>
-            <View style={styles.previewLineInfo}>
-              <View style={[styles.previewLineBadge, { backgroundColor: previewLine.line.color || theme.colors.primary }]}>
-                <Text style={styles.previewLineBadgeText}>{previewLine.line.code}</Text>
-              </View>
-              <Text style={styles.previewLineName} numberOfLines={1}>
-                {previewLine.line.directions?.[previewLine.dirIdx]?.headSign || 'Hat Güzergahı'}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.previewLineClose}
-              onPress={() => setPreviewLine(null)}
-              activeOpacity={0.7}
-            >
-              <X size={14} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
-          </View>
-        )}
+      {/* 7. LOADING SPINNER OVERLAY */}
+      {loading && (
+        <View style={[styles.loadingBanner, { bottom: bottomNavHeight + 20 }]}>
+          <ActivityIndicator size="small" color="#3B82F6" />
+          <Text style={styles.loadingBannerText}>En uygun ETUS rotaları hesaplanıyor...</Text>
+        </View>
+      )}
 
-        {/* 5. WEATHER & LIVE TRANSIT WIDGET (Bottom-Left above sheet) */}
-        {!searchResults && (
-          <View style={styles.weatherWidget}>
-            <View style={styles.weatherTempRow}>
-              <Cloud size={15} color="#E2E8F0" />
-              <Text style={styles.weatherTempText}>18°</Text>
-            </View>
-            <View style={styles.weatherStatusRow}>
-              <View style={styles.weatherAqiDot} />
-              <Text style={styles.weatherAqiText}>AQI 42</Text>
-            </View>
-          </View>
-        )}
+      {/* 8. BOTTOM SHEET: PRESET DESTINATIONS OR ROUTE RESULT SHEET */}
+      {searchResults && !loading ? (
+        <View style={[styles.routeResultSheetWrapper, { bottom: bottomNavHeight }]}>
+          <RouteResultSheet
+            routes={searchResults.routes}
+            selectedIdx={selectedRouteIdx}
+            onSelectIdx={setSelectedRouteIdx}
+            toLocation={toLocation}
+            fromLocation={fromLocation}
+            fareType={fareType}
+            onFareTypeChange={setFareType}
+            onOpenDetails={() => setDetailsModalVisible(true)}
+            onClose={handleClearRoute}
+          />
+        </View>
+      ) : (
+        !loading && (
+          <View style={[styles.presetSheetContainer, { bottom: bottomNavHeight }]}>
+            {/* Grabber Handle */}
+            <View style={styles.sheetGrabberBar} />
 
-        {/* 6. BOTTOM-RIGHT RECENTER BUTTON */}
-        {!searchResults && (
-          <View style={styles.bottomRecenterContainer}>
-            <TouchableOpacity
-              style={styles.circleMapBtn}
-              onPress={handleUseGps}
-              activeOpacity={0.8}
-            >
-              <Crosshair size={18} color="#E2E8F0" />
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* 7. LOADING SPINNER OVERLAY */}
-        {loading && (
-          <View style={styles.loadingBanner}>
-            <ActivityIndicator size="small" color="#3B82F6" />
-            <Text style={styles.loadingBannerText}>En uygun ETUS rotaları hesaplanıyor...</Text>
-          </View>
-        )}
-
-        {/* 8. BOTTOM SHEET: PRESET DESTINATIONS OR ROUTE RESULT SHEET */}
-        {searchResults && !loading ? (
-          <View style={styles.routeResultSheetWrapper}>
-            <RouteResultSheet
-              routes={searchResults.routes}
-              selectedIdx={selectedRouteIdx}
-              onSelectIdx={setSelectedRouteIdx}
-              toLocation={toLocation}
-              fromLocation={fromLocation}
-              fareType={fareType}
-              onFareTypeChange={setFareType}
-              onOpenDetails={() => setDetailsModalVisible(true)}
-              onClose={handleClearRoute}
-            />
-          </View>
-        ) : (
-          !loading && (
-            <View style={styles.presetSheetContainer}>
-              {/* Grabber Handle */}
-              <View style={styles.sheetGrabberBar} />
-
-              {/* Destination Preset Items */}
-              <View style={styles.presetList}>
-                {/* 1. Ev */}
-                <TouchableOpacity
-                  style={styles.presetItem}
-                  onPress={() => handleQuickPreset('home')}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.presetIconBox}>
-                    <Home size={18} color="#E2E8F0" />
-                  </View>
-                  <View style={styles.presetTextCol}>
-                    <Text style={styles.presetTitle}>Ev</Text>
-                    <Text style={styles.presetSubtitle}>Tahmini süre · 22 dk</Text>
-                  </View>
-                  <ChevronRight size={18} color="#475569" />
-                </TouchableOpacity>
-
-                {/* 2. İş */}
-                <TouchableOpacity
-                  style={styles.presetItem}
-                  onPress={() => handleQuickPreset('work')}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.presetIconBox}>
-                    <Briefcase size={18} color="#E2E8F0" />
-                  </View>
-                  <View style={styles.presetTextCol}>
-                    <Text style={styles.presetTitle}>İş</Text>
-                    <Text style={styles.presetSubtitle}>Tahmini süre · 35 dk</Text>
-                  </View>
-                  <ChevronRight size={18} color="#475569" />
-                </TouchableOpacity>
-
-                {/* 3. Trakya Üniversitesi */}
-                <TouchableOpacity
-                  style={styles.presetItem}
-                  onPress={() => handleQuickPreset('uni')}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.presetIconBox}>
-                    <GraduationCap size={18} color="#E2E8F0" />
-                  </View>
-                  <View style={styles.presetTextCol}>
-                    <Text style={styles.presetTitle}>Trakya Üniversitesi</Text>
-                    <Text style={styles.presetSubtitle}>Balkan Kampüsü · 18 dk</Text>
-                  </View>
-                  <ChevronRight size={18} color="#475569" />
-                </TouchableOpacity>
-              </View>
-            </View>
-          )
-        )}
-
-        {/* 9. FIXED BOTTOM NAVIGATION BAR (Exact Match to Reference Design) */}
-        <SafeAreaView style={styles.bottomNavSafeArea} edges={['bottom']}>
-          <View style={styles.bottomNav}>
-            {/* Tab 1: Keşfet */}
-            <TouchableOpacity
-              style={styles.navTab}
-              onPress={() => {
-                setActiveTab('explore');
-                handleClearRoute();
-              }}
-              activeOpacity={0.75}
-            >
-              <Navigation
-                size={20}
-                color={activeTab === 'explore' ? '#3B82F6' : '#64748B'}
-              />
-              <Text
-                style={[
-                  styles.navTabLabel,
-                  activeTab === 'explore' && styles.navTabLabelActive
-                ]}
-              >
-                Keşfet
-              </Text>
-            </TouchableOpacity>
-
-            {/* Tab 2: Kaydedilenler */}
-            <TouchableOpacity
-              style={styles.navTab}
-              onPress={() => {
-                setActiveTab('saved');
-                setSearchTargetType('to');
-                setSearchModalVisible(true);
-              }}
-              activeOpacity={0.75}
-            >
-              <Bookmark
-                size={20}
-                color={activeTab === 'saved' ? '#3B82F6' : '#64748B'}
-              />
-              <Text
-                style={[
-                  styles.navTabLabel,
-                  activeTab === 'saved' && styles.navTabLabelActive
-                ]}
-              >
-                Kaydedilenler
-              </Text>
-            </TouchableOpacity>
-
-            {/* Tab 3: Geçmiş */}
-            <TouchableOpacity
-              style={styles.navTab}
-              onPress={() => {
-                setActiveTab('history');
-                setSearchTargetType('to');
-                setSearchModalVisible(true);
-              }}
-              activeOpacity={0.75}
-            >
-              <Clock
-                size={20}
-                color={activeTab === 'history' ? '#3B82F6' : '#64748B'}
-              />
-              <Text
-                style={[
-                  styles.navTabLabel,
-                  activeTab === 'history' && styles.navTabLabelActive
-                ]}
-              >
-                Geçmiş
-              </Text>
-            </TouchableOpacity>
-
-            {/* Tab 4: Ayarlar */}
-            <TouchableOpacity
-              style={styles.navTab}
-              onPress={() => {
-                setActiveTab('settings');
-                setProfileModalVisible(true);
-              }}
-              activeOpacity={0.75}
-            >
-              <Settings
-                size={20}
-                color={activeTab === 'settings' ? '#3B82F6' : '#64748B'}
-              />
-              <Text
-                style={[
-                  styles.navTabLabel,
-                  activeTab === 'settings' && styles.navTabLabelActive
-                ]}
-              >
-                Ayarlar
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-
-        {/* 10. MODAL: PROFILE & FARE SETTINGS */}
-        <Modal
-          visible={profileModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setProfileModalVisible(false)}
-        >
-          <SafeAreaView style={styles.profileModalContainer}>
-            <View style={styles.profileModalHeader}>
-              <Text style={styles.profileModalTitle}>Tercihler & Tarife</Text>
+            {/* Destination Preset Items */}
+            <View style={styles.presetList}>
+              {/* 1. Ev */}
               <TouchableOpacity
-                onPress={() => setProfileModalVisible(false)}
-                style={styles.profileModalClose}
+                style={styles.presetItem}
+                onPress={() => handleQuickPreset('home')}
+                activeOpacity={0.7}
               >
-                <X size={18} color="#FFFFFF" />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView contentContainerStyle={styles.profileModalContent}>
-              {/* Fare Segment Selection */}
-              <Text style={styles.profileSectionTitle}>ETUS BİLET TARİFESİ</Text>
-              <View style={styles.profileFareGroup}>
-                <TouchableOpacity
-                  style={[styles.profileFareCard, fareType === 'ogrenci' && styles.profileFareCardActive]}
-                  onPress={() => setFareType('ogrenci')}
-                  activeOpacity={0.75}
-                >
-                  <View style={styles.profileFareIconBox}>
-                    <GraduationCap size={20} color={fareType === 'ogrenci' ? '#3B82F6' : '#94A3B8'} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.profileFareCardTitle}>Öğrenci Tarifesi</Text>
-                    <Text style={styles.profileFareCardSub}>Geçerli Kentkart ile 20,00 ₺</Text>
-                  </View>
-                  {fareType === 'ogrenci' && <Check size={18} color="#3B82F6" />}
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.profileFareCard, fareType === 'tam' && styles.profileFareCardActive]}
-                  onPress={() => setFareType('tam')}
-                  activeOpacity={0.75}
-                >
-                  <View style={styles.profileFareIconBox}>
-                    <User size={20} color={fareType === 'tam' ? '#3B82F6' : '#94A3B8'} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.profileFareCardTitle}>Tam / Sivil Tarifesi</Text>
-                    <Text style={styles.profileFareCardSub}>Standart Kentkart ile 30,00 ₺</Text>
-                  </View>
-                  {fareType === 'tam' && <Check size={18} color="#3B82F6" />}
-                </TouchableOpacity>
-              </View>
-
-              {/* Transit Tools Quick Links */}
-              <Text style={styles.profileSectionTitle}>ULAŞIM ARAÇLARI</Text>
-              <TouchableOpacity
-                style={styles.profileActionRow}
-                onPress={() => {
-                  setProfileModalVisible(false);
-                  setLinesModalVisible(true);
-                }}
-                activeOpacity={0.75}
-              >
-                <View style={styles.profileActionIconBox}>
-                  <Bus size={18} color="#24C795" />
+                <View style={styles.presetIconBox}>
+                  <Home size={18} color="#E2E8F0" />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.profileActionTitle}>ETUS Hat Rehberi</Text>
-                  <Text style={styles.profileActionSub}>Tüm güzergahlar ve kalkış saatleri</Text>
+                <View style={styles.presetTextCol}>
+                  <Text style={styles.presetTitle}>Ev</Text>
+                  <Text style={styles.presetSubtitle}>Tahmini süre · 22 dk</Text>
                 </View>
                 <ChevronRight size={18} color="#475569" />
               </TouchableOpacity>
 
+              {/* 2. İş */}
               <TouchableOpacity
-                style={styles.profileActionRow}
-                onPress={() => {
-                  setProfileModalVisible(false);
-                  setFaresModalVisible(true);
-                }}
-                activeOpacity={0.75}
+                style={styles.presetItem}
+                onPress={() => handleQuickPreset('work')}
+                activeOpacity={0.7}
               >
-                <View style={styles.profileActionIconBox}>
-                  <CreditCard size={18} color="#F59E0B" />
+                <View style={styles.presetIconBox}>
+                  <Briefcase size={18} color="#E2E8F0" />
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.profileActionTitle}>Ücret Tarifeleri & Aktarma</Text>
-                  <Text style={styles.profileActionSub}>Detaylı tarife tablosu ve aktarma kuralları</Text>
+                <View style={styles.presetTextCol}>
+                  <Text style={styles.presetTitle}>İş</Text>
+                  <Text style={styles.presetSubtitle}>Tahmini süre · 35 dk</Text>
                 </View>
                 <ChevronRight size={18} color="#475569" />
               </TouchableOpacity>
 
-              <View style={styles.appVersionBox}>
-                <Text style={styles.appVersionText}>ETUS Edirne Toplu Taşıma · v2.4</Text>
-                <Text style={styles.appVersionSub}>Canlı TomTom ve Mapbox ile güçlendirilmiştir.</Text>
-              </View>
-            </ScrollView>
-          </SafeAreaView>
-        </Modal>
-
-        {/* 11. SEARCH MODAL (TomTom + Mapbox + Nominatim + 745 Stops Live Search) */}
-        <SearchModal
-          visible={searchModalVisible}
-          onClose={() => setSearchModalVisible(false)}
-          targetType={searchTargetType}
-          currentName={searchTargetType === 'from' ? fromLocation.name : toLocation.name}
-          onSelect={handleModalSelect}
-        />
-
-        {/* 12. ROUTE DETAILS TURN-BY-TURN MODAL */}
-        <RouteDetailsModal
-          visible={detailsModalVisible}
-          route={activeRoute}
-          onClose={() => setDetailsModalVisible(false)}
-        />
-
-        {/* 13. LINES EXPLORER MODAL */}
-        <Modal
-          visible={linesModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setLinesModalVisible(false)}
-        >
-          <View style={styles.modalBody}>
-            <LinesExplorer
-              onSelectLine={(line, dirIdx) => {
-                setLinesModalVisible(false);
-                setPreviewLine({ line, dirIdx });
-              }}
-              onClose={() => setLinesModalVisible(false)}
-            />
+              {/* 3. Trakya Üniversitesi */}
+              <TouchableOpacity
+                style={styles.presetItem}
+                onPress={() => handleQuickPreset('uni')}
+                activeOpacity={0.7}
+              >
+                <View style={styles.presetIconBox}>
+                  <GraduationCap size={18} color="#E2E8F0" />
+                </View>
+                <View style={styles.presetTextCol}>
+                  <Text style={styles.presetTitle}>Trakya Üniversitesi</Text>
+                  <Text style={styles.presetSubtitle}>Balkan Kampüsü · 18 dk</Text>
+                </View>
+                <ChevronRight size={18} color="#475569" />
+              </TouchableOpacity>
+            </View>
           </View>
-        </Modal>
+        )
+      )}
 
-        {/* 14. FARES & TARIFFS MODAL */}
-        <Modal
-          visible={faresModalVisible}
-          animationType="slide"
-          presentationStyle="pageSheet"
-          onRequestClose={() => setFaresModalVisible(false)}
+      {/* 9. FIXED BOTTOM NAVIGATION BAR (Exact Match to Reference Design) */}
+      <View style={[styles.bottomNav, { height: bottomNavHeight, paddingBottom: bottomPadding }]}>
+        {/* Tab 1: Keşfet */}
+        <TouchableOpacity
+          style={styles.navTab}
+          onPress={() => {
+            setActiveTab('explore');
+            handleClearRoute();
+          }}
+          activeOpacity={0.75}
         >
-          <View style={styles.modalBody}>
-            <FaresView
-              selectedType={fareType}
-              onSelectType={(t) => {
-                setFareType(t);
-                setFaresModalVisible(false);
-              }}
-              onClose={() => setFaresModalVisible(false)}
-            />
-          </View>
-        </Modal>
+          <Navigation
+            size={20}
+            color={activeTab === 'explore' ? '#3B82F6' : '#64748B'}
+          />
+          <Text
+            style={[
+              styles.navTabLabel,
+              activeTab === 'explore' && styles.navTabLabelActive
+            ]}
+          >
+            Keşfet
+          </Text>
+        </TouchableOpacity>
+
+        {/* Tab 2: Kaydedilenler */}
+        <TouchableOpacity
+          style={styles.navTab}
+          onPress={() => {
+            setActiveTab('saved');
+            setSearchTargetType('to');
+            setSearchModalVisible(true);
+          }}
+          activeOpacity={0.75}
+        >
+          <Bookmark
+            size={20}
+            color={activeTab === 'saved' ? '#3B82F6' : '#64748B'}
+          />
+          <Text
+            style={[
+              styles.navTabLabel,
+              activeTab === 'saved' && styles.navTabLabelActive
+            ]}
+          >
+            Kaydedilenler
+          </Text>
+        </TouchableOpacity>
+
+        {/* Tab 3: Geçmiş */}
+        <TouchableOpacity
+          style={styles.navTab}
+          onPress={() => {
+            setActiveTab('history');
+            setSearchTargetType('to');
+            setSearchModalVisible(true);
+          }}
+          activeOpacity={0.75}
+        >
+          <Clock
+            size={20}
+            color={activeTab === 'history' ? '#3B82F6' : '#64748B'}
+          />
+          <Text
+            style={[
+              styles.navTabLabel,
+              activeTab === 'history' && styles.navTabLabelActive
+            ]}
+          >
+            Geçmiş
+          </Text>
+        </TouchableOpacity>
+
+        {/* Tab 4: Ayarlar */}
+        <TouchableOpacity
+          style={styles.navTab}
+          onPress={() => {
+            setActiveTab('settings');
+            setProfileModalVisible(true);
+          }}
+          activeOpacity={0.75}
+        >
+          <Settings
+            size={20}
+            color={activeTab === 'settings' ? '#3B82F6' : '#64748B'}
+          />
+          <Text
+            style={[
+              styles.navTabLabel,
+              activeTab === 'settings' && styles.navTabLabelActive
+            ]}
+          >
+            Ayarlar
+          </Text>
+        </TouchableOpacity>
       </View>
+
+      {/* 10. MODAL: PROFILE & FARE SETTINGS */}
+      <Modal
+        visible={profileModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setProfileModalVisible(false)}
+      >
+        <SafeAreaView style={styles.profileModalContainer}>
+          <View style={styles.profileModalHeader}>
+            <Text style={styles.profileModalTitle}>Tercihler & Tarife</Text>
+            <TouchableOpacity
+              onPress={() => setProfileModalVisible(false)}
+              style={styles.profileModalClose}
+            >
+              <X size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.profileModalContent}>
+            {/* Fare Segment Selection */}
+            <Text style={styles.profileSectionTitle}>ETUS BİLET TARİFESİ</Text>
+            <View style={styles.profileFareGroup}>
+              <TouchableOpacity
+                style={[styles.profileFareCard, fareType === 'ogrenci' && styles.profileFareCardActive]}
+                onPress={() => setFareType('ogrenci')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.profileFareIconBox}>
+                  <GraduationCap size={20} color={fareType === 'ogrenci' ? '#3B82F6' : '#94A3B8'} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.profileFareCardTitle}>Öğrenci Tarifesi</Text>
+                  <Text style={styles.profileFareCardSub}>Geçerli Kentkart ile 20,00 ₺</Text>
+                </View>
+                {fareType === 'ogrenci' && <Check size={18} color="#3B82F6" />}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.profileFareCard, fareType === 'tam' && styles.profileFareCardActive]}
+                onPress={() => setFareType('tam')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.profileFareIconBox}>
+                  <User size={20} color={fareType === 'tam' ? '#3B82F6' : '#94A3B8'} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.profileFareCardTitle}>Tam / Sivil Tarifesi</Text>
+                  <Text style={styles.profileFareCardSub}>Standart Kentkart ile 30,00 ₺</Text>
+                </View>
+                {fareType === 'tam' && <Check size={18} color="#3B82F6" />}
+              </TouchableOpacity>
+            </View>
+
+            {/* Transit Tools Quick Links */}
+            <Text style={styles.profileSectionTitle}>ULAŞIM ARAÇLARI</Text>
+            <TouchableOpacity
+              style={styles.profileActionRow}
+              onPress={() => {
+                setProfileModalVisible(false);
+                setLinesModalVisible(true);
+              }}
+              activeOpacity={0.75}
+            >
+              <View style={styles.profileActionIconBox}>
+                <Bus size={18} color="#24C795" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.profileActionTitle}>ETUS Hat Rehberi</Text>
+                <Text style={styles.profileActionSub}>Tüm güzergahlar ve kalkış saatleri</Text>
+              </View>
+              <ChevronRight size={18} color="#475569" />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.profileActionRow}
+              onPress={() => {
+                setProfileModalVisible(false);
+                setFaresModalVisible(true);
+              }}
+              activeOpacity={0.75}
+            >
+              <View style={styles.profileActionIconBox}>
+                <CreditCard size={18} color="#F59E0B" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.profileActionTitle}>Ücret Tarifeleri & Aktarma</Text>
+                <Text style={styles.profileActionSub}>Detaylı tarife tablosu ve aktarma kuralları</Text>
+              </View>
+              <ChevronRight size={18} color="#475569" />
+            </TouchableOpacity>
+
+            <View style={styles.appVersionBox}>
+              <Text style={styles.appVersionText}>ETUS Edirne Toplu Taşıma · v2.4</Text>
+              <Text style={styles.appVersionSub}>Canlı TomTom ve Mapbox ile güçlendirilmiştir.</Text>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 11. SEARCH MODAL (TomTom + Mapbox + Nominatim + 745 Stops Live Search) */}
+      <SearchModal
+        visible={searchModalVisible}
+        onClose={() => setSearchModalVisible(false)}
+        targetType={searchTargetType}
+        currentName={searchTargetType === 'from' ? fromLocation.name : toLocation.name}
+        onSelect={handleModalSelect}
+      />
+
+      {/* 12. ROUTE DETAILS TURN-BY-TURN MODAL */}
+      <RouteDetailsModal
+        visible={detailsModalVisible}
+        route={activeRoute}
+        onClose={() => setDetailsModalVisible(false)}
+      />
+
+      {/* 13. LINES EXPLORER MODAL */}
+      <Modal
+        visible={linesModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setLinesModalVisible(false)}
+      >
+        <View style={styles.modalBody}>
+          <LinesExplorer
+            onSelectLine={(line, dirIdx) => {
+              setLinesModalVisible(false);
+              setPreviewLine({ line, dirIdx });
+            }}
+            onClose={() => setLinesModalVisible(false)}
+          />
+        </View>
+      </Modal>
+
+      {/* 14. FARES & TARIFFS MODAL */}
+      <Modal
+        visible={faresModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setFaresModalVisible(false)}
+      >
+        <View style={styles.modalBody}>
+          <FaresView
+            selectedType={fareType}
+            onSelectType={(t) => {
+              setFareType(t);
+              setFaresModalVisible(false);
+            }}
+            onClose={() => setFaresModalVisible(false)}
+          />
+        </View>
+      </Modal>
+    </View>
+  );
+}
+
+export default function App() {
+  return (
+    <SafeAreaProvider>
+      <MainScreen />
     </SafeAreaProvider>
   );
 }
@@ -738,23 +753,19 @@ const styles = StyleSheet.create({
     backgroundColor: '#090B0F',
   },
   // Top Header Area (Greeting + Pill Search Bar)
-  topSafeArea: {
+  topHeaderCard: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 90,
-  },
-  topHeaderCard: {
     paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 16 : 8,
-    paddingBottom: 6,
+    zIndex: 90,
   },
   greetingRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 14,
+    marginBottom: 12,
   },
   greetingTextCol: {
     flex: 1,
@@ -775,7 +786,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(22, 27, 34, 0.92)',
+    backgroundColor: 'rgba(22, 27, 34, 0.94)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -784,7 +795,7 @@ const styles = StyleSheet.create({
   searchPill: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(22, 27, 34, 0.94)',
+    backgroundColor: 'rgba(22, 27, 34, 0.95)',
     height: 48,
     borderRadius: 24,
     paddingHorizontal: 16,
@@ -803,7 +814,6 @@ const styles = StyleSheet.create({
   topFloatingControls: {
     position: 'absolute',
     right: 18,
-    top: Platform.OS === 'ios' ? 154 : 144,
     gap: 10,
     zIndex: 85,
   },
@@ -811,7 +821,7 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: 'rgba(22, 27, 34, 0.92)',
+    backgroundColor: 'rgba(22, 27, 34, 0.94)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
@@ -822,7 +832,6 @@ const styles = StyleSheet.create({
   weatherWidget: {
     position: 'absolute',
     left: 18,
-    bottom: 250,
     backgroundColor: 'rgba(22, 27, 34, 0.94)',
     borderRadius: 16,
     paddingVertical: 9,
@@ -863,14 +872,12 @@ const styles = StyleSheet.create({
   bottomRecenterContainer: {
     position: 'absolute',
     right: 18,
-    bottom: 250,
     zIndex: 85,
   },
 
   // Preview Line Banner
   previewLineBanner: {
     position: 'absolute',
-    top: 154,
     left: 18,
     right: 70,
     backgroundColor: '#161B24',
@@ -921,14 +928,13 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 64, // sits right on top of bottom nav bar
     backgroundColor: '#11151B',
     borderTopLeftRadius: 26,
     borderTopRightRadius: 26,
     borderTopWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.08)',
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingBottom: 14,
     zIndex: 80,
   },
   sheetGrabberBar: {
@@ -938,21 +944,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#333C4D',
     alignSelf: 'center',
     marginTop: 10,
-    marginBottom: 12,
+    marginBottom: 8,
   },
   presetList: {
-    gap: 8,
+    gap: 4,
   },
   presetItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 10,
+    paddingVertical: 8,
     gap: 14,
   },
   presetIconBox: {
-    width: 42,
-    height: 42,
-    borderRadius: 21,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: '#181E29',
     alignItems: 'center',
     justifyContent: 'center',
@@ -978,7 +984,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 64,
     zIndex: 90,
   },
 
@@ -987,7 +992,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 20,
     right: 20,
-    bottom: 90,
     backgroundColor: '#161B24',
     borderRadius: 14,
     paddingVertical: 12,
@@ -1007,23 +1011,19 @@ const styles = StyleSheet.create({
   },
 
   // Bottom Fixed Navigation Bar (Exact Match)
-  bottomNavSafeArea: {
+  bottomNav: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: '#090B0F',
-    zIndex: 100,
-  },
-  bottomNav: {
     flexDirection: 'row',
-    height: 64,
     backgroundColor: '#090B0F',
     borderTopWidth: 1,
     borderTopColor: 'rgba(255, 255, 255, 0.06)',
     alignItems: 'center',
     justifyContent: 'space-around',
     paddingHorizontal: 8,
+    zIndex: 100,
   },
   navTab: {
     alignItems: 'center',
