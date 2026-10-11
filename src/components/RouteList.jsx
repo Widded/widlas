@@ -102,13 +102,23 @@ export default function RouteList({
                 <div 
                   key={routeGroup.groupId} 
                   className={`route-card ${isSelected ? 'selected' : ''}`}
-                  onClick={() => { setSelectedRouteIndex(idx); if (!isSelected) setExpandedRouteId(null); }}
+                  onClick={() => { 
+                    if (setSheetState) setSheetState('half');
+                    if (isSelected) {
+                      const next = isExpanded ? null : routeGroup.groupId;
+                      setExpandedRouteId(next);
+                      if (next && setSheetState) setSheetState('full');
+                    } else {
+                      setSelectedRouteIndex(idx);
+                      setExpandedRouteId(null);
+                    }
+                  }}
                   style={{
                     borderColor: isSelected ? 'var(--primary)' : 'var(--border-color)',
                     backgroundColor: isSelected ? 'var(--surface-hover)' : 'var(--surface)',
                     borderWidth: isSelected ? '2px' : '1px',
                     padding: isSelected ? '15px' : '16px',
-                    cursor: isSelected ? 'default' : 'pointer'
+                    cursor: 'pointer'
                   }}
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>

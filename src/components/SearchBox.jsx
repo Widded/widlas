@@ -59,14 +59,24 @@ export default function SearchBox({
         
         {isPopular ? (
           localPlaces.map((place, idx) => (
-            <div key={'pop_' + idx} className="search-result-item" onClick={() => { selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}>
+            <div 
+              key={'pop_' + idx} 
+              className="search-result-item" 
+              onMouseDown={(e) => { e.preventDefault(); selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}
+              onClick={() => { selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}
+            >
               <div className="icon-wrapper"><MapPin size={20} color="var(--text-dim)" /></div>
               <span style={{ fontWeight: '600', fontSize: '1.05rem' }}>{place.name}</span>
             </div>
           ))
         ) : (
           suggestions.map((place, idx) => (
-            <div key={idx} className="search-result-item" onClick={() => { selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}>
+            <div 
+              key={idx} 
+              className="search-result-item" 
+              onMouseDown={(e) => { e.preventDefault(); selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}
+              onClick={() => { selectSuggestion(activeInput, place); if(closeOnSelect) setActiveInput(null); }}
+            >
               <div className="icon-wrapper">
                 {place.type === 'stop' ? <BusFront size={20} color="var(--primary)" /> : <MapPin size={20} color="var(--text-dim)" />}
               </div>

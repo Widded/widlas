@@ -98,7 +98,7 @@ body {
 
   /* Peek State (Map dominates screen) */
   .app-container.layout-split.sheet-peek:not(.search-active) .desktop-map-area {
-    height: calc(100dvh - 170px);
+    height: calc(100dvh - 120px);
   }
 
   /* Full State (List dominates screen) */
@@ -160,8 +160,9 @@ body {
   }
 
   .app-container.layout-split.sheet-peek:not(.search-active) .desktop-sidebar {
-    height: 170px;
+    height: 120px;
     flex: none;
+    cursor: pointer;
   }
 
   .app-container.layout-split.sheet-full:not(.search-active) .desktop-sidebar {
@@ -179,9 +180,11 @@ body {
     height: 100dvh;
   }
 
-  /* Maximize space for search suggestions */
+  /* Maximize space for search suggestions AND in peek mode */
   .app-container.search-active .app-header,
-  .app-container.search-active .tabs-wrapper {
+  .app-container.search-active .tabs-wrapper,
+  .app-container.layout-split.sheet-peek:not(.search-active) .app-header,
+  .app-container.layout-split.sheet-peek:not(.search-active) .tabs-wrapper {
     display: none !important;
   }
 
@@ -897,4 +900,64 @@ body {
     transform: scale(1.5);
     opacity: 0;
   }
+}
+
+/* Modern Non-blocking Toast Notification */
+.app-toast {
+  position: fixed;
+  top: max(16px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  max-width: 90vw;
+  width: auto;
+  min-width: 280px;
+  background: rgba(15, 23, 42, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  color: #fff;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  pointer-events: auto;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  gap: 12px;
+}
+
+.toast-close {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 2px 4px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.toast-close:hover {
+  color: #fff;
+}
+
+.toast-warning {
+  border-left: 4px solid #f59e0b;
+}
+
+.toast-error {
+  border-left: 4px solid #ef4444;
+}
+
+.toast-info {
+  border-left: 4px solid #3b82f6;
 }

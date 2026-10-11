@@ -72,10 +72,32 @@ function App() {
   const [mapZoom, setMapZoom] = useState(13);
 
   const [sheetState, setSheetState] = useState('half'); // 'peek' | 'half' | 'full'
+  const [toast, setToast] = useState(null); // { message, type: 'info' | 'warning' | 'error' }
+  const toastTimerRef = useRef(null);
+
+  const showToast = useCallback((message, type = 'info', duration = 3800) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast({ message, type });
+    toastTimerRef.current = setTimeout(() => {
+      setToast(null);
+    }, duration);
+  }, []);
+
   const touchStartYRef = useRef(null);
+  const isDraggingRef = useRef(false);
 
   const handleSheetTouchStart = (e) => {
     touchStartYRef.current = e.touches[0].clientY;
+    isDraggingRef.current = false;
+  };
+
+  const handleSheetTouchMove = (e) => {
+    if (touchStartYRef.current !== null) {
+      const diff = Math.abs(touchStartYRef.current - e.touches[0].clientY);
+      if (diff > 8) {
+        isDraggingRef.current = true;
+      }
+    }
   };
 
   const handleSheetTouchEnd = (e) => {
@@ -93,9 +115,15 @@ function App() {
       if (sheetState === 'full') setSheetState('half');
       else if (sheetState === 'half') setSheetState('peek');
     }
+
+    // Keep dragging flag for a brief moment so subsequent synthetic click is ignored
+    setTimeout(() => {
+      isDraggingRef.current = false;
+    }, 120);
   };
 
   const toggleSheetState = () => {
+    if (isDraggingRef.current) return;
     setSheetState(prev => (prev === 'half' ? 'full' : prev === 'full' ? 'peek' : 'half'));
   };
 
@@ -222,11 +250,11 @@ function App() {
         },
         (error) => {
           console.error("GPS hatası:", error);
-          alert("Konum alınamadı, lütfen tarayıcınızın konum izni verdiğinden emin olun.");
+          showToast("Konum alınamadı, lütfen tarayıcınızın konum izni verdiğinden emin olun.", "error");
         }
       );
     } else {
-      alert("Tarayıcınız konum özelliğini desteklemiyor.");
+      showToast("Tarayıcınız konum özelliğini desteklemiyor.", "error");
     }
   };
 
@@ -412,6 +440,7 @@ function App() {
     if (mapSelectionMode === 'from') {
       setFromLocation(newLoc);
       setMapSelectionMode(null);
+      setMapCenter([lat, lng]);
       if (toLocation.lat) {
         setHasSearched(true);
         setSheetState('half');
@@ -419,6 +448,7 @@ function App() {
     } else if (mapSelectionMode === 'to') {
       setToLocation(newLoc);
       setMapSelectionMode(null);
+      setMapCenter([lat, lng]);
       if (fromLocation.lat) {
         setHasSearched(true);
         setSheetState('half');
@@ -426,6 +456,7 @@ function App() {
     } else if (activeInput === 'from') {
       setFromLocation(newLoc);
       setActiveInput(null);
+      setMapCenter([lat, lng]);
       if (toLocation.lat) {
         setHasSearched(true);
         setSheetState('half');
@@ -433,33 +464,25 @@ function App() {
     } else if (activeInput === 'to') {
       setToLocation(newLoc);
       setActiveInput(null);
+      setMapCenter([lat, lng]);
       if (fromLocation.lat) {
         setHasSearched(true);
         setSheetState('half');
       }
     } else {
-      // Herhangi bir kutu seçili değilse akıllı atama yap
-      if (!fromLocation.lat) {
-        setFromLocation(newLoc);
-      } else if (!toLocation.lat) {
-        setToLocation(newLoc);
-      } else {
-        // İkisi de doluysa hedefi değiştir
-        setToLocation(newLoc);
-      }
-      // Mobilde haritaya tıklandığında haritayı inceleyebilmek için paneli küçült
+      // SADECE HARİTAYI İNCELEME MODU:
+      // Kullanıcı gezinirken veya haritaya dokunurken rotayı BOZMA!
+      // Mobilde haritayı daha rahat görebilmek için paneli peek moduna al
       if (window.innerWidth < 1024 && hasSearched && !activeInput) {
-        setSheetState('peek');
+        setSheetState(prev => (prev === 'peek' ? 'half' : 'peek'));
       }
     }
-    // Seçilen yeri merkeze al
-    setMapCenter([lat, lng]);
     setIsFollowing(false); // Kullanıcı haritaya tıklarsa takibi bırak
   }, [mapSelectionMode, activeInput, fromLocation.lat, toLocation.lat, activeMainTab, hasSearched]);
 
   const handleSearch = async () => {
     if (!fromLocation.lat || !toLocation.lat) {
-      alert("Lütfen listeden geçerli bir adres seçin veya Konumunuzu kullanın.");
+      showToast("Lütfen listeden geçerli bir adres seçin veya Konumunuzu kullanın.", "warning");
       return;
     }
 
@@ -469,7 +492,7 @@ function App() {
     let result = await calculateSmartRoute(fromLocation.lat, fromLocation.lon, toLocation.lat, toLocation.lon);
     
     if (isNightTime && result && result.routes) {
-      alert("Dikkat: Saat 00:00 ile 06:00 arasında Edirne'de otobüs seferleri aktif değildir. Gösterilen rotalar bilgi ve test amaçlıdır.");
+      showToast("Gece Seferi: Saat 00:00 - 06:00 arasında Edirne'de otobüs seferleri sınırlıdır. Gösterilen rotalar bilgi amaçlıdır.", "info", 5000);
     }
 
     setSearchResults(result);
@@ -498,7 +521,7 @@ function App() {
         setMapZoom(18);
         setIsFollowing(true);
       } else {
-        alert("Navigasyon için lütfen önce arama kutusundaki hedefin (GPS) butonuna basarak canlı takibi etkinleştirin.");
+        showToast("Navigasyon için lütfen önce arama kutusundaki hedefin (GPS) butonuna basarak canlı takibi etkinleştirin.", "info");
       }
     } else {
       setMapCenter([lat, lon]);
@@ -545,6 +568,16 @@ function App() {
   return (
     <div className={`app-container ${isSplitLayout ? `layout-split sheet-${sheetState}` : 'layout-center'} ${activeInput ? 'search-active' : ''} ${mapSelectionMode ? 'map-picking' : ''}`}>
       
+      {/* Toast Notification Banner */}
+      {toast && (
+        <div className={`app-toast toast-${toast.type} animate-in`}>
+          <div className="toast-content">
+            <span>{toast.message}</span>
+            <button className="toast-close" onClick={() => setToast(null)}>✕</button>
+          </div>
+        </div>
+      )}
+
       {/* Map Area - Always visible on desktop, conditionally styled on mobile */}
       <MapArea 
         mapCenter={mapCenter}
@@ -573,6 +606,7 @@ function App() {
         <div 
           className="sheet-drag-handle-bar"
           onTouchStart={handleSheetTouchStart}
+          onTouchMove={handleSheetTouchMove}
           onTouchEnd={handleSheetTouchEnd}
           onClick={toggleSheetState}
           title="Paneli kaydır veya dokun"

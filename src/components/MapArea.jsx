@@ -55,9 +55,23 @@ function MapUpdater({ center, zoom }) {
   const map = useMap();
   useEffect(() => {
     if (center && Array.isArray(center) && center.length === 2 && Number.isFinite(center[0]) && Number.isFinite(center[1])) {
-      map.flyTo(center, zoom || 14, { duration: 1.5 });
+      map.flyTo(center, zoom || 14, { duration: 1.2 });
     }
   }, [center, zoom, map]);
+  return null;
+}
+
+function MapContainerObserver() {
+  const map = useMap();
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container) return;
+    const observer = new ResizeObserver(() => {
+      map.invalidateSize({ debounceMoveEvents: true });
+    });
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, [map]);
   return null;
 }
 
@@ -65,10 +79,59 @@ function MapResizeHandler({ isVisible }) {
   const map = useMap();
   useEffect(() => {
     if (isVisible) {
-      setTimeout(() => map.invalidateSize(), 150);
-      setTimeout(() => map.invalidateSize(), 400);
+      setTimeout(() => map.invalidateSize(), 100);
+      setTimeout(() => map.invalidateSize(), 360);
     }
   }, [isVisible, map]);
+  return null;
+}
+
+function MapAutoFitter({ activeRoute, activeLineData, activeLineDirIdx, fromLocation, toLocation, walkingPathStart, walkingPathEnd }) {
+  const map = useMap();
+  useEffect(() => {
+    // 1. Hatlar sekmesinde hat seçildiyse o hattın sınırlarına sığdır
+    if (activeLineData?.directions?.[activeLineDirIdx]?.path?.length > 1) {
+      const path = activeLineData.directions[activeLineDirIdx].path;
+      const bounds = L.latLngBounds(path);
+      if (bounds.isValid()) {
+        map.fitBounds(bounds, {
+          paddingTopLeft: [30, 30],
+          paddingBottomRight: window.innerWidth < 1024 ? [30, 180] : [30, 30],
+          maxZoom: 15,
+          animate: true
+        });
+      }
+      return;
+    }
+
+    // 2. Rota bulunduysa rota bacakları, yürüme yolları ve durakları haritaya kusursuz sığdır
+    if (activeRoute) {
+      const coords = [];
+      if (fromLocation?.lat && fromLocation?.lon) coords.push([fromLocation.lat, fromLocation.lon]);
+      if (toLocation?.lat && toLocation?.lon) coords.push([toLocation.lat, toLocation.lon]);
+      if (activeRoute.startStop?.lat && activeRoute.startStop?.lon) coords.push([activeRoute.startStop.lat, activeRoute.startStop.lon]);
+      if (activeRoute.endStop?.lat && activeRoute.endStop?.lon) coords.push([activeRoute.endStop.lat, activeRoute.endStop.lon]);
+      if (activeRoute.transferStop?.lat && activeRoute.transferStop?.lon) coords.push([activeRoute.transferStop.lat, activeRoute.transferStop.lon]);
+      if (Array.isArray(activeRoute.routeGeometry)) coords.push(...activeRoute.routeGeometry);
+      if (Array.isArray(activeRoute.routeGeometry1)) coords.push(...activeRoute.routeGeometry1);
+      if (Array.isArray(activeRoute.routeGeometry2)) coords.push(...activeRoute.routeGeometry2);
+      if (Array.isArray(walkingPathStart)) coords.push(...walkingPathStart);
+      if (Array.isArray(walkingPathEnd)) coords.push(...walkingPathEnd);
+
+      const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]));
+      if (validCoords.length >= 2) {
+        const bounds = L.latLngBounds(validCoords);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            paddingTopLeft: [40, 40],
+            paddingBottomRight: window.innerWidth < 1024 ? [40, 220] : [40, 40],
+            maxZoom: 16,
+            animate: true
+          });
+        }
+      }
+    }
+  }, [activeRoute?.id, activeLineData?.code, activeLineDirIdx, map]);
   return null;
 }
 
@@ -156,10 +219,20 @@ const MapArea = React.memo(function MapArea({
             attribution='&copy; Google Maps'
           />
           {/* Use MapUpdater only if we are not following the user live. */}
-          {!isFollowing && <MapUpdater center={safeMapCenter} zoom={mapZoom} />}
+          {!isFollowing && !activeRoute && <MapUpdater center={safeMapCenter} zoom={mapZoom} />}
           <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
           
+          <MapContainerObserver />
           <MapResizeHandler isVisible={isSplitLayout} />
+          <MapAutoFitter 
+            activeRoute={activeRoute} 
+            activeLineData={activeLineData} 
+            activeLineDirIdx={activeLineDirIdx} 
+            fromLocation={fromLocation} 
+            toLocation={toLocation} 
+            walkingPathStart={walkingPathStart} 
+            walkingPathEnd={walkingPathEnd} 
+          />
           
           <MapClickHandler 
             onMapClick={onMapClick} 
