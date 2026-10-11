@@ -44,6 +44,7 @@ import SearchModal from './src/components/SearchModal';
 import FaresView from './src/components/FaresView';
 import RouteResultSheet from './src/components/RouteResultSheet';
 import SavedView from './src/components/SavedView';
+import HistoryView from './src/components/HistoryView';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
@@ -307,6 +308,18 @@ function MainScreen() {
             setActiveTab('explore');
           }}
         />
+      ) : activeTab === 'history' ? (
+        <HistoryView
+          topPadding={topPadding}
+          bottomPadding={bottomNavHeight}
+          onSelectHistoryItem={(item) => {
+            setActiveTab('explore');
+            executeRouteSearch(item.from || fromLocation, item.to);
+          }}
+          onBack={() => {
+            setActiveTab('explore');
+          }}
+        />
       ) : (
         <>
           {/* 1. FULL-SCREEN DARK NATIVE MAP */}
@@ -560,8 +573,6 @@ function MainScreen() {
           style={styles.navTab}
           onPress={() => {
             setActiveTab('history');
-            setSearchTargetType('to');
-            setSearchModalVisible(true);
           }}
           activeOpacity={0.75}
         >
