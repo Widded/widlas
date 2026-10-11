@@ -1,9 +1,11 @@
 import React, { useRef, useEffect } from 'react';
-import { View, TouchableOpacity, Text, StyleSheet, Platform } from 'react-native';
+import { View, TouchableOpacity, Text, StyleSheet, Platform, Dimensions } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { Navigation, Bus, MapPin } from 'lucide-react-native';
 import { theme } from '../theme';
 import { allStopsDB } from '../data/db';
+
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 const darkMapStyle = [
   { elementType: "geometry", stylers: [{ color: "#0c111c" }] },
@@ -63,8 +65,6 @@ export default function NativeMap({
   activeLineData,
   activeLineDirIdx,
   userLocation,
-  mapSelectionMode,
-  onMapPress,
   style
 }) {
   const mapRef = useRef(null);
@@ -78,7 +78,7 @@ export default function NativeMap({
       const coords = dir?.path?.map(c => ({ latitude: c[0], longitude: c[1] })) || [];
       if (coords.length > 1) {
         mapRef.current.fitToCoordinates(coords, {
-          edgePadding: { top: 90, right: 60, bottom: 120, left: 60 },
+          edgePadding: { top: 120, right: 60, bottom: 200, left: 60 },
           animated: true
         });
       }
@@ -115,7 +115,7 @@ export default function NativeMap({
 
       if (coords.length > 1) {
         mapRef.current.fitToCoordinates(coords, {
-          edgePadding: { top: 90, right: 60, bottom: 140, left: 60 },
+          edgePadding: { top: 120, right: 60, bottom: 240, left: 60 },
           animated: true
         });
       }
@@ -133,17 +133,6 @@ export default function NativeMap({
     }
   }, [activeRoute, activeLineData, activeLineDirIdx, fromLocation?.lat, fromLocation?.lon]);
 
-  const recenterUser = () => {
-    if (userLocation?.lat && mapRef.current) {
-      mapRef.current.animateToRegion({
-        latitude: userLocation.lat,
-        longitude: userLocation.lon,
-        latitudeDelta: 0.015,
-        longitudeDelta: 0.015
-      }, 500);
-    }
-  };
-
   const toCoords = (geom) => {
     if (!geom || !Array.isArray(geom)) return [];
     return geom.map(c => ({ latitude: c[0], longitude: c[1] }));
@@ -151,11 +140,30 @@ export default function NativeMap({
 
   const activeLineDir = activeLineData?.directions?.[activeLineDirIdx || 0];
 
+  // If user opens on Web browser (Chrome/localhost:8081)
+  if (Platform.OS === 'web') {
+    return (
+      <View style={[styles.container, style]}>
+        <iframe
+          src="https://www.openstreetmap.org/export/embed.html?bbox=26.50%2C41.64%2C26.62%2C41.71&layer=mapnik"
+          style={{
+            width: '100%',
+            height: '100%',
+            border: 'none',
+            filter: 'invert(90%) hue-rotate(180deg) brightness(85%) contrast(110%)',
+          }}
+          title="Edirne Harita"
+        />
+      </View>
+    );
+  }
+
+  // Native Mobile (iOS & Android)
   return (
     <View style={[styles.container, style]}>
       <MapView
         ref={mapRef}
-        style={StyleSheet.absoluteFillObject}
+        style={styles.mapView}
         initialRegion={{
           latitude: 41.6771,
           longitude: 26.5557,
@@ -163,14 +171,9 @@ export default function NativeMap({
           longitudeDelta: 0.05,
         }}
         showsUserLocation={true}
-        showsCompass={true}
+        showsCompass={false}
         customMapStyle={Platform.OS === 'android' ? darkMapStyle : undefined}
         userInterfaceStyle="dark"
-        onPress={(e) => {
-          if (onMapPress) {
-            onMapPress(e.nativeEvent.coordinate);
-          }
-        }}
       >
         {/* Origin Marker */}
         {fromLocation?.lat && (
@@ -178,11 +181,8 @@ export default function NativeMap({
             coordinate={{ latitude: fromLocation.lat, longitude: fromLocation.lon }}
             title="Başlangıç"
             description={fromLocation.name}
-          >
-            <View style={styles.originMarkerBadge}>
-              <View style={styles.originMarkerDot} />
-            </View>
-          </Marker>
+            pinColor="#0084FF"
+          />
         )}
 
         {/* Destination Marker */}
@@ -191,11 +191,8 @@ export default function NativeMap({
             coordinate={{ latitude: toLocation.lat, longitude: toLocation.lon }}
             title="Varış Noktası"
             description={toLocation.name}
-          >
-            <View style={styles.destMarkerBadge}>
-              <MapPin size={16} color="#FFFFFF" />
-            </View>
-          </Marker>
+            pinColor="#F43F5E"
+          />
         )}
 
         {/* Active Route Polylines & Stops */}
@@ -207,11 +204,8 @@ export default function NativeMap({
                 coordinate={{ latitude: activeRoute.startStop.lat, longitude: activeRoute.startStop.lon }}
                 title={`Biniş: ${activeRoute.startStop.name}`}
                 description={`${activeRoute.line1 || activeRoute.name} Hattı`}
-              >
-                <View style={[styles.stopMarkerBadge, { backgroundColor: activeRoute.color || theme.colors.primary }]}>
-                  <Bus size={13} color="#FFFFFF" />
-                </View>
-              </Marker>
+                pinColor="#8B5CF6"
+              />
             )}
 
             {/* Transfer Bus Stop */}
@@ -220,11 +214,8 @@ export default function NativeMap({
                 coordinate={{ latitude: activeRoute.transferStop.lat, longitude: activeRoute.transferStop.lon }}
                 title={`Aktarma: ${activeRoute.transferStop.name}`}
                 description={`${activeRoute.line2 || ''} Hattına Geçiş`}
-              >
-                <View style={[styles.stopMarkerBadge, { backgroundColor: theme.colors.warning }]}>
-                  <Text style={styles.stopMarkerText}>AK</Text>
-                </View>
-              </Marker>
+                pinColor="#F59E0B"
+              />
             )}
 
             {/* End Bus Stop */}
@@ -232,11 +223,8 @@ export default function NativeMap({
               <Marker
                 coordinate={{ latitude: activeRoute.endStop.lat, longitude: activeRoute.endStop.lon }}
                 title={`İniş: ${activeRoute.endStop.name}`}
-              >
-                <View style={[styles.stopMarkerBadge, { backgroundColor: theme.colors.danger }]}>
-                  <MapPin size={13} color="#FFFFFF" />
-                </View>
-              </Marker>
+                pinColor="#F43F5E"
+              />
             )}
 
             {/* Polylines */}
@@ -245,14 +233,14 @@ export default function NativeMap({
                 {activeRoute.routeGeometry1 && (
                   <Polyline
                     coordinates={toCoords(activeRoute.routeGeometry1)}
-                    strokeColor={activeRoute.color || '#0084FF'}
+                    strokeColor={activeRoute.color || '#8B5CF6'}
                     strokeWidth={5}
                   />
                 )}
                 {activeRoute.routeGeometry2 && (
                   <Polyline
                     coordinates={toCoords(activeRoute.routeGeometry2)}
-                    strokeColor={activeRoute.color2 || '#FF9100'}
+                    strokeColor={activeRoute.color2 || '#F59E0B'}
                     strokeWidth={5}
                   />
                 )}
@@ -261,7 +249,7 @@ export default function NativeMap({
               activeRoute.routeGeometry && (
                 <Polyline
                   coordinates={toCoords(activeRoute.routeGeometry)}
-                  strokeColor={activeRoute.color || '#0084FF'}
+                  strokeColor={activeRoute.color || '#8B5CF6'}
                   strokeWidth={5}
                 />
               )
@@ -275,7 +263,7 @@ export default function NativeMap({
             {activeLineDir.path && (
               <Polyline
                 coordinates={toCoords(activeLineDir.path)}
-                strokeColor={activeLineData.color || theme.colors.primary}
+                strokeColor={activeLineData.color || '#8B5CF6'}
                 strokeWidth={5}
               />
             )}
@@ -288,113 +276,28 @@ export default function NativeMap({
                   coordinate={{ latitude: stop.lat, longitude: stop.lon }}
                   title={stop.name}
                   description={`Durak #${sIdx + 1}`}
-                >
-                  <View style={[styles.smallStopDot, { backgroundColor: activeLineData.color || theme.colors.primary }]}>
-                    <View style={styles.smallStopInner} />
-                  </View>
-                </Marker>
+                  pinColor={activeLineData.color || '#8B5CF6'}
+                />
               );
             })}
           </>
         )}
       </MapView>
-
-      {/* Floating GPS Recenter Button */}
-      {userLocation?.lat && (
-        <TouchableOpacity style={styles.recenterBtn} onPress={recenterUser} activeOpacity={0.85}>
-          <Navigation size={18} color={theme.colors.primaryGlow} />
-        </TouchableOpacity>
-      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    overflow: 'hidden',
-    position: 'relative',
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    flex: 1,
   },
-  recenterBtn: {
-    position: 'absolute',
-    top: 70,
-    right: 14,
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: theme.colors.glassBg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.glassBorder,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
-    elevation: 5,
-  },
-  originMarkerBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: 'rgba(0, 132, 255, 0.25)',
-    borderWidth: 2,
-    borderColor: '#0084FF',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  originMarkerDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#00D2FF',
-  },
-  destMarkerBadge: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#FF3366',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#FF3366',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.5,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-  stopMarkerBadge: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: '#FFFFFF',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.4,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  stopMarkerText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '900',
-  },
-  smallStopDot: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1.5,
-    borderColor: '#FFFFFF',
-  },
-  smallStopInner: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: '#FFFFFF',
+  mapView: {
+    ...StyleSheet.absoluteFillObject,
+    width: '100%',
+    height: '100%',
+    flex: 1,
   },
 });

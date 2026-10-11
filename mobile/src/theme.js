@@ -11,13 +11,17 @@ export const theme = {
     
     // Glassmorphism & Hairlines
     glass: 'rgba(15, 23, 42, 0.92)',
+    glassBg: 'rgba(15, 23, 42, 0.92)',
     glassBorder: 'rgba(255, 255, 255, 0.08)',
     border: 'rgba(255, 255, 255, 0.07)',
+    hairline: 'rgba(255, 255, 255, 0.07)',
     
     // Typography Hierarchy
     textPrimary: '#FFFFFF',
+    textMain: '#FFFFFF',
     textSecondary: '#94A3B8',
     textMuted: '#64748B',
+    textTertiary: '#64748B',
     textDim: '#475569',
     
     // Controlled Accents: Studio Violet & Lavender
@@ -33,12 +37,18 @@ export const theme = {
     
     emerald: '#10B981',
     emeraldLight: 'rgba(16, 185, 129, 0.15)',
+    success: '#10B981',
+    successLight: 'rgba(16, 185, 129, 0.15)',
     
     amber: '#F59E0B',
     amberLight: 'rgba(245, 158, 11, 0.15)',
+    warning: '#F59E0B',
+    warningLight: 'rgba(245, 158, 11, 0.15)',
     
     rose: '#F43F5E',
     roseLight: 'rgba(244, 63, 94, 0.15)',
+    danger: '#F43F5E',
+    dangerLight: 'rgba(244, 63, 94, 0.15)',
   },
   radius: {
     xs: 6,
