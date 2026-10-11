@@ -28,27 +28,48 @@ export default function SettingsView({
   onOpenLines,
   onOpenProfile,
   fareType = 'ogrenci',
-  onFareTypeChange
+  onFareTypeChange,
+  mapView: externalMapView,
+  onMapViewChange,
+  accuracy: externalAccuracy,
+  onAccuracyChange,
+  walkingDistance: externalWalkingDistance,
+  onWalkingDistanceChange,
+  notificationsEnabled: externalNotificationsEnabled,
+  onNotificationsChange
 }) {
-  // Notification toggle state
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  // Internal fallbacks if not controlled
+  const [internalNotifs, setInternalNotifs] = useState(true);
+  const [internalMapView, setInternalMapView] = useState('Standart');
+  const [internalAccuracy, setInternalAccuracy] = useState('Yüksek');
+  const [internalWalkingDistance, setInternalWalkingDistance] = useState('500 m');
 
-  // Map view & accuracy states
-  const [mapView, setMapView] = useState('Standart'); // 'Standart' | 'Uydu'
-  const [accuracy, setAccuracy] = useState('Yüksek'); // 'Yüksek' | 'Dengeli'
-  const [walkingDistance, setWalkingDistance] = useState('500 m'); // '300 m' | '500 m' | '1 km'
+  const notificationsEnabled = externalNotificationsEnabled !== undefined ? externalNotificationsEnabled : internalNotifs;
+  const setNotificationsEnabled = onNotificationsChange || setInternalNotifs;
+
+  const mapView = externalMapView !== undefined ? externalMapView : internalMapView;
+  const accuracy = externalAccuracy !== undefined ? externalAccuracy : internalAccuracy;
+  const walkingDistance = externalWalkingDistance !== undefined ? externalWalkingDistance : internalWalkingDistance;
 
   // Cycle Map View
   const handleToggleMapView = () => {
     const nextView = mapView === 'Standart' ? 'Uydu' : 'Standart';
-    setMapView(nextView);
+    if (onMapViewChange) {
+      onMapViewChange(nextView);
+    } else {
+      setInternalMapView(nextView);
+    }
     Alert.alert('Harita Görünümü', `Harita görünümü "${nextView}" olarak ayarlandı.`);
   };
 
   // Cycle Accuracy
   const handleToggleAccuracy = () => {
     const nextAcc = accuracy === 'Yüksek' ? 'Dengeli' : 'Yüksek';
-    setAccuracy(nextAcc);
+    if (onAccuracyChange) {
+      onAccuracyChange(nextAcc);
+    } else {
+      setInternalAccuracy(nextAcc);
+    }
     Alert.alert('Konum Doğruluğu', `GPS doğruluğu "${nextAcc}" moduna alındı.`);
   };
 
@@ -57,7 +78,11 @@ export default function SettingsView({
     const options = ['300 m', '500 m', '1 km'];
     const nextIdx = (options.indexOf(walkingDistance) + 1) % options.length;
     const nextDist = options[nextIdx];
-    setWalkingDistance(nextDist);
+    if (onWalkingDistanceChange) {
+      onWalkingDistanceChange(nextDist);
+    } else {
+      setInternalWalkingDistance(nextDist);
+    }
     Alert.alert('Yürüyüş Mesafesi', `Maksimum durak arama mesafesi ${nextDist} olarak güncellendi.`);
   };
 

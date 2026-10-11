@@ -10,7 +10,8 @@ import {
   SafeAreaView,
   StyleSheet,
   Dimensions,
-  Platform
+  Platform,
+  Switch
 } from 'react-native';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -33,7 +34,12 @@ import {
   Bus,
   CreditCard,
   X,
-  Check
+  Check,
+  MapPin,
+  Map,
+  Globe,
+  Droplets,
+  Wind
 } from 'lucide-react-native';
 
 import { theme } from './src/theme';
@@ -79,18 +85,31 @@ function MainScreen() {
   const [linesModalVisible, setLinesModalVisible] = useState(false);
   const [faresModalVisible, setFaresModalVisible] = useState(false);
   const [profileModalVisible, setProfileModalVisible] = useState(false);
+  const [layerModalVisible, setLayerModalVisible] = useState(false);
+  const [weatherModalVisible, setWeatherModalVisible] = useState(false);
+  const [voiceModalVisible, setVoiceModalVisible] = useState(false);
+
+  // Map & App Settings state (Synced globally)
+  const [mapType, setMapType] = useState('Standart'); // 'Standart' | 'Uydu'
+  const [accuracy, setAccuracy] = useState('Yüksek'); // 'Yüksek' | 'Dengeli'
+  const [walkingDistance, setWalkingDistance] = useState('500 m');
+  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [showAllStops, setShowAllStops] = useState(false);
 
   // Line preview mode from explorer
   const [previewLine, setPreviewLine] = useState(null);
 
-  // Continuous Live GPS Watcher
+  // Continuous Live GPS Watcher (Reacts to accuracy preference)
   useEffect(() => {
     let locationSubscription = null;
     (async () => {
       try {
         const { status } = await Location.requestForegroundPermissionsAsync();
         if (status === 'granted') {
-          const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+          const loc = await Location.getCurrentPositionAsync({
+            accuracy: accuracy === 'Yüksek' ? Location.Accuracy.High : Location.Accuracy.Balanced
+          });
           const userCoords = {
             name: 'Mevcut Konumunuz',
             lat: loc.coords.latitude,
@@ -102,9 +121,9 @@ function MainScreen() {
           // Watch position continuously
           locationSubscription = await Location.watchPositionAsync(
             {
-              accuracy: Location.Accuracy.Balanced,
-              distanceInterval: 10,
-              timeInterval: 4000
+              accuracy: accuracy === 'Yüksek' ? Location.Accuracy.High : Location.Accuracy.Balanced,
+              distanceInterval: accuracy === 'Yüksek' ? 5 : 15,
+              timeInterval: accuracy === 'Yüksek' ? 2500 : 7000
             },
             (newLoc) => {
               const updated = {
@@ -136,7 +155,7 @@ function MainScreen() {
         locationSubscription.remove();
       }
     };
-  }, []);
+  }, [accuracy]);
 
   const activeRoute = searchResults?.routes?.[selectedRouteIdx] || null;
 
@@ -164,7 +183,7 @@ function MainScreen() {
     }
   }, [activeRoute?.id, fromLocation?.lat, fromLocation?.lon, toLocation?.lat, toLocation?.lon]);
 
-  // Force GPS Recenter
+  // Force GPS Recenter & Map Animation
   const handleUseGps = async () => {
     try {
       const { status } = await Location.requestForegroundPermissionsAsync();
@@ -172,7 +191,9 @@ function MainScreen() {
         Alert.alert('İzin Gerekli', 'Konumunuza erişmek için lütfen izin verin.');
         return;
       }
-      const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High });
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: accuracy === 'Yüksek' ? Location.Accuracy.High : Location.Accuracy.Balanced
+      });
       const userCoords = {
         name: 'Mevcut Konumunuz',
         lat: loc.coords.latitude,
@@ -180,6 +201,7 @@ function MainScreen() {
       };
       setUserLocation(userCoords);
       setFromLocation(userCoords);
+      setRecenterTrigger(prev => prev + 1);
 
       if (toLocation?.lat) {
         executeRouteSearch(userCoords, toLocation);
@@ -187,6 +209,12 @@ function MainScreen() {
     } catch (e) {
       Alert.alert('Hata', 'Konumunuz tespit edilemedi.');
     }
+  };
+
+  // Compass / Orientation & Recenter
+  const handleCompassPress = () => {
+    setRecenterTrigger(prev => prev + 1);
+    handleUseGps();
   };
 
   // Run Route Search
@@ -327,6 +355,14 @@ function MainScreen() {
           bottomPadding={bottomNavHeight}
           fareType={fareType}
           onFareTypeChange={setFareType}
+          mapView={mapType}
+          onMapViewChange={setMapType}
+          accuracy={accuracy}
+          onAccuracyChange={setAccuracy}
+          walkingDistance={walkingDistance}
+          onWalkingDistanceChange={setWalkingDistance}
+          notificationsEnabled={notificationsEnabled}
+          onNotificationsChange={setNotificationsEnabled}
           onOpenLines={() => setLinesModalVisible(true)}
           onOpenProfile={() => setProfileModalVisible(true)}
           onBack={() => setActiveTab('explore')}
@@ -339,46 +375,59 @@ function MainScreen() {
             fromLocation={fromLocation}
             toLocation={toLocation}
             activeRoute={previewLine ? null : activeRoute}
-        activeLineData={previewLine?.line}
-        activeLineDirIdx={previewLine?.dirIdx}
-        userLocation={userLocation}
-        walkingPathStart={walkingPathStart}
-        walkingPathEnd={walkingPathEnd}
-        onMapPress={handleMapPress}
-      />
+            activeLineData={previewLine?.line}
+            activeLineDirIdx={previewLine?.dirIdx}
+            userLocation={userLocation}
+            walkingPathStart={walkingPathStart}
+            walkingPathEnd={walkingPathEnd}
+            onMapPress={handleMapPress}
+            mapType={mapType}
+            recenterTrigger={recenterTrigger}
+            showAllStops={showAllStops}
+          />
 
       {/* 2. TOP PILL SEARCH BAR (Floating OLED Capsule - Safe Area Protected) */}
       <View style={[styles.topHeaderCard, { paddingTop: topPadding + 8 }]} pointerEvents="box-none">
-        <TouchableOpacity
-          style={styles.searchPill}
-          onPress={() => {
-            setSearchTargetType('to');
-            setSearchModalVisible(true);
-          }}
-          activeOpacity={0.85}
-        >
-          <Search size={18} color="#3B82F6" />
-          <Text style={styles.searchPillPlaceholder}>Varış noktası veya hat ara...</Text>
-          <Mic size={17} color="#94A3B8" />
-        </TouchableOpacity>
+        <View style={styles.searchPill}>
+          <TouchableOpacity
+            style={styles.searchPillInputArea}
+            onPress={() => {
+              setSearchTargetType('to');
+              setSearchModalVisible(true);
+            }}
+            activeOpacity={0.85}
+          >
+            <Search size={18} color="#3B82F6" />
+            <Text style={styles.searchPillPlaceholder}>Varış noktası veya hat ara...</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.searchMicBtn}
+            onPress={() => setVoiceModalVisible(true)}
+            activeOpacity={0.7}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
+            <Mic size={17} color="#3B82F6" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 3. FLOATING MAP CONTROLS (Top Right Compass & Layers - Placed below search bar) */}
       <View style={[styles.topFloatingControls, { top: topFloatingTop }]}>
         <TouchableOpacity
           style={styles.circleMapBtn}
-          onPress={handleUseGps}
+          onPress={handleCompassPress}
           activeOpacity={0.8}
         >
           <Navigation size={18} color="#E2E8F0" />
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.circleMapBtn}
-          onPress={() => setLinesModalVisible(true)}
+          style={[styles.circleMapBtn, mapType === 'Uydu' && styles.circleMapBtnActive]}
+          onPress={() => setLayerModalVisible(true)}
           activeOpacity={0.8}
         >
-          <Layers size={18} color="#E2E8F0" />
+          <Layers size={18} color={mapType === 'Uydu' ? '#3B82F6' : '#E2E8F0'} />
         </TouchableOpacity>
       </View>
 
@@ -405,7 +454,11 @@ function MainScreen() {
 
       {/* 5. WEATHER & LIVE TRANSIT WIDGET (Bottom-Left - Positioned cleanly ABOVE the sheet) */}
       {!searchResults && (
-        <View style={[styles.weatherWidget, { bottom: floatingWidgetsBottom }]}>
+        <TouchableOpacity
+          style={[styles.weatherWidget, { bottom: floatingWidgetsBottom }]}
+          onPress={() => setWeatherModalVisible(true)}
+          activeOpacity={0.85}
+        >
           <View style={styles.weatherTempRow}>
             <Cloud size={15} color="#E2E8F0" />
             <Text style={styles.weatherTempText}>18°</Text>
@@ -414,7 +467,7 @@ function MainScreen() {
             <View style={styles.weatherAqiDot} />
             <Text style={styles.weatherAqiText}>AQI 42</Text>
           </View>
-        </View>
+        </TouchableOpacity>
       )}
 
       {/* 6. BOTTOM-RIGHT RECENTER BUTTON (Positioned cleanly ABOVE the sheet) */}
@@ -761,6 +814,258 @@ function MainScreen() {
             onClose={() => setFaresModalVisible(false)}
           />
         </View>
+      </Modal>
+
+      {/* 15. MODAL: HARİTA KATMANLARI & GÖRÜNÜM */}
+      <Modal
+        visible={layerModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setLayerModalVisible(false)}
+      >
+        <SafeAreaView style={styles.sheetModalContainer}>
+          <View style={styles.sheetModalHeader}>
+            <Text style={styles.sheetModalTitle}>Harita Katmanları & Görünüm</Text>
+            <TouchableOpacity
+              onPress={() => setLayerModalVisible(false)}
+              style={styles.sheetModalClose}
+            >
+              <X size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.sheetModalContent}>
+            <Text style={styles.sheetSectionLabel}>HARİTA TÜRÜ</Text>
+            <View style={styles.sheetGroupCard}>
+              {/* Standart Koyu */}
+              <TouchableOpacity
+                style={styles.sheetRowItem}
+                onPress={() => {
+                  setMapType('Standart');
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.sheetIconCircle}>
+                  <Map size={18} color="#3B82F6" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.sheetRowTitle}>Standart Koyu (OLED)</Text>
+                  <Text style={styles.sheetRowSubtitle}>Yüksek kontrastlı gece teması</Text>
+                </View>
+                {mapType === 'Standart' && <Check size={18} color="#3B82F6" />}
+              </TouchableOpacity>
+
+              <View style={styles.sheetRowDivider} />
+
+              {/* Uydu */}
+              <TouchableOpacity
+                style={styles.sheetRowItem}
+                onPress={() => {
+                  setMapType('Uydu');
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.sheetIconCircle}>
+                  <Globe size={18} color="#24C795" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.sheetRowTitle}>Uydu Haritası</Text>
+                  <Text style={styles.sheetRowSubtitle}>Detaylı hava ve coğrafi uydu görüntüsü</Text>
+                </View>
+                {mapType === 'Uydu' && <Check size={18} color="#3B82F6" />}
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.sheetSectionLabel}>ULAŞIM KATMANLARI</Text>
+            <View style={styles.sheetGroupCard}>
+              {/* Durakları Göster */}
+              <View style={styles.sheetRowItem}>
+                <View style={styles.sheetIconCircle}>
+                  <MapPin size={18} color="#F59E0B" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.sheetRowTitle}>Durakları Haritada Vurgula</Text>
+                  <Text style={styles.sheetRowSubtitle}>Tüm ETUS durak işaretçilerini göster</Text>
+                </View>
+                <Switch
+                  value={showAllStops}
+                  onValueChange={setShowAllStops}
+                  trackColor={{ false: '#1E2538', true: '#3B82F6' }}
+                  thumbColor="#FFFFFF"
+                />
+              </View>
+
+              <View style={styles.sheetRowDivider} />
+
+              {/* Tüm Hatları Aç */}
+              <TouchableOpacity
+                style={styles.sheetRowItem}
+                onPress={() => {
+                  setLayerModalVisible(false);
+                  setLinesModalVisible(true);
+                }}
+                activeOpacity={0.7}
+              >
+                <View style={styles.sheetIconCircle}>
+                  <Bus size={18} color="#818CF8" />
+                </View>
+                <View style={{ flex: 1, marginLeft: 12 }}>
+                  <Text style={styles.sheetRowTitle}>ETUS Hatları & Güzergahlar</Text>
+                  <Text style={styles.sheetRowSubtitle}>Tüm otobüs hatlarını ve kalkış saatlerini gör</Text>
+                </View>
+                <ChevronRight size={18} color="#475569" />
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 16. MODAL: EDİRNE HAVA DURUMU & ULAŞIM RAPORU */}
+      <Modal
+        visible={weatherModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setWeatherModalVisible(false)}
+      >
+        <SafeAreaView style={styles.sheetModalContainer}>
+          <View style={styles.sheetModalHeader}>
+            <Text style={styles.sheetModalTitle}>Edirne Canlı Hava & Ulaşım</Text>
+            <TouchableOpacity
+              onPress={() => setWeatherModalVisible(false)}
+              style={styles.sheetModalClose}
+            >
+              <X size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.sheetModalContent}>
+            {/* Main Weather Card */}
+            <View style={styles.weatherMainHeroCard}>
+              <View style={styles.weatherHeroRow}>
+                <View>
+                  <Text style={styles.weatherHeroTemp}>18°C</Text>
+                  <Text style={styles.weatherHeroCondition}>Parçalı Bulutlu</Text>
+                </View>
+                <Cloud size={48} color="#94A3B8" />
+              </View>
+
+              <View style={styles.weatherAqiBadgeRow}>
+                <View style={styles.weatherAqiBadge}>
+                  <View style={styles.weatherAqiDot} />
+                  <Text style={styles.weatherAqiBadgeText}>Hava Kalitesi: AQI 42 (Mükemmel)</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Weather Metrics Grid */}
+            <View style={styles.weatherGrid}>
+              <View style={styles.weatherGridItem}>
+                <Droplets size={16} color="#3B82F6" />
+                <Text style={styles.weatherGridVal}>%52</Text>
+                <Text style={styles.weatherGridLabel}>Nem</Text>
+              </View>
+
+              <View style={styles.weatherGridItem}>
+                <Wind size={16} color="#24C795" />
+                <Text style={styles.weatherGridVal}>14 km/s</Text>
+                <Text style={styles.weatherGridLabel}>Rüzgar (KB)</Text>
+              </View>
+
+              <View style={styles.weatherGridItem}>
+                <Crosshair size={16} color="#F59E0B" />
+                <Text style={styles.weatherGridVal}>1018 hPa</Text>
+                <Text style={styles.weatherGridLabel}>Basınç</Text>
+              </View>
+
+              <View style={styles.weatherGridItem}>
+                <Navigation size={16} color="#818CF8" />
+                <Text style={styles.weatherGridVal}>10 km</Text>
+                <Text style={styles.weatherGridLabel}>Görüş</Text>
+              </View>
+            </View>
+
+            {/* Live Transit Status Card */}
+            <Text style={styles.sheetSectionLabel}>ETUS CANLI SEFER DURUMU</Text>
+            <View style={styles.sheetGroupCard}>
+              <View style={styles.transitStatusCard}>
+                <View style={styles.transitStatusHeader}>
+                  <View style={styles.transitLiveDot} />
+                  <Text style={styles.transitStatusTitle}>Tüm Seferler Normal</Text>
+                </View>
+                <Text style={styles.transitStatusDesc}>
+                  Edirne genelinde tüm ETUS güzergahlarında otobüsler planlanan sefer saatlerinde hizmet vermektedir. Herhangi bir yol çalışması veya hat kesintisi bulunmamaktadır.
+                </Text>
+              </View>
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 17. MODAL: SESLİ ARAMA & HIZLI NOKTALAR */}
+      <Modal
+        visible={voiceModalVisible}
+        animationType="slide"
+        presentationStyle="pageSheet"
+        onRequestClose={() => setVoiceModalVisible(false)}
+      >
+        <SafeAreaView style={styles.sheetModalContainer}>
+          <View style={styles.sheetModalHeader}>
+            <Text style={styles.sheetModalTitle}>Sesli Arama & Hızlı Rota</Text>
+            <TouchableOpacity
+              onPress={() => setVoiceModalVisible(false)}
+              style={styles.sheetModalClose}
+            >
+              <X size={18} color="#FFFFFF" />
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.sheetModalContent}>
+            {/* Glowing Voice Mic Visual */}
+            <View style={styles.voiceHeroBox}>
+              <View style={styles.voiceMicOuterPulse}>
+                <View style={styles.voiceMicInner}>
+                  <Mic size={32} color="#FFFFFF" />
+                </View>
+              </View>
+              <Text style={styles.voiceHeroTitle}>Nereye gitmek istiyorsunuz?</Text>
+              <Text style={styles.voiceHeroSubtitle}>Aşağıdaki popüler noktalardan birine tek dokunuşla rota oluşturun:</Text>
+            </View>
+
+            {/* Quick 1-Tap Voice Destinations */}
+            <View style={styles.sheetGroupCard}>
+              {[
+                { name: 'Erasta AVM', sub: 'Abdurrahman Mah. · Alışveriş & Sinema', lat: 41.6663, lon: 26.5710 },
+                { name: 'Trakya Üniversitesi Balkan Kampüsü', sub: 'Balkan Yerleşkesi · Fakülteler', lat: 41.6389, lon: 26.6150 },
+                { name: 'Selimiye Camii & Meydanı', sub: 'Merkez Tarihi Alan', lat: 41.6781, lon: 26.5594 },
+                { name: 'Edirne Otogar', sub: 'Şehirlerarası Otobüs Terminali', lat: 41.6320, lon: 26.6184 },
+                { name: 'Saraçlar Caddesi', sub: 'Trafiğe Kapalı Alışveriş Caddesi', lat: 41.6735, lon: 26.5537 },
+                { name: 'Sultan 1. Murat Devlet Hastanesi', sub: 'Kocasinan Mah. · Sağlık', lat: 41.6545, lon: 26.6060 },
+                { name: 'Karaağaç Lozan Anıtı', sub: 'Karaağaç Tarihi Bölgesi', lat: 41.6535, lon: 26.5208 },
+              ].map((dest, i, arr) => (
+                <React.Fragment key={dest.name}>
+                  <TouchableOpacity
+                    style={styles.sheetRowItem}
+                    onPress={() => {
+                      setVoiceModalVisible(false);
+                      executeRouteSearch(fromLocation, dest);
+                    }}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.sheetIconCircle}>
+                      <MapPin size={18} color="#3B82F6" />
+                    </View>
+                    <View style={{ flex: 1, marginLeft: 12 }}>
+                      <Text style={styles.sheetRowTitle}>{dest.name}</Text>
+                      <Text style={styles.sheetRowSubtitle}>{dest.sub}</Text>
+                    </View>
+                    <ChevronRight size={18} color="#475569" />
+                  </TouchableOpacity>
+                  {i < arr.length - 1 && <View style={styles.sheetRowDivider} />}
+                </React.Fragment>
+              ))}
+            </View>
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </View>
   );
@@ -1212,5 +1517,221 @@ const styles = StyleSheet.create({
   modalBody: {
     flex: 1,
     backgroundColor: '#090B0F',
+  },
+
+  // Interactive Layer, Weather, Voice Sheet Modals
+  sheetModalContainer: {
+    flex: 1,
+    backgroundColor: '#090B0F',
+  },
+  sheetModalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#1A202C',
+  },
+  sheetModalTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  sheetModalClose: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1A202C',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetModalContent: {
+    padding: 20,
+    paddingBottom: 40,
+  },
+  sheetSectionLabel: {
+    fontSize: 12.5,
+    fontWeight: '600',
+    color: '#64748B',
+    marginTop: 18,
+    marginBottom: 8,
+    letterSpacing: 0.5,
+  },
+  sheetGroupCard: {
+    backgroundColor: '#12161E',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    overflow: 'hidden',
+  },
+  sheetRowItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+  },
+  sheetIconCircle: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: '#182030',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sheetRowTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  sheetRowSubtitle: {
+    fontSize: 12,
+    color: '#94A3B8',
+    marginTop: 2,
+  },
+  sheetRowDivider: {
+    height: 1,
+    backgroundColor: '#182030',
+    marginLeft: 66,
+  },
+  circleMapBtnActive: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#1A2234',
+  },
+  searchPillInputArea: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  searchMicBtn: {
+    padding: 6,
+  },
+
+  // Weather Modal Styles
+  weatherMainHeroCard: {
+    backgroundColor: '#12161E',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    marginBottom: 16,
+  },
+  weatherHeroRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  weatherHeroTemp: {
+    fontSize: 44,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  weatherHeroCondition: {
+    fontSize: 16,
+    color: '#94A3B8',
+    marginTop: 4,
+  },
+  weatherAqiBadgeRow: {
+    marginTop: 14,
+  },
+  weatherAqiBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(36, 199, 149, 0.15)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    gap: 6,
+  },
+  weatherAqiBadgeText: {
+    color: '#24C795',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  weatherGrid: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 16,
+  },
+  weatherGridItem: {
+    flex: 1,
+    backgroundColor: '#12161E',
+    borderRadius: 16,
+    padding: 12,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    gap: 4,
+  },
+  weatherGridVal: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#FFFFFF',
+  },
+  weatherGridLabel: {
+    fontSize: 11,
+    color: '#64748B',
+  },
+  transitStatusCard: {
+    padding: 16,
+  },
+  transitStatusHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  transitLiveDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#24C795',
+  },
+  transitStatusTitle: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#24C795',
+  },
+  transitStatusDesc: {
+    fontSize: 13,
+    color: '#94A3B8',
+    lineHeight: 19,
+  },
+
+  // Voice Search Modal Styles
+  voiceHeroBox: {
+    alignItems: 'center',
+    paddingVertical: 20,
+  },
+  voiceMicOuterPulse: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: 'rgba(59, 130, 246, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  voiceMicInner: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#3B82F6',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  voiceHeroTitle: {
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#FFFFFF',
+    marginBottom: 6,
+  },
+  voiceHeroSubtitle: {
+    fontSize: 13,
+    color: '#94A3B8',
+    textAlign: 'center',
+    paddingHorizontal: 20,
   },
 });

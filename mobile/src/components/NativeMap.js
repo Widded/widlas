@@ -73,9 +73,26 @@ export default function NativeMap({
   walkingPathStart,
   walkingPathEnd,
   onMapPress,
-  style
+  style,
+  mapType = 'Standart',
+  recenterTrigger = 0,
+  showAllStops = false
 }) {
   const mapRef = useRef(null);
+
+  // Recenter trigger effect
+  useEffect(() => {
+    if (!mapRef.current || !recenterTrigger) return;
+    const target = userLocation?.lat ? userLocation : fromLocation;
+    if (target?.lat && target?.lon) {
+      mapRef.current.animateToRegion({
+        latitude: target.lat,
+        longitude: target.lon,
+        latitudeDelta: 0.02,
+        longitudeDelta: 0.02
+      }, 600);
+    }
+  }, [recenterTrigger]);
 
   useEffect(() => {
     if (!mapRef.current) return;
@@ -186,7 +203,8 @@ export default function NativeMap({
         }}
         showsUserLocation={true}
         showsCompass={false}
-        customMapStyle={Platform.OS === 'android' ? darkMapStyle : undefined}
+        mapType={mapType === 'Uydu' ? 'satellite' : 'standard'}
+        customMapStyle={mapType === 'Uydu' ? undefined : (Platform.OS === 'android' ? darkMapStyle : undefined)}
         userInterfaceStyle="dark"
         onPress={(e) => {
           if (onMapPress && e.nativeEvent?.coordinate) {
@@ -194,6 +212,16 @@ export default function NativeMap({
           }
         }}
       >
+        {/* 0. Optional Stops Preview on map */}
+        {showAllStops && allStopsDB && allStopsDB.slice(0, 120).map(s => (
+          <Marker
+            key={`s-${s.id}`}
+            coordinate={{ latitude: s.lat, longitude: s.lon }}
+            title={s.name}
+            description={`ETUS Durak #${s.id}`}
+            pinColor="#3B82F6"
+          />
+        ))}
         {/* Origin / GPS Start Pin (Show only if custom location, don't duplicate native GPS puck) */}
         {fromLocation?.lat && fromLocation.name !== 'Konumunuz' && fromLocation.name !== 'Mevcut Konumunuz' && (
           <Marker
