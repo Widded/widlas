@@ -52,7 +52,6 @@ import RouteResultSheet from './src/components/RouteResultSheet';
 import SavedView from './src/components/SavedView';
 import HistoryView from './src/components/HistoryView';
 import SettingsView from './src/components/SettingsView';
-import SearchView from './src/components/SearchView';
 
 import { calculateSmartRoute } from './src/data/routes';
 import { fetchWalkingPath, reverseGeocodeCoord } from './src/services/api';
@@ -63,7 +62,7 @@ function MainScreen() {
   const insets = useSafeAreaInsets();
 
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
-  const [activeTab, setActiveTab] = useState('search'); // 'search' | 'map' | 'history' | 'settings'
+  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'saved' | 'history' | 'settings'
 
   // Locations
   const [fromLocation, setFromLocation] = useState({ name: 'Konumunuz', lat: null, lon: null });
@@ -318,44 +317,20 @@ function MainScreen() {
     <View style={styles.container}>
       <StatusBar style="light" />
 
-      {activeTab === 'search' ? (
-        <SearchView
-          topPadding={topPadding}
-          bottomPadding={bottomNavHeight}
-          onSelectPlace={(place) => {
-            setActiveTab('map');
-            executeRouteSearch(fromLocation, place);
-          }}
-          onSelectRoute={(from, to) => {
-            setActiveTab('map');
-            executeRouteSearch(from, to);
-          }}
-          onOpenMap={() => {
-            setActiveTab('map');
-          }}
-          onOpenFavorites={() => {
-            setLinesModalVisible(true);
-          }}
-          onOpenVoice={() => {
-            setVoiceModalVisible(true);
-          }}
-          onViewAllHistory={() => {
-            setActiveTab('history');
-          }}
-        />
-      ) : activeTab === 'saved' ? (
+      {activeTab === 'saved' ? (
         <SavedView
           topPadding={topPadding}
           bottomPadding={bottomNavHeight}
           onSelectPlace={(place) => {
-            setActiveTab('map');
+            setActiveTab('explore');
             executeRouteSearch(fromLocation, place);
           }}
           onOpenSearch={() => {
-            setActiveTab('search');
+            setSearchTargetType('to');
+            setSearchModalVisible(true);
           }}
           onBack={() => {
-            setActiveTab('map');
+            setActiveTab('explore');
           }}
         />
       ) : activeTab === 'history' ? (
@@ -363,11 +338,11 @@ function MainScreen() {
           topPadding={topPadding}
           bottomPadding={bottomNavHeight}
           onSelectHistoryItem={(item) => {
-            setActiveTab('map');
+            setActiveTab('explore');
             executeRouteSearch(item.from || fromLocation, item.to);
           }}
           onBack={() => {
-            setActiveTab('map');
+            setActiveTab('explore');
           }}
         />
       ) : activeTab === 'settings' ? (
@@ -386,7 +361,7 @@ function MainScreen() {
           onNotificationsChange={setNotificationsEnabled}
           onOpenLines={() => setLinesModalVisible(true)}
           onOpenProfile={() => setProfileModalVisible(true)}
-          onBack={() => setActiveTab('map')}
+          onBack={() => setActiveTab('explore')}
         />
       ) : (
         <>
@@ -413,7 +388,7 @@ function MainScreen() {
             style={styles.searchPillInputArea}
             onPress={() => {
               setSearchTargetType('to');
-              setActiveTab('search');
+              setSearchModalVisible(true);
             }}
             activeOpacity={0.85}
           >
@@ -590,52 +565,51 @@ function MainScreen() {
       </>
       )}
 
-      {/* 9. FIXED BOTTOM NAVIGATION BAR (Exact Match to Reference Design) */}
+      {/* 9. FIXED BOTTOM NAVIGATION BAR */}
       <View style={[styles.bottomNav, { height: bottomNavHeight, paddingBottom: bottomPadding }]}>
-        {/* Tab 1: Ara */}
+        {/* Tab 1: Keşfet */}
         <TouchableOpacity
           style={styles.navTab}
           onPress={() => {
-            setActiveTab('search');
+            setActiveTab('explore');
+            handleClearRoute();
           }}
           activeOpacity={0.75}
         >
-          <Search
+          <Navigation
             size={20}
-            color={activeTab === 'search' ? '#38BDF8' : '#64748B'}
+            color={activeTab === 'explore' ? '#3B82F6' : '#64748B'}
           />
           <Text
             style={[
               styles.navTabLabel,
-              activeTab === 'search' && styles.navTabLabelActive
+              activeTab === 'explore' && styles.navTabLabelActive
             ]}
           >
-            Ara
+            Keşfet
           </Text>
-          {activeTab === 'search' && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
 
-        {/* Tab 2: Harita */}
+        {/* Tab 2: Kaydedilenler */}
         <TouchableOpacity
           style={styles.navTab}
           onPress={() => {
-            setActiveTab('map');
+            setActiveTab('saved');
           }}
           activeOpacity={0.75}
         >
-          <Map
+          <Bookmark
             size={20}
-            color={activeTab === 'map' ? '#38BDF8' : '#64748B'}
+            color={activeTab === 'saved' ? '#3B82F6' : '#64748B'}
           />
           <Text
             style={[
               styles.navTabLabel,
-              activeTab === 'map' && styles.navTabLabelActive
+              activeTab === 'saved' && styles.navTabLabelActive
             ]}
           >
-            Harita
+            Kaydedilenler
           </Text>
-          {activeTab === 'map' && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
 
         {/* Tab 3: Geçmiş */}
@@ -648,7 +622,7 @@ function MainScreen() {
         >
           <Clock
             size={20}
-            color={activeTab === 'history' ? '#38BDF8' : '#64748B'}
+            color={activeTab === 'history' ? '#3B82F6' : '#64748B'}
           />
           <Text
             style={[
@@ -658,7 +632,6 @@ function MainScreen() {
           >
             Geçmiş
           </Text>
-          {activeTab === 'history' && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
 
         {/* Tab 4: Ayarlar */}
@@ -671,7 +644,7 @@ function MainScreen() {
         >
           <Settings
             size={20}
-            color={activeTab === 'settings' ? '#38BDF8' : '#64748B'}
+            color={activeTab === 'settings' ? '#3B82F6' : '#64748B'}
           />
           <Text
             style={[
@@ -681,7 +654,6 @@ function MainScreen() {
           >
             Ayarlar
           </Text>
-          {activeTab === 'settings' && <View style={styles.activeTabIndicator} />}
         </TouchableOpacity>
       </View>
 
@@ -784,13 +756,22 @@ function MainScreen() {
         </SafeAreaView>
       </Modal>
 
-      {/* 11. SEARCH MODAL (TomTom + Mapbox + Nominatim + 745 Stops Live Search) */}
+      {/* 11. SEARCH MODAL (Full Reference Design Search Experience) */}
       <SearchModal
         visible={searchModalVisible}
         onClose={() => setSearchModalVisible(false)}
         targetType={searchTargetType}
         currentName={searchTargetType === 'from' ? fromLocation.name : toLocation.name}
         onSelect={handleModalSelect}
+        onOpenLines={() => {
+          setSearchModalVisible(false);
+          setLinesModalVisible(true);
+        }}
+        onViewAllHistory={() => {
+          setSearchModalVisible(false);
+          setActiveTab('history');
+        }}
+        onOpenVoice={() => setVoiceModalVisible(true)}
       />
 
       {/* 12. ROUTE DETAILS TURN-BY-TURN MODAL */}

@@ -4,47 +4,112 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ScrollView,
   FlatList,
   Modal,
   SafeAreaView,
   ActivityIndicator,
-  StyleSheet
+  StyleSheet,
+  Dimensions
 } from 'react-native';
 import {
-  ArrowLeft,
-  X,
+  Search,
+  Mic,
+  Home,
+  Briefcase,
+  Map,
+  Star,
+  ChevronRight,
   MapPin,
   Bus,
-  Search,
+  Clock,
+  Navigation,
+  X,
+  Train,
+  Ship,
+  GraduationCap,
+  ShoppingBag,
+  Landmark,
   Utensils,
   Coffee,
   Pill,
   Bed,
-  ShoppingBag,
   Store,
-  Landmark,
   CreditCard,
-  Activity,
-  Star
+  Activity
 } from 'lucide-react-native';
+
 import { theme } from '../theme';
 import { LOCAL_PLACES } from '../data/places';
 import { searchPlacesOnline, getCategoryMeta } from '../services/api';
 
+// Recent search items matching reference design (with Edirne transit support)
+const DEFAULT_RECENT_SEARCHES = [
+  {
+    id: 'rec_1',
+    type: 'place',
+    iconType: 'pin',
+    title: 'Selimiye Camii',
+    subtitle: 'Edirne Merkez',
+    place: { name: 'Selimiye Camii', lat: 41.6781, lon: 26.5594 }
+  },
+  {
+    id: 'rec_2',
+    type: 'line',
+    iconType: 'bus',
+    title: '1A',
+    subtitle: 'ETUS Otobüs Hattı · Gazimihal - Kıyık',
+    lineCode: '1A'
+  },
+  {
+    id: 'rec_3',
+    type: 'route',
+    iconType: 'route',
+    title: 'Erasta AVM → Trakya Üni',
+    subtitle: 'Toplu Taşıma · Hat 3 ile aktarmasız',
+    place: { name: 'Trakya Üniversitesi Balkan Kampüsü', lat: 41.6389, lon: 26.6150 }
+  },
+  {
+    id: 'rec_4',
+    type: 'place',
+    iconType: 'clock',
+    title: 'Saraçlar Caddesi',
+    subtitle: 'Tarihi Çarşı & Yaya Bölgesi',
+    place: { name: 'Saraçlar Caddesi', lat: 41.6735, lon: 26.5537 }
+  }
+];
+
+// Popular search chips
+const POPULAR_SEARCH_CHIPS = [
+  { id: 'pop_marmaray', label: 'Marmaray', icon: Train, query: 'Marmaray' },
+  { id: 'pop_metrobus', label: 'Metrobüs', icon: Bus, query: 'Metrobüs' },
+  { id: 'pop_metro', label: 'Metro', icon: Train, query: 'Metro' },
+  { id: 'pop_vapur', label: 'Vapur', icon: Ship, query: 'Vapur' },
+  { id: 'pop_etus', label: 'ETUS Hatları', icon: Bus, query: 'ETUS' },
+  { id: 'pop_uni', label: 'Trakya Üni', icon: GraduationCap, place: { name: 'Trakya Üniversitesi Balkan Kampüsü', lat: 41.6389, lon: 26.6150 } },
+  { id: 'pop_erasta', label: 'Erasta AVM', icon: ShoppingBag, place: { name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 } },
+  { id: 'pop_selimiye', label: 'Selimiye', icon: Landmark, place: { name: 'Selimiye Camii', lat: 41.6781, lon: 26.5594 } },
+  { id: 'pop_otogar', label: 'Otogar', icon: Bus, place: { name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 } }
+];
+
 export default function SearchModal({
   visible,
   onClose,
-  targetType,
+  targetType = 'to',
   currentName,
-  onSelect
+  onSelect,
+  onOpenLines,
+  onViewAllHistory,
+  onOpenVoice
 }) {
   const [query, setQuery] = useState('');
-  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'places' | 'stops'
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
+  const [activeFilter, setActiveFilter] = useState('all'); // 'all' | 'places' | 'stops'
   const inputRef = useRef(null);
   const debounceTimerRef = useRef(null);
 
+  // Sync initial query when opened
   useEffect(() => {
     if (visible) {
       const initialText =
@@ -52,18 +117,20 @@ export default function SearchModal({
           ? ''
           : currentName || '';
       setQuery(initialText);
-      setActiveTab('all');
-      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place', source: 'local' })));
+      setActiveFilter('all');
+      setResults([]);
+      setSearching(false);
     }
   }, [visible, currentName]);
 
-  // Debounced Live Search with TomTom Live POIs, Mapbox, Nominatim & ETUS DB
+  // Live debounced search
   useEffect(() => {
+    if (!visible) return;
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
 
     const q = query.trim();
     if (!q || q.length < 2) {
-      setResults(LOCAL_PLACES.map(p => ({ ...p, type: 'place', source: 'local' })));
+      setResults([]);
       setSearching(false);
       return;
     }
@@ -72,7 +139,7 @@ export default function SearchModal({
     debounceTimerRef.current = setTimeout(async () => {
       try {
         const res = await searchPlacesOnline(q);
-        setResults(res);
+        setResults(res || []);
       } catch (err) {
         console.warn('Search error:', err);
       } finally {
@@ -83,19 +150,61 @@ export default function SearchModal({
     return () => {
       if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     };
-  }, [query]);
+  }, [query, visible]);
 
-  // Filter tabs: 'all' | 'places' (businesses, cafes, shops) | 'stops' (bus stops)
-  const filteredResults = results.filter(item => {
-    if (activeTab === 'stops') return item.type === 'stop';
-    if (activeTab === 'places') return item.type === 'place';
-    return true;
-  });
+  // Handle Quick Action Grid clicks
+  const handleActionPress = (actionKey) => {
+    if (actionKey === 'home') {
+      onSelect({
+        name: 'Ev (Şükrüpaşa)',
+        lat: 41.6670,
+        lon: 26.5911
+      });
+      onClose();
+    } else if (actionKey === 'work') {
+      onSelect({
+        name: 'İş (Saraçlar Caddesi)',
+        lat: 41.6735,
+        lon: 26.5537
+      });
+      onClose();
+    } else if (actionKey === 'map') {
+      onClose();
+    } else if (actionKey === 'favs') {
+      onClose();
+      if (onOpenLines) onOpenLines();
+    }
+  };
 
-  // Render contextual Icon based on category
+  // Handle Recent Search Item click
+  const handleRecentItemPress = (item) => {
+    if (item.place) {
+      onSelect(item.place);
+      onClose();
+    } else if (item.type === 'line') {
+      if (onOpenLines) {
+        onClose();
+        onOpenLines(item.lineCode);
+      } else {
+        setQuery(item.lineCode);
+      }
+    }
+  };
+
+  // Handle Popular Chip click
+  const handlePopularChipPress = (chip) => {
+    if (chip.place) {
+      onSelect(chip.place);
+      onClose();
+    } else if (chip.query) {
+      setQuery(chip.query);
+    }
+  };
+
+  // Render Category Icon for live search
   const renderItemIcon = (meta) => {
-    const size = 15;
-    const color = meta.color;
+    const size = 16;
+    const color = meta.color || '#38BDF8';
 
     switch (meta.icon) {
       case 'bus':
@@ -125,151 +234,290 @@ export default function SearchModal({
     }
   };
 
+  // Filter live results
+  const filteredResults = results.filter(item => {
+    if (activeFilter === 'stops') return item.type === 'stop';
+    if (activeFilter === 'places') return item.type === 'place';
+    return true;
+  });
+
+  const isLiveSearchActive = query.trim().length >= 2;
+
   return (
-    <Modal visible={visible} animationType="slide" transparent={false} onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent={false}
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.container}>
-        {/* Top Grabber */}
-        <View style={styles.grabberBox}>
-          <View style={styles.grabberBar} />
-        </View>
-
-        {/* Search Header Bar */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={onClose}
-            style={styles.backBtn}
-            activeOpacity={0.7}
-            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-          >
-            <ArrowLeft size={18} color={theme.colors.textPrimary} />
-          </TouchableOpacity>
-
-          <View style={styles.inputContainer}>
-            <Search size={15} color={theme.colors.textMuted} />
-            <TextInput
-              ref={inputRef}
-              style={styles.textInput}
-              placeholder={
-                targetType === 'from'
-                  ? 'Başlangıç durağı, işletme veya sokak...'
-                  : 'Nereye gitmek istiyorsunuz? (Kafe, AVM, durak...)'
-              }
-              placeholderTextColor={theme.colors.textMuted}
-              value={query}
-              onChangeText={setQuery}
-              autoFocus
-              returnKeyType="search"
-            />
-            {searching && (
-              <ActivityIndicator size="small" color={theme.colors.primary} style={{ marginRight: 4 }} />
-            )}
-            {query.length > 0 && (
-              <TouchableOpacity
-                onPress={() => setQuery('')}
-                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              >
-                <X size={14} color={theme.colors.textSecondary} />
-              </TouchableOpacity>
-            )}
+        {/* TOP HEADER ROW: Title, Subtitle & Clean Close Button */}
+        <View style={styles.headerArea}>
+          <View style={styles.headerTextGroup}>
+            <Text style={styles.headerTitle}>Ara</Text>
+            <Text style={styles.headerSubtitle}>
+              {targetType === 'from' ? 'Başlangıç noktası veya konum seçin.' : 'Durak, hat, adres veya konum ara.'}
+            </Text>
           </View>
-        </View>
-
-        {/* Filter Segment Chips */}
-        <View style={styles.filterRow}>
           <TouchableOpacity
-            style={[styles.filterChip, activeTab === 'all' && styles.filterChipActive]}
-            onPress={() => setActiveTab('all')}
+            style={styles.closeBtn}
+            onPress={onClose}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             activeOpacity={0.7}
           >
-            <Text style={[styles.filterChipText, activeTab === 'all' && styles.filterChipTextActive]}>
-              Tümü
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, activeTab === 'places' && styles.filterChipActive]}
-            onPress={() => setActiveTab('places')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.filterChipText, activeTab === 'places' && styles.filterChipTextActive]}>
-              İşletme & Mekan
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterChip, activeTab === 'stops' && styles.filterChipActive]}
-            onPress={() => setActiveTab('stops')}
-            activeOpacity={0.7}
-          >
-            <Text style={[styles.filterChipText, activeTab === 'stops' && styles.filterChipTextActive]}>
-              ETUS Durakları
-            </Text>
+            <X size={18} color="#CBD5E1" />
           </TouchableOpacity>
         </View>
 
-        {/* Section Heading */}
-        <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>
-            {query.length < 2 ? 'ÖNERİLEN POPÜLER NOKTALAR' : `SONUÇLAR (${filteredResults.length})`}
-          </Text>
-          {searching && (
-            <Text style={styles.sectionSearchingText}>Canlı taranıyor...</Text>
+        {/* SEARCH INPUT BAR (Pill Container matching screenshot) */}
+        <View style={styles.inputContainer}>
+          <Search size={18} color="#64748B" style={styles.searchIcon} />
+          <TextInput
+            ref={inputRef}
+            style={styles.textInput}
+            placeholder={targetType === 'from' ? 'Başlangıç durağı veya adres ara...' : 'Örn: Selimiye, 1A, Trakya Üniversitesi'}
+            placeholderTextColor="#64748B"
+            value={query}
+            onChangeText={setQuery}
+            returnKeyType="search"
+            autoCorrect={false}
+            autoFocus
+          />
+          {query.length > 0 ? (
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={() => setQuery('')}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <X size={16} color="#94A3B8" />
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={styles.iconBtn}
+              onPress={() => {
+                if (onOpenVoice) onOpenVoice();
+              }}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Mic size={17} color="#94A3B8" />
+            </TouchableOpacity>
           )}
         </View>
 
-        {/* Results List */}
-        <FlatList
-          data={filteredResults}
-          keyExtractor={(item, index) => `${item.name}_${item.lat}_${item.lon}_${index}`}
-          contentContainerStyle={styles.listContent}
-          keyboardShouldPersistTaps="handled"
-          ItemSeparatorComponent={() => <View style={styles.itemSeparator} />}
-          ListEmptyComponent={
-            !searching && query.length >= 2 ? (
-              <View style={styles.emptyResultsBox}>
-                <Text style={styles.emptyResultsText}>Sonuç bulunamadı.</Text>
-                <Text style={styles.emptyResultsSub}>
-                  Farklı bir işletme adı, cadde veya ETUS durağı deneyebilirsiniz.
-                </Text>
-              </View>
-            ) : null
-          }
-          renderItem={({ item }) => {
-            const isStop = item.type === 'stop';
-            const meta = getCategoryMeta(item);
-
-            return (
+        {/* CONTENT AREA: DEFAULT OVERVIEW OR LIVE SEARCH RESULTS */}
+        {!isLiveSearchActive ? (
+          <ScrollView
+            style={styles.scrollContent}
+            contentContainerStyle={styles.scrollInner}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* 4 ACTION GRID CARDS (Ev, İş, Harita, Favori Hatlar) */}
+            <View style={styles.actionGrid}>
+              {/* Card 1: Ev */}
               <TouchableOpacity
-                style={styles.resultItem}
-                onPress={() => onSelect(item)}
+                style={styles.actionCard}
+                onPress={() => handleActionPress('home')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.actionIconBox}>
+                  <Home size={22} color="#CBD5E1" strokeWidth={1.8} />
+                </View>
+                <Text style={styles.actionLabel}>Ev</Text>
+              </TouchableOpacity>
+
+              {/* Card 2: İş */}
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => handleActionPress('work')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.actionIconBox}>
+                  <Briefcase size={22} color="#CBD5E1" strokeWidth={1.8} />
+                </View>
+                <Text style={styles.actionLabel}>İş</Text>
+              </TouchableOpacity>
+
+              {/* Card 3: Harita */}
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => handleActionPress('map')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.actionIconBox}>
+                  <Map size={22} color="#CBD5E1" strokeWidth={1.8} />
+                </View>
+                <Text style={styles.actionLabel}>Harita</Text>
+              </TouchableOpacity>
+
+              {/* Card 4: Favori Hatlar */}
+              <TouchableOpacity
+                style={styles.actionCard}
+                onPress={() => handleActionPress('favs')}
+                activeOpacity={0.75}
+              >
+                <View style={styles.actionIconBox}>
+                  <Star size={22} color="#CBD5E1" strokeWidth={1.8} />
+                </View>
+                <Text style={styles.actionLabel} numberOfLines={1}>Favori Hatlar</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* SON ARAMALAR SECTION */}
+            <View style={styles.sectionHeaderRow}>
+              <Text style={styles.sectionTitle}>Son Aramalar</Text>
+              <TouchableOpacity
+                style={styles.seeAllBtn}
+                onPress={() => {
+                  onClose();
+                  if (onViewAllHistory) onViewAllHistory();
+                }}
                 activeOpacity={0.7}
               >
-                {/* Visual Icon with Tinted Badge Background */}
-                <View style={[styles.iconBox, { backgroundColor: meta.bg }]}>
-                  {renderItemIcon(meta)}
-                </View>
-
-                {/* Information Column */}
-                <View style={styles.itemTextCol}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.itemTitleText} numberOfLines={1}>
-                      {item.name}
-                    </Text>
-                    <View style={[styles.categoryBadge, { backgroundColor: meta.bg }]}>
-                      <Text style={[styles.categoryBadgeText, { color: meta.color }]}>
-                        {meta.label}
-                      </Text>
-                    </View>
-                  </View>
-
-                  <Text style={styles.itemSubText} numberOfLines={1}>
-                    {item.detail || (isStop ? 'ETUS Otobüs Durağı' : item.shortName || 'Edirne')}
-                  </Text>
-                </View>
+                <Text style={styles.seeAllText}>Tümünü Gör</Text>
+                <ChevronRight size={14} color="#38BDF8" />
               </TouchableOpacity>
-            );
-          }}
-        />
+            </View>
+
+            <View style={styles.recentList}>
+              {DEFAULT_RECENT_SEARCHES.map((item) => {
+                return (
+                  <TouchableOpacity
+                    key={item.id}
+                    style={styles.recentRow}
+                    onPress={() => handleRecentItemPress(item)}
+                    activeOpacity={0.75}
+                  >
+                    <View style={styles.recentIconCircle}>
+                      {item.iconType === 'pin' && <MapPin size={18} color="#38BDF8" />}
+                      {item.iconType === 'bus' && <Bus size={18} color="#24C795" />}
+                      {item.iconType === 'route' && <Navigation size={18} color="#818CF8" />}
+                      {item.iconType === 'clock' && <Clock size={18} color="#F59E0B" />}
+                    </View>
+
+                    <View style={styles.recentTextContainer}>
+                      <Text style={styles.recentTitle} numberOfLines={1}>{item.title}</Text>
+                      <Text style={styles.recentSubtitle} numberOfLines={1}>{item.subtitle}</Text>
+                    </View>
+
+                    <ChevronRight size={16} color="#475569" />
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* POPÜLER ARAMALAR SECTION */}
+            <View style={[styles.sectionHeaderRow, { marginTop: 28 }]}>
+              <Text style={styles.sectionTitle}>Popüler Aramalar</Text>
+            </View>
+
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.popularChipsContainer}
+              style={styles.popularChipsScroll}
+            >
+              {POPULAR_SEARCH_CHIPS.map((chip) => {
+                const IconComp = chip.icon;
+                return (
+                  <TouchableOpacity
+                    key={chip.id}
+                    style={styles.popularChip}
+                    onPress={() => handlePopularChipPress(chip)}
+                    activeOpacity={0.75}
+                  >
+                    <IconComp size={15} color="#94A3B8" />
+                    <Text style={styles.popularChipText}>{chip.label}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
+          </ScrollView>
+        ) : (
+          /* LIVE RESULTS VIEW */
+          <View style={styles.liveResultsContainer}>
+            {/* Filter segment tabs */}
+            <View style={styles.filterBar}>
+              <TouchableOpacity
+                style={[styles.filterBtn, activeFilter === 'all' && styles.filterBtnActive]}
+                onPress={() => setActiveFilter('all')}
+              >
+                <Text style={[styles.filterBtnText, activeFilter === 'all' && styles.filterBtnTextActive]}>
+                  Tümü
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterBtn, activeFilter === 'stops' && styles.filterBtnActive]}
+                onPress={() => setActiveFilter('stops')}
+              >
+                <Text style={[styles.filterBtnText, activeFilter === 'stops' && styles.filterBtnTextActive]}>
+                  ETUS Durakları
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.filterBtn, activeFilter === 'places' && styles.filterBtnActive]}
+                onPress={() => setActiveFilter('places')}
+              >
+                <Text style={[styles.filterBtnText, activeFilter === 'places' && styles.filterBtnTextActive]}>
+                  Mekanlar & Yerler
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {searching ? (
+              <View style={styles.loadingBox}>
+                <ActivityIndicator size="small" color="#3B82F6" />
+                <Text style={styles.loadingText}>Sonuçlar aranıyor...</Text>
+              </View>
+            ) : (
+              <FlatList
+                data={filteredResults}
+                keyExtractor={(item, index) => `${item.name}_${item.lat}_${item.lon}_${index}`}
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.resultsListContent}
+                ListEmptyComponent={
+                  <View style={styles.emptyBox}>
+                    <Text style={styles.emptyTitle}>Sonuç bulunamadı</Text>
+                    <Text style={styles.emptySub}>
+                      Farklı bir arama terimi, cadde veya ETUS durağı deneyebilirsiniz.
+                    </Text>
+                  </View>
+                }
+                renderItem={({ item }) => {
+                  const meta = getCategoryMeta(item);
+                  return (
+                    <TouchableOpacity
+                      style={styles.resultRow}
+                      onPress={() => {
+                        onSelect(item);
+                        onClose();
+                      }}
+                      activeOpacity={0.75}
+                    >
+                      <View style={[styles.resultIconCircle, { backgroundColor: meta.bg || '#161B24' }]}>
+                        {renderItemIcon(meta)}
+                      </View>
+
+                      <View style={styles.resultTextContainer}>
+                        <Text style={styles.resultTitle} numberOfLines={1}>{item.name}</Text>
+                        <Text style={styles.resultSubtitle} numberOfLines={1}>
+                          {item.type === 'stop'
+                            ? (item.routes?.length ? `Hatlar: ${item.routes.join(', ')}` : 'ETUS Durağı')
+                            : (item.address || meta.label || 'Edirne')}
+                        </Text>
+                      </View>
+
+                      <ChevronRight size={16} color="#475569" />
+                    </TouchableOpacity>
+                  );
+                }}
+              />
+            )}
+          </View>
+        )}
       </SafeAreaView>
     </Modal>
   );
@@ -278,166 +526,302 @@ export default function SearchModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.bg,
+    backgroundColor: '#090B0F',
   },
-  grabberBox: {
-    alignItems: 'center',
-    paddingVertical: 6,
-  },
-  grabberBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: theme.colors.border,
-  },
-  header: {
+  headerArea: {
+    paddingHorizontal: 20,
+    marginTop: 12,
+    marginBottom: 16,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 10,
+    justifyContent: 'space-between',
   },
-  backBtn: {
+  headerTextGroup: {
+    flex: 1,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: -0.6,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#94A3B8',
+    marginTop: 4,
+    fontWeight: '400',
+  },
+  closeBtn: {
     width: 36,
     height: 36,
-    borderRadius: theme.radius.sm,
-    backgroundColor: theme.colors.surface,
+    borderRadius: 18,
+    backgroundColor: '#12161E',
+    borderWidth: 1,
+    borderColor: '#1E2538',
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: theme.colors.border,
+    marginLeft: 12,
   },
+
+  // Input Container
   inputContainer: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.radius.sm,
-    paddingHorizontal: 12,
-    height: 42,
-    gap: 8,
+    backgroundColor: '#12161E',
+    height: 52,
+    borderRadius: 26,
+    marginHorizontal: 20,
+    paddingHorizontal: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: '#1E2538',
+    gap: 12,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  searchIcon: {
+    marginRight: -2,
   },
   textInput: {
     flex: 1,
-    fontSize: 13.5,
-    color: theme.colors.textPrimary,
-    fontWeight: '500',
+    color: '#FFFFFF',
+    fontSize: 15,
     paddingVertical: 0,
   },
-  filterRow: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    gap: 6,
-  },
-  filterChip: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    borderRadius: theme.radius.xs,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 1,
-    borderColor: theme.colors.borderSubtle,
-  },
-  filterChipActive: {
-    backgroundColor: theme.colors.surfaceHover,
-    borderColor: theme.colors.border,
-  },
-  filterChipText: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: theme.colors.textMuted,
-  },
-  filterChipTextActive: {
-    color: theme.colors.textPrimary,
-    fontWeight: '600',
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 10,
-    paddingBottom: 4,
-  },
-  sectionTitle: {
-    fontSize: 10,
-    fontWeight: '700',
-    color: theme.colors.textMuted,
-    letterSpacing: 0.5,
-  },
-  sectionSearchingText: {
-    fontSize: 10,
-    fontWeight: '600',
-    color: theme.colors.primary,
-  },
-  listContent: {
-    paddingHorizontal: 16,
-    paddingBottom: 36,
-  },
-  resultItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    gap: 12,
-  },
-  iconBox: {
-    width: 34,
-    height: 34,
-    borderRadius: theme.radius.xs,
+  iconBtn: {
+    padding: 6,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  itemTextCol: {
+
+  // Scroll Content
+  scrollContent: {
     flex: 1,
   },
-  titleRow: {
+  scrollInner: {
+    paddingBottom: 24,
+  },
+
+  // 4 Action Grid Cards
+  actionGrid: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginTop: 20,
+    gap: 10,
+  },
+  actionCard: {
+    flex: 1,
+    aspectRatio: 1.05,
+    backgroundColor: '#12161E',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+    shadowColor: '#000000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  actionIconBox: {
+    marginBottom: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  actionLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    color: '#CBD5E1',
+    textAlign: 'center',
+  },
+
+  // Section Headers
+  sectionHeaderRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 8,
-    marginBottom: 2,
+    marginHorizontal: 20,
+    marginTop: 26,
+    marginBottom: 10,
   },
-  itemTitleText: {
-    flex: 1,
-    fontSize: 13.5,
-    fontWeight: '600',
-    color: theme.colors.textPrimary,
-  },
-  categoryBadge: {
-    paddingHorizontal: 7,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  categoryBadgeText: {
-    fontSize: 9.5,
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: '700',
-    letterSpacing: 0.2,
-    textTransform: 'uppercase',
+    color: '#E2E8F0',
+    letterSpacing: -0.2,
   },
-  itemSubText: {
-    fontSize: 11.5,
-    color: theme.colors.textSecondary,
-  },
-  itemSeparator: {
-    height: 1,
-    backgroundColor: theme.colors.hairline,
-    marginLeft: 46,
-  },
-  emptyResultsBox: {
+  seeAllBtn: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 36,
+    gap: 3,
+    paddingVertical: 4,
+    paddingLeft: 8,
   },
-  emptyResultsText: {
+  seeAllText: {
     fontSize: 13,
     fontWeight: '600',
-    color: theme.colors.textPrimary,
+    color: '#38BDF8',
   },
-  emptyResultsSub: {
-    fontSize: 11.5,
-    color: theme.colors.textMuted,
-    marginTop: 4,
+
+  // Recent Searches List
+  recentList: {
+    marginHorizontal: 20,
+  },
+  recentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 13,
+    borderBottomWidth: 1,
+    borderBottomColor: '#12161E',
+  },
+  recentIconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#12161E',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  recentTextContainer: {
+    flex: 1,
+    marginLeft: 14,
+    marginRight: 8,
+  },
+  recentTitle: {
+    fontSize: 15.5,
+    fontWeight: '600',
+    color: '#FFFFFF',
+    letterSpacing: -0.2,
+  },
+  recentSubtitle: {
+    fontSize: 12.5,
+    color: '#64748B',
+    marginTop: 2.5,
+  },
+
+  // Popular Chips
+  popularChipsScroll: {
+    marginTop: 2,
+  },
+  popularChipsContainer: {
+    paddingHorizontal: 20,
+    gap: 8,
+    flexDirection: 'row',
+  },
+  popularChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#12161E',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+    borderRadius: 20,
+    paddingHorizontal: 14,
+    paddingVertical: 9,
+    gap: 7,
+  },
+  popularChipText: {
+    color: '#E2E8F0',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+
+  // Live Results Mode
+  liveResultsContainer: {
+    flex: 1,
+    marginTop: 12,
+  },
+  filterBar: {
+    flexDirection: 'row',
+    paddingHorizontal: 20,
+    gap: 8,
+    marginBottom: 10,
+  },
+  filterBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 14,
+    borderRadius: 16,
+    backgroundColor: '#12161E',
+    borderWidth: 1,
+    borderColor: '#1E2538',
+  },
+  filterBtnActive: {
+    backgroundColor: '#1E293B',
+    borderColor: '#38BDF8',
+  },
+  filterBtnText: {
+    fontSize: 12.5,
+    color: '#94A3B8',
+    fontWeight: '500',
+  },
+  filterBtnTextActive: {
+    color: '#FFFFFF',
+    fontWeight: '600',
+  },
+  loadingBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 32,
+  },
+  loadingText: {
+    color: '#94A3B8',
+    fontSize: 14,
+  },
+  resultsListContent: {
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  resultRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#12161E',
+  },
+  resultIconCircle: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  resultTextContainer: {
+    flex: 1,
+    marginLeft: 14,
+    marginRight: 8,
+  },
+  resultTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  resultSubtitle: {
+    fontSize: 12.5,
+    color: '#64748B',
+    marginTop: 2,
+  },
+  emptyBox: {
+    paddingVertical: 48,
+    alignItems: 'center',
+    paddingHorizontal: 24,
+  },
+  emptyTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 6,
+  },
+  emptySub: {
+    color: '#64748B',
+    fontSize: 13,
     textAlign: 'center',
+    lineHeight: 18,
   },
 });
