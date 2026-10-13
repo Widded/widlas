@@ -285,18 +285,42 @@ const MapArea = React.memo(function MapArea({
   // Direct route stops list
   const directStops = useMemo(() => {
     if (!activeRoute || activeRoute.isTransfer) return [];
-    return (activeRoute.directStops || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+    if (activeRoute.directStops?.length) {
+      return activeRoute.directStops.filter(s => s && isValidCoord([s.lat, s.lon]));
+    }
+    const stops = [
+      activeRoute.startStop,
+      ...(activeRoute.legs?.[0]?.stops || []),
+      activeRoute.endStop
+    ].filter(s => s && isValidCoord([s.lat, s.lon]));
+    return stops;
   }, [activeRoute]);
 
   // Transfer route stops lists
   const transferLeg1Stops = useMemo(() => {
     if (!activeRoute || !activeRoute.isTransfer) return [];
-    return (activeRoute.stops1 || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+    if (activeRoute.stops1?.length) {
+      return activeRoute.stops1.filter(s => s && isValidCoord([s.lat, s.lon]));
+    }
+    const stops = [
+      activeRoute.startStop,
+      ...(activeRoute.legs?.[0]?.stops || []),
+      activeRoute.transferStop
+    ].filter(s => s && isValidCoord([s.lat, s.lon]));
+    return stops;
   }, [activeRoute]);
 
   const transferLeg2Stops = useMemo(() => {
     if (!activeRoute || !activeRoute.isTransfer) return [];
-    return (activeRoute.stops2 || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+    if (activeRoute.stops2?.length) {
+      return activeRoute.stops2.filter(s => s && isValidCoord([s.lat, s.lon]));
+    }
+    const stops = [
+      activeRoute.transferStop,
+      ...(activeRoute.legs?.[1]?.stops || []),
+      activeRoute.endStop
+    ].filter(s => s && isValidCoord([s.lat, s.lon]));
+    return stops;
   }, [activeRoute]);
 
   // Origin & Destination pins

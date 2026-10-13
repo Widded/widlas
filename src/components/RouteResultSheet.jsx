@@ -37,7 +37,7 @@ const fmtDist = (route) => {
 };
 
 export default function RouteResultSheet({
-  routes = [],
+  routes: incomingRoutes = [],
   selectedIdx = 0,
   onSelectIdx,
   toLocation,
@@ -46,6 +46,12 @@ export default function RouteResultSheet({
   onFareTypeChange,
   onClose
 }) {
+  const routes = useMemo(() => {
+    if (Array.isArray(incomingRoutes)) return incomingRoutes;
+    if (incomingRoutes && Array.isArray(incomingRoutes.routes)) return incomingRoutes.routes;
+    return [];
+  }, [incomingRoutes]);
+
   const [filterType, setFilterType] = useState('fastest'); // 'fastest' | 'least_transfers'
   const [isMinimized, setIsMinimized] = useState(false);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
@@ -118,8 +124,8 @@ export default function RouteResultSheet({
                 {currentRoute?.isWalkOnly
                   ? 'Yürüyüş'
                   : currentRoute?.isTransfer
-                    ? `${currentRoute.line1}+${currentRoute.line2}`
-                    : currentRoute.name || currentRoute.lineCode}
+                    ? `${currentRoute.line1 || currentRoute.legs?.[0]?.line || '1'}+${currentRoute.line2 || currentRoute.legs?.[1]?.line || '2'}`
+                    : currentRoute?.name || currentRoute?.lineCode || currentRoute?.legs?.[0]?.line || 'Hat'}
               </span>
             </div>
 
@@ -227,7 +233,7 @@ export default function RouteResultSheet({
                         style={{ backgroundColor: route.color || '#3B82F6' }}
                       >
                         <Bus size={13} />
-                        <span>{route.line1}</span>
+                        <span>{route.line1 || route.legs?.[0]?.line || 'Hat'}</span>
                       </div>
                       <ArrowRight size={13} className="text-dim" />
                       <div
@@ -235,7 +241,7 @@ export default function RouteResultSheet({
                         style={{ backgroundColor: route.color2 || '#F59E0B' }}
                       >
                         <Bus size={13} />
-                        <span>{route.line2}</span>
+                        <span>{route.line2 || route.legs?.[1]?.line || 'Hat'}</span>
                       </div>
                       {route.walkTimeEnd > 0 && (
                         <>
@@ -254,7 +260,7 @@ export default function RouteResultSheet({
                         style={{ backgroundColor: route.color || '#3B82F6' }}
                       >
                         <Bus size={13} />
-                        <span>{route.name || route.lineCode}</span>
+                        <span>{route.name || route.lineCode || route.legs?.[0]?.line || 'Hat'}</span>
                       </div>
                       {route.walkTimeEnd > 0 && (
                         <>
@@ -331,7 +337,9 @@ export default function RouteResultSheet({
                           </span>
                           <span className="itinerary-step-meta">
                             {route.startStop?.name} durağından biniş
-                            {route.directStops?.length ? ` · ${route.directStops.length} durak` : ''}
+                            {(route.directStops?.length || route.legs?.[0]?.stops?.length || route.passedStops?.length)
+                              ? ` · ${(route.directStops?.length || route.legs?.[0]?.stops?.length || route.passedStops?.length)} durak`
+                              : ''}
                           </span>
                         </div>
                       </div>
@@ -364,6 +372,7 @@ export default function RouteResultSheet({
                             </span>
                             <span className="itinerary-step-meta">
                               {route.endStop?.name} durağında inin
+                              {route.legs?.[1]?.stops?.length ? ` · ${route.legs[1].stops.length} durak` : ''}
                             </span>
                           </div>
                         </div>

@@ -20,10 +20,12 @@ import {
   Bed,
   CreditCard,
   Activity,
-  Layers
+  Layers,
+  Eye
 } from 'lucide-react';
 import { LOCAL_PLACES } from '../data/places';
 import { searchPlacesOnline, getCategoryMeta } from '../services/api';
+import { etusLines } from '../data/db';
 
 const DEFAULT_RECENT_SEARCHES = [
   {
@@ -64,6 +66,8 @@ const POPULAR_CHIPS = [
   { id: 'p5', label: 'Saraçlar Cad.', icon: Building, place: { name: 'Saraçlar Caddesi', lat: 41.6735, lon: 26.5537 } }
 ];
 
+const POPULAR_LINES = ['1A', '2A', '3', '3A', '7A', '1F', '4'];
+
 export default function SearchModal({
   isOpen,
   onClose,
@@ -72,14 +76,15 @@ export default function SearchModal({
   toLocation,
   onSelectLocation,
   onSelectFromMap,
-  onOpenLines
+  onOpenLines,
+  onSelectLineOnMap
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
   const [fromQuery, setFromQuery] = useState(fromLocation?.name || 'Konumunuz');
   const [toQuery, setToQuery] = useState(toLocation?.name || '');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [filterType, setFilterType] = useState('all'); // 'all' | 'places' | 'stops'
+  const [filterType, setFilterType] = useState('all'); // 'all' | 'lines' | 'places' | 'stops'
 
   const toInputRef = useRef(null);
   const fromInputRef = useRef(null);
@@ -92,6 +97,7 @@ export default function SearchModal({
       setFromQuery(fromLocation?.name || 'Konumunuz');
       setToQuery(toLocation?.name || '');
       setSearchResults([]);
+      setFilterType('all');
 
       // Auto-focus input
       setTimeout(() => {
@@ -133,7 +139,7 @@ export default function SearchModal({
       } finally {
         setIsSearching(false);
       }
-    }, 280);
+    }, 250);
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -162,10 +168,13 @@ export default function SearchModal({
 
   // Filtered search list
   const filteredResults = searchResults.filter(item => {
+    if (filterType === 'lines') return item.type === 'line';
     if (filterType === 'places') return item.type === 'place';
     if (filterType === 'stops') return item.type === 'stop';
     return true;
   });
+
+  const lineResultsCount = searchResults.filter(item => item.type === 'line').length;
 
   return (
     <div className="search-modal-backdrop" onClick={onClose}>
@@ -225,7 +234,7 @@ export default function SearchModal({
             <input
               ref={toInputRef}
               type="text"
-              placeholder="Varış noktası veya hat ara..."
+              placeholder="Varış noktası veya hat ara (1A, Erasta, Otogar)..."
               value={toQuery}
               onChange={(e) => {
                 setToQuery(e.target.value);
@@ -291,7 +300,7 @@ export default function SearchModal({
           })}
         </div>
 
-        {/* Filter Pills (Tümü / Yerler / Duraklar) */}
+        {/* Filter Pills (Tümü / Hatlar / Yerler / Duraklar) */}
         {searchResults.length > 0 && (
           <div className="search-filter-pills-row">
             <button
@@ -300,6 +309,14 @@ export default function SearchModal({
             >
               Tümü ({searchResults.length})
             </button>
+            {lineResultsCount > 0 && (
+              <button
+                className={`search-filter-pill ${filterType === 'lines' ? 'active' : ''}`}
+                onClick={() => setFilterType('lines')}
+              >
+                Hatlar ({lineResultsCount})
+              </button>
+            )}
             <button
               className={`search-filter-pill ${filterType === 'places' ? 'active' : ''}`}
               onClick={() => setFilterType('places')}
@@ -320,7 +337,7 @@ export default function SearchModal({
           {isSearching && (
             <div className="search-loading-row">
               <div className="search-spinner" />
-              <span>Edirne noktaları ve ETUS durakları taranıyor...</span>
+              <span>Edirne noktaları ve ETUS hatları taranıyor...</span>
             </div>
           )}
 
@@ -329,17 +346,36 @@ export default function SearchModal({
             <div className="search-results-list">
               {filteredResults.map((item, idx) => {
                 const meta = getCategoryMeta(item);
+                const isLine = item.type === 'line';
+
                 return (
                   <div
                     key={`res_${idx}_${item.name}`}
                     className="search-result-item"
-                    onClick={() => handleSelectPlace(item)}
+                    onClick={() => {
+                      if (isLine) {
+                        const lineData = etusLines[item.lineCode];
+                        if (lineData && onSelectLineOnMap) {
+                          onSelectLineOnMap(lineData, 0);
+                          onClose();
+                          return;
+                        } else if (onOpenLines) {
+                          onOpenLines(item.lineCode);
+                          onClose();
+                          return;
+                        }
+                      }
+                      handleSelectPlace(item);
+                    }}
                   >
                     <div
                       className="search-item-badge-icon"
-                      style={{ backgroundColor: meta.bg, color: meta.color }}
+                      style={{
+                        backgroundColor: isLine ? (item.lineColor || '#3B82F6') : meta.bg,
+                        color: isLine ? '#FFFFFF' : meta.color
+                      }}
                     >
-                      {item.type === 'stop' ? <Bus size={16} /> : <MapPin size={16} />}
+                      {isLine ? <Bus size={16} /> : item.type === 'stop' ? <Bus size={16} /> : <MapPin size={16} />}
                     </div>
 
                     <div className="search-item-info">
@@ -347,9 +383,12 @@ export default function SearchModal({
                         <span className="search-item-name">{item.name}</span>
                         <span
                           className="search-item-cat-tag"
-                          style={{ color: meta.color, backgroundColor: meta.bg }}
+                          style={{
+                            color: isLine ? '#FFFFFF' : meta.color,
+                            backgroundColor: isLine ? (item.lineColor || '#3B82F6') : meta.bg
+                          }}
                         >
-                          {meta.label}
+                          {isLine ? 'ETUS Hattı' : meta.label}
                         </span>
                       </div>
                       <span className="search-item-sub">
@@ -357,7 +396,13 @@ export default function SearchModal({
                       </span>
                     </div>
 
-                    <ChevronRight size={16} className="search-item-arrow" />
+                    {isLine ? (
+                      <div className="search-item-line-action" title="Güzergahı Gör">
+                        <Eye size={16} className="text-primary" />
+                      </div>
+                    ) : (
+                      <ChevronRight size={16} className="search-item-arrow" />
+                    )}
                   </div>
                 );
               })}
@@ -369,16 +414,51 @@ export default function SearchModal({
             <div className="search-empty-state">
               <MapPin size={28} className="text-dim" />
               <p className="search-empty-title">"{activeQuery}" için sonuç bulunamadı</p>
-              <p className="search-empty-sub">Farklı bir isim deneyebilir veya haritadan doğrudan seçebilirsiniz.</p>
+              <p className="search-empty-sub">Farklı bir isim (örn: 1A, Selimiye, Otogar) deneyebilir veya haritadan doğrudan dokunarak seçebilirsiniz.</p>
             </div>
           )}
 
-          {/* Default Recent Searches when input is blank */}
+          {/* Default Recent Searches & Popular Lines when input is blank */}
           {!isSearching && (!activeQuery || activeQuery.length < 2) && (
             <div className="search-recents-section">
-              <div className="search-recents-header">
+              {/* Popular ETUS Lines Fast Bar */}
+              <div className="search-popular-lines-card">
+                <div className="search-popular-lines-header">
+                  <Bus size={14} className="text-primary" />
+                  <span>Sık Kullanılan ETUS Hatları</span>
+                </div>
+                <div className="search-popular-lines-pills">
+                  {POPULAR_LINES.map(code => {
+                    const line = etusLines[code];
+                    if (!line) return null;
+                    return (
+                      <button
+                        key={code}
+                        className="search-popular-line-btn"
+                        onClick={() => {
+                          if (onSelectLineOnMap) {
+                            onSelectLineOnMap(line, 0);
+                            onClose();
+                          } else if (onOpenLines) {
+                            onOpenLines(code);
+                            onClose();
+                          }
+                        }}
+                      >
+                        <span
+                          className="search-popular-line-dot"
+                          style={{ backgroundColor: line.color || '#3B82F6' }}
+                        />
+                        <span className="search-popular-line-name">Hat {code}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="search-recents-header" style={{ marginTop: '16px' }}>
                 <Clock size={14} className="text-dim" />
-                <span>Son ve Popüler Aramalar</span>
+                <span>Popüler Noktalar</span>
               </div>
 
               <div className="search-results-list">
@@ -389,7 +469,7 @@ export default function SearchModal({
                     onClick={() => handleSelectPlace(item.place)}
                   >
                     <div className="search-item-badge-icon recent-icon">
-                      {item.type === 'line' ? <Bus size={16} /> : <Clock size={16} />}
+                      <Clock size={16} />
                     </div>
                     <div className="search-item-info">
                       <span className="search-item-name">{item.title}</span>

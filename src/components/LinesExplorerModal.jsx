@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   Search,
   X,
@@ -8,7 +8,8 @@ import {
   ChevronUp,
   MapPin,
   Eye,
-  Navigation
+  Navigation,
+  ArrowUpDown
 } from 'lucide-react';
 import { etusLines, allStopsDB } from '../data/db';
 
@@ -19,15 +20,41 @@ const CORRIDORS = [
   { id: 'merkez', title: 'Çarşı / Merkez' }
 ];
 
+const normalizeTr = (str = '') => {
+  return str
+    .replace(/İ/g, 'i')
+    .replace(/I/g, 'ı')
+    .toLowerCase()
+    .replace(/ğ/g, 'g')
+    .replace(/ü/g, 'u')
+    .replace(/ş/g, 's')
+    .replace(/ı/g, 'i')
+    .replace(/ö/g, 'o')
+    .replace(/ç/g, 'c')
+    .trim();
+};
+
+const CAMPUS_KEYWORDS = ['fakulte', 'universite', 'balkan', 'yerleske', 'kyk', 'tip', 'kampus', 'eczacilik', 'aysekadin'];
+const OTOGAR_KEYWORDS = ['otogar', 'terminal'];
+const MERKEZ_KEYWORDS = ['carsi', 'merkez', 'gazimihal', 'selimiye', 'saraclar', 'bankalar', 'orduevi', 'hukumet', 'belediye'];
+
 export default function LinesExplorerModal({
   isOpen,
   onClose,
+  initialLineCode = null,
   onSelectLineOnMap
 }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCorridor, setSelectedCorridor] = useState('all');
-  const [expandedLineCode, setExpandedLineCode] = useState(null);
+  const [expandedLineCode, setExpandedLineCode] = useState(initialLineCode);
   const [activeDirIdx, setActiveDirIdx] = useState(0);
+
+  useEffect(() => {
+    if (initialLineCode) {
+      setExpandedLineCode(initialLineCode);
+      setActiveDirIdx(0);
+    }
+  }, [initialLineCode]);
 
   // Sorted list of all ETUS lines numerically
   const allLines = useMemo(() => {
@@ -39,37 +66,80 @@ export default function LinesExplorerModal({
 
   // Filter lines by corridor and search query
   const filteredLines = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    return allLines.filter(line => {
-      // Corridor filter
-      if (selectedCorridor === 'kampus') {
-        const hasCampus = line.directions.some(d =>
-          (d.headSign || '').toLowerCase().includes('fakülte') ||
-          (d.headSign || '').toLowerCase().includes('üniversite') ||
-          (d.headSign || '').toLowerCase().includes('balkan')
-        );
-        if (!hasCampus) return false;
-      } else if (selectedCorridor === 'otogar') {
-        const hasOtogar = line.directions.some(d =>
-          (d.headSign || '').toLowerCase().includes('otogar')
-        );
-        if (!hasOtogar) return false;
-      } else if (selectedCorridor === 'merkez') {
-        const hasMerkez = line.directions.some(d =>
-          (d.headSign || '').toLowerCase().includes('çarşı') ||
-          (d.headSign || '').toLowerCase().includes('merkez') ||
-          (d.headSign || '').toLowerCase().includes('gazimihal') ||
-          (d.headSign || '').toLowerCase().includes('selimiye')
-        );
-        if (!hasMerkez) return false;
-      }
+    const normQ = normalizeTr(searchQuery);
+    const cleanQ = normQ.replace(/^hat\s+/, '').trim();
 
-      // Query filter
-      if (!q) return true;
-      if (line.code.toLowerCase().includes(q)) return true;
-      if (line.name && line.name.toLowerCase().includes(q)) return true;
-      return line.directions.some(d => (d.headSign || '').toLowerCase().includes(q));
-    });
+    return allLines
+      .map(line => {
+        // Check corridor
+        if (selectedCorridor === 'kampus') {
+          const matches = line.directions.some(d => {
+            const h = normalizeTr(d.headSign || '');
+            if (CAMPUS_KEYWORDS.some(k => h.includes(k))) return true;
+            return (d.stopIds || []).some(sid => {
+              const s = normalizeTr(allStopsDB[sid]?.name || '');
+              return CAMPUS_KEYWORDS.some(k => s.includes(k));
+            });
+          });
+          if (!matches) return null;
+        } else if (selectedCorridor === 'otogar') {
+          const matches = line.directions.some(d => {
+            const h = normalizeTr(d.headSign || '');
+            if (OTOGAR_KEYWORDS.some(k => h.includes(k))) return true;
+            return (d.stopIds || []).some(sid => {
+              const s = normalizeTr(allStopsDB[sid]?.name || '');
+              return OTOGAR_KEYWORDS.some(k => s.includes(k));
+            });
+          });
+          if (!matches) return null;
+        } else if (selectedCorridor === 'merkez') {
+          const matches = line.directions.some(d => {
+            const h = normalizeTr(d.headSign || '');
+            if (MERKEZ_KEYWORDS.some(k => h.includes(k))) return true;
+            return (d.stopIds || []).some(sid => {
+              const s = normalizeTr(allStopsDB[sid]?.name || '');
+              return MERKEZ_KEYWORDS.some(k => s.includes(k));
+            });
+          });
+          if (!matches) return null;
+        }
+
+        // Query check
+        if (!normQ) return { line, matchedStop: null };
+
+        const normCode = normalizeTr(line.code);
+        if (normCode === normQ || normCode === cleanQ || (cleanQ.length >= 1 && normCode.startsWith(cleanQ))) {
+          return { line, matchedStop: null };
+        }
+
+        const headSigns = (line.directions || []).map(d => normalizeTr(d.headSign || '')).join(' ');
+        if (headSigns.includes(normQ) || (cleanQ.length >= 2 && headSigns.includes(cleanQ))) {
+          return { line, matchedStop: null };
+        }
+
+        // Check stops along this line
+        let foundStopName = null;
+        for (const d of line.directions || []) {
+          for (const sid of d.stopIds || []) {
+            const stop = allStopsDB[sid];
+            if (stop?.name) {
+              const normStop = normalizeTr(stop.name);
+              if (normStop.includes(normQ) || (cleanQ.length >= 2 && normStop.includes(cleanQ))) {
+                foundStopName = stop.name;
+                break;
+              }
+            }
+          }
+          if (foundStopName) break;
+        }
+
+        if (foundStopName) {
+          return { line, matchedStop: foundStopName };
+        }
+
+        return null;
+      })
+      .filter(Boolean);
   }, [allLines, selectedCorridor, searchQuery]);
 
   if (!isOpen) return null;
@@ -99,7 +169,7 @@ export default function LinesExplorerModal({
           <Search size={16} className="text-dim" />
           <input
             type="text"
-            placeholder="Hat kodu veya güzergah ara (Örn: 1A, Gazimihal, Otogar)..."
+            placeholder="Hat kodu, güzergah veya durak ara (1A, Balkan, Erasta, Otogar)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="lines-search-input"
@@ -130,9 +200,10 @@ export default function LinesExplorerModal({
             <div className="search-empty-state">
               <Bus size={28} className="text-dim" />
               <p className="search-empty-title">Aramanıza uygun ETUS hattı bulunamadı</p>
+              <p className="search-empty-sub">Farklı bir hat kodu (örn: 1A, 3, 7) veya durak ismi deneyin.</p>
             </div>
           ) : (
-            filteredLines.map(line => {
+            filteredLines.map(({ line, matchedStop }) => {
               const isExpanded = expandedLineCode === line.code;
               const dir = line.directions?.[activeDirIdx] || line.directions?.[0];
 
@@ -158,6 +229,16 @@ export default function LinesExplorerModal({
                       <span className="lines-item-headsign">
                         {line.directions?.[0]?.headSign || 'ETUS Edirne Toplu Taşıma'}
                       </span>
+                      <div className="lines-item-meta-row">
+                        <span className="lines-item-meta-sub">
+                          {line.directions?.length || 1} Yön · {line.directions?.[0]?.stopIds?.length || 0} Durak
+                        </span>
+                        {matchedStop && (
+                          <span className="lines-item-match-pill">
+                            📍 {matchedStop} durağı
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <div className="lines-item-arrow">
@@ -198,7 +279,7 @@ export default function LinesExplorerModal({
                       {/* Stops Timeline */}
                       <div className="lines-stops-list">
                         <span className="lines-stops-header">
-                          Durak Listesi ({dir?.stopIds?.length || 0} Durak)
+                          Güzergah Durakları ({dir?.stopIds?.length || 0} Durak)
                         </span>
 
                         <div className="lines-stops-timeline">

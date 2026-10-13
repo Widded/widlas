@@ -1,6 +1,5 @@
-// Edirne Ulaşım - External Transit & Geospatial APIs (TomTom, Mapbox, Nominatim)
 import { LOCAL_PLACES, normalizeTr } from '../data/places';
-import { allStopsDB } from '../data/db';
+import { allStopsDB, etusLines } from '../data/db';
 
 const MB_PART_A = 'pk.eyJ1Ijoid2lkZGVkIiwiYSI6ImNtdXNpdXBnOTB4YmMyd3Mxd2NsYXo2ZzMifQ';
 const MB_PART_B = 'bEWk1zPyEYmByrckZXW4bA';
@@ -12,6 +11,15 @@ export const TOMTOM_TOKEN = import.meta.env.VITE_TOMTOM_TOKEN || `${TT_PART_A}${
 
 // Helper: Get user-friendly category badge & icon metadata
 export const getCategoryMeta = (item) => {
+  if (item.type === 'line') {
+    return {
+      label: 'ETUS Hattı',
+      color: item.lineColor || '#38BDF8',
+      bg: 'rgba(56, 189, 248, 0.16)',
+      icon: 'bus'
+    };
+  }
+
   if (item.type === 'stop') {
     return {
       label: 'ETUS Durağı',
@@ -145,7 +153,36 @@ export const searchPlacesOnline = async (query) => {
       source: 'etus'
     }));
 
-  // C) Remote APIs (TomTom with Typeahead + Mapbox Edirne BBox + Nominatim)
+  // C) ETUS Bus Lines Match (e.g. "1A", "Hat 1A", "3", "Hat 3", "7", "Otogar")
+  const cleanQ = normQuery.replace(/^hat\s+/, '').trim();
+  const lineMatches = Object.values(etusLines)
+    .filter(line => {
+      const c = (line.code || '').toLowerCase();
+      const normC = normalizeTr(c);
+      const headSigns = (line.directions || []).map(d => normalizeTr(d.headSign || '')).join(' ');
+      return normC === normQuery ||
+             normC === cleanQ ||
+             (cleanQ.length >= 1 && normC.startsWith(cleanQ)) ||
+             headSigns.includes(normQuery) ||
+             (cleanQ.length >= 2 && headSigns.includes(cleanQ));
+    })
+    .slice(0, 6)
+    .map(line => {
+      const firstStopId = line.directions?.[0]?.stopIds?.[0];
+      const firstStop = allStopsDB[firstStopId];
+      return {
+        name: `Hat ${line.code}`,
+        detail: line.directions?.[0]?.headSign || 'ETUS Otobüs Hattı',
+        lat: firstStop?.lat || 41.6771,
+        lon: firstStop?.lon || 26.5557,
+        lineCode: line.code,
+        lineColor: line.color,
+        type: 'line',
+        source: 'etus_line'
+      };
+    });
+
+  // D) Remote APIs (TomTom with Typeahead + Mapbox Edirne BBox + Nominatim)
   const remotePromises = [];
 
   // TomTom Search
@@ -250,6 +287,7 @@ export const searchPlacesOnline = async (query) => {
   const remainingStops = stopMatches.slice(4);
 
   const combined = [
+    ...lineMatches,
     ...localMatches,
     ...uniqueRemote,
     ...topStops,
@@ -260,6 +298,14 @@ export const searchPlacesOnline = async (query) => {
   const finalResults = [];
   const seenAll = new Set();
   for (const item of combined) {
+    if (item.type === 'line') {
+      const key = `line_${item.lineCode}`;
+      if (!seenAll.has(key)) {
+        seenAll.add(key);
+        finalResults.push(item);
+      }
+      continue;
+    }
     if (!item.lat || !item.lon) continue;
     const key = `${normalizeTr(item.name).slice(0, 16)}_${item.lat.toFixed(3)}_${item.lon.toFixed(3)}`;
     if (!seenAll.has(key)) {

@@ -51,6 +51,7 @@ export default function App() {
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchTargetType, setSearchTargetType] = useState('to'); // 'from' | 'to'
   const [linesModalOpen, setLinesModalOpen] = useState(false);
+  const [selectedLineForModal, setSelectedLineForModal] = useState(null);
   const [faresModalOpen, setFaresModalOpen] = useState(false);
 
   // Map Controls
@@ -120,7 +121,7 @@ export default function App() {
 
     // 3. Road-snapped transit paths
     if (!route.isTransfer) {
-      const stops = route.directStops || [];
+      const stops = [route.startStop, ...(route.legs?.[0]?.stops || []), route.endStop].filter(Boolean);
       if (stops.length > 1) {
         fetchRoadSnappedBusPath(stops).then(snapped => setRoadSnappedBusPath(snapped));
       } else {
@@ -130,13 +131,15 @@ export default function App() {
       setRoadSnappedBusPath2(null);
     } else {
       setRoadSnappedBusPath(null);
-      if (route.stops1?.length > 1) {
-        fetchRoadSnappedBusPath(route.stops1).then(snapped => setRoadSnappedBusPath1(snapped));
+      const stops1 = [route.startStop, ...(route.legs?.[0]?.stops || []), route.transferStop].filter(Boolean);
+      const stops2 = [route.transferStop, ...(route.legs?.[1]?.stops || []), route.endStop].filter(Boolean);
+      if (stops1.length > 1) {
+        fetchRoadSnappedBusPath(stops1).then(snapped => setRoadSnappedBusPath1(snapped));
       } else {
         setRoadSnappedBusPath1(null);
       }
-      if (route.stops2?.length > 1) {
-        fetchRoadSnappedBusPath(route.stops2).then(snapped => setRoadSnappedBusPath2(snapped));
+      if (stops2.length > 1) {
+        fetchRoadSnappedBusPath(stops2).then(snapped => setRoadSnappedBusPath2(snapped));
       } else {
         setRoadSnappedBusPath2(null);
       }
@@ -165,14 +168,15 @@ export default function App() {
     }
 
     try {
-      const routes = await calculateSmartRoute(fromLat, fromLon, to.lat, to.lon);
-      if (!routes || routes.length === 0) {
+      const result = await calculateSmartRoute(fromLat, fromLon, to.lat, to.lon);
+      const routeList = result?.routes || (Array.isArray(result) ? result : []);
+      if (!routeList || routeList.length === 0) {
         setSearchResults([]);
         showToast('Bu noktalar arasında doğrudan ETUS rotası bulunamadı.', 'warning');
       } else {
-        setSearchResults(routes);
+        setSearchResults(routeList);
         setSelectedRouteIdx(0);
-        updateRouteGeometry(routes[0], { lat: fromLat, lon: fromLon }, to);
+        updateRouteGeometry(routeList[0], { lat: fromLat, lon: fromLon }, to);
       }
     } catch (err) {
       console.error('Calculate route error:', err);
@@ -244,8 +248,16 @@ export default function App() {
   };
 
   // Line Explorer selection
-  const handleSelectLineOnMap = (lineData, dirIdx) => {
-    handleClearRoute();
+  const handleSelectLineOnMap = (lineData, dirIdx = 0) => {
+    setSearchResults(null);
+    setSelectedRouteIdx(0);
+    setToLocation({ name: '', lat: null, lon: null });
+    setWalkingPathStart([]);
+    setWalkingPathEnd([]);
+    setRoadSnappedBusPath(null);
+    setRoadSnappedBusPath1(null);
+    setRoadSnappedBusPath2(null);
+
     setActiveLineData(lineData);
     setActiveLineDirIdx(dirIdx);
     showToast(`Hat ${lineData.code} güzergahı haritada gösteriliyor.`);
@@ -488,17 +500,21 @@ export default function App() {
           setSearchTargetType(target);
           showToast('Haritada istediğiniz noktaya dokunun.');
         }}
-        onOpenLines={() => {
+        onOpenLines={(code) => {
+          setSelectedLineForModal(code || null);
           setSearchModalOpen(false);
           setLinesModalOpen(true);
         }}
+        onSelectLineOnMap={handleSelectLineOnMap}
       />
 
       {/* 8. Lines Explorer Modal */}
       <LinesExplorerModal
         isOpen={linesModalOpen}
+        initialLineCode={selectedLineForModal}
         onClose={() => {
           setLinesModalOpen(false);
+          setSelectedLineForModal(null);
           setActiveTab('explore');
         }}
         onSelectLineOnMap={handleSelectLineOnMap}
