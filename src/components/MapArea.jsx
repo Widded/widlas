@@ -1,102 +1,142 @@
-import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, CircleMarker, Popup, useMap, useMapEvents } from 'react-leaflet';
-import { Navigation } from 'lucide-react';
+import React, { useEffect, useMemo, useRef } from 'react';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { allStopsDB } from '../data/db';
 
-const createCustomIcon = (svgString, color) => {
+// Helper: Calculate travel bearing between two coordinates (degrees)
+function getBearing(lat1, lon1, lat2, lon2) {
+  if (lat1 === undefined || lon1 === undefined || lat2 === undefined || lon2 === undefined) return 0;
+  const dLat1 = (lat1 * Math.PI) / 180;
+  const dLat2 = (lat2 * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const y = Math.sin(dLon) * Math.cos(dLat2);
+  const x = Math.cos(dLat1) * Math.sin(dLat2) - Math.sin(dLat1) * Math.cos(dLon);
+  const brng = (Math.atan2(y, x) * 180) / Math.PI;
+  return Math.round((brng + 360) % 360);
+}
+
+// Marker Icons Generators
+const createStartStopIcon = () => {
   return L.divIcon({
-    className: 'custom-leaflet-icon',
+    className: '',
     html: `
-      <div style="
-        background-color: ${color}; 
-        width: 32px; 
-        height: 32px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        border-radius: 50%; 
-        border: 3px solid white;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.1);
-        color: white;
-      ">
-        ${svgString}
+      <div class="start-stop-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M8 6v6"></path><path d="M15 6v6"></path><path d="M2 12h19.6"></path>
+          <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"></path>
+          <circle cx="7" cy="18" r="2"></circle><circle cx="15" cy="18" r="2"></circle>
+        </svg>
       </div>
-      <div style="
-        width: 0;
-        height: 0;
-        border-left: 8px solid transparent;
-        border-right: 8px solid transparent;
-        border-top: 10px solid ${color};
-        margin: -2px auto 0 auto;
-        filter: drop-shadow(0px 3px 2px rgba(0,0,0,0.2));
-      "></div>
     `,
-    iconSize: [32, 42],
-    iconAnchor: [16, 42],
-    popupAnchor: [0, -42]
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
   });
 };
 
-const userLocationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>`;
-const destinationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" x2="4" y1="22" y2="15"/></svg>`;
-const busStopSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><circle cx="15" cy="18" r="2"/></svg>`;
-const transferSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 14 4-4-4-4"/><path d="M2 10h20"/><path d="m6 10-4 4 4 4"/><path d="M22 14H2"/></svg>`;
-
-const customIcons = {
-  start: createCustomIcon(userLocationSvg, '#10b981'),
-  end: createCustomIcon(destinationSvg, '#ef4444'),
-  busStart: createCustomIcon(busStopSvg, '#3b82f6'),
-  transfer: createCustomIcon(transferSvg, '#f59e0b')
+const createEndStopIcon = () => {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="end-stop-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+    `,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+  });
 };
 
-function MapUpdater({ center, zoom }) {
+const createTransferStopIcon = () => {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="transfer-stop-badge">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+      </div>
+    `,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16]
+  });
+};
+
+const createIntermediateStopIcon = (bearing, color = '#3B82F6') => {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="stop-badge" style="border-color: ${color}">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${bearing}deg)">
+          <line x1="12" y1="19" x2="12" y2="5"></line>
+          <polyline points="5 12 12 5 19 12"></polyline>
+        </svg>
+      </div>
+    `,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13],
+    popupAnchor: [0, -14]
+  });
+};
+
+const createPinIcon = (color, isDestination = false) => {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="custom-pin">
+        <div class="pin-bubble" style="background: ${color}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            ${isDestination 
+              ? '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" x2="4" y1="22" y2="15"></line>'
+              : '<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"></path><circle cx="12" cy="10" r="3"></circle>'
+            }
+          </svg>
+        </div>
+        <div class="pin-arrow" style="border-top-color: ${color}"></div>
+      </div>
+    `,
+    iconSize: [30, 36],
+    iconAnchor: [15, 36],
+    popupAnchor: [0, -38]
+  });
+};
+
+// Subcomponent: Live map controller for recenter & auto-fit
+function MapAutoFitter({ 
+  activeRoute, 
+  activeLineData, 
+  activeLineDirIdx, 
+  fromLocation, 
+  toLocation, 
+  walkingPathStart, 
+  walkingPathEnd,
+  roadSnappedBusPath,
+  roadSnappedBusPath1,
+  roadSnappedBusPath2,
+  recenterTarget
+}) {
   const map = useMap();
+
   useEffect(() => {
-    if (center && Array.isArray(center) && center.length === 2 && Number.isFinite(center[0]) && Number.isFinite(center[1])) {
-      map.flyTo(center, zoom || 14, { duration: 1.2 });
+    // 1. Recenter target if provided
+    if (recenterTarget && Number.isFinite(recenterTarget.lat) && Number.isFinite(recenterTarget.lon)) {
+      map.flyTo([recenterTarget.lat, recenterTarget.lon], recenterTarget.zoom || 15, { duration: 1.0 });
+      return;
     }
-  }, [center, zoom, map]);
-  return null;
-}
 
-function MapContainerObserver() {
-  const map = useMap();
-  useEffect(() => {
-    const container = map.getContainer();
-    if (!container) return;
-    const observer = new ResizeObserver(() => {
-      map.invalidateSize({ debounceMoveEvents: true });
-    });
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [map]);
-  return null;
-}
-
-function MapResizeHandler({ isVisible }) {
-  const map = useMap();
-  useEffect(() => {
-    if (isVisible) {
-      setTimeout(() => map.invalidateSize(), 100);
-      setTimeout(() => map.invalidateSize(), 360);
-    }
-  }, [isVisible, map]);
-  return null;
-}
-
-function MapAutoFitter({ activeRoute, activeLineData, activeLineDirIdx, fromLocation, toLocation, walkingPathStart, walkingPathEnd }) {
-  const map = useMap();
-  useEffect(() => {
-    // 1. Hatlar sekmesinde hat seçildiyse o hattın sınırlarına sığdır
+    // 2. Active Line Explorer Mode
     if (activeLineData?.directions?.[activeLineDirIdx]?.path?.length > 1) {
       const path = activeLineData.directions[activeLineDirIdx].path;
       const bounds = L.latLngBounds(path);
       if (bounds.isValid()) {
         map.fitBounds(bounds, {
-          paddingTopLeft: [30, 30],
-          paddingBottomRight: window.innerWidth < 1024 ? [30, 180] : [30, 30],
+          paddingTopLeft: [70, 30],
+          paddingBottomRight: [30, window.innerWidth < 768 ? 200 : 70],
           maxZoom: 15,
           animate: true
         });
@@ -104,48 +144,64 @@ function MapAutoFitter({ activeRoute, activeLineData, activeLineDirIdx, fromLoca
       return;
     }
 
-    // 2. Rota bulunduysa rota bacakları, yürüme yolları ve durakları haritaya kusursuz sığdır
+    // 3. Active Route Mode
     if (activeRoute) {
       const coords = [];
       if (fromLocation?.lat && fromLocation?.lon) coords.push([fromLocation.lat, fromLocation.lon]);
       if (toLocation?.lat && toLocation?.lon) coords.push([toLocation.lat, toLocation.lon]);
-      if (activeRoute.startStop?.lat && activeRoute.startStop?.lon) coords.push([activeRoute.startStop.lat, activeRoute.startStop.lon]);
-      if (activeRoute.endStop?.lat && activeRoute.endStop?.lon) coords.push([activeRoute.endStop.lat, activeRoute.endStop.lon]);
-      if (activeRoute.transferStop?.lat && activeRoute.transferStop?.lon) coords.push([activeRoute.transferStop.lat, activeRoute.transferStop.lon]);
-      if (Array.isArray(activeRoute.routeGeometry)) coords.push(...activeRoute.routeGeometry);
-      if (Array.isArray(activeRoute.routeGeometry1)) coords.push(...activeRoute.routeGeometry1);
-      if (Array.isArray(activeRoute.routeGeometry2)) coords.push(...activeRoute.routeGeometry2);
-      if (Array.isArray(walkingPathStart)) coords.push(...walkingPathStart);
-      if (Array.isArray(walkingPathEnd)) coords.push(...walkingPathEnd);
+
+      if (roadSnappedBusPath?.length) coords.push(...roadSnappedBusPath);
+      else if (activeRoute.routeGeometry?.length) coords.push(...activeRoute.routeGeometry);
+
+      if (roadSnappedBusPath1?.length) coords.push(...roadSnappedBusPath1);
+      else if (activeRoute.routeGeometry1?.length) coords.push(...activeRoute.routeGeometry1);
+
+      if (roadSnappedBusPath2?.length) coords.push(...roadSnappedBusPath2);
+      else if (activeRoute.routeGeometry2?.length) coords.push(...activeRoute.routeGeometry2);
+
+      if (walkingPathStart?.length) coords.push(...walkingPathStart);
+      if (walkingPathEnd?.length) coords.push(...walkingPathEnd);
 
       const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]));
       if (validCoords.length >= 2) {
         const bounds = L.latLngBounds(validCoords);
         if (bounds.isValid()) {
           map.fitBounds(bounds, {
-            paddingTopLeft: [40, 40],
-            paddingBottomRight: window.innerWidth < 1024 ? [40, 220] : [40, 40],
+            paddingTopLeft: [80, 24],
+            paddingBottomRight: [24, window.innerWidth < 768 ? 240 : 80],
             maxZoom: 16,
             animate: true
           });
         }
       }
     }
-  }, [activeRoute?.id, activeLineData?.code, activeLineDirIdx, map]);
+  }, [
+    activeRoute?.id, 
+    activeLineData?.code, 
+    activeLineDirIdx, 
+    recenterTarget, 
+    roadSnappedBusPath, 
+    roadSnappedBusPath1, 
+    roadSnappedBusPath2, 
+    map
+  ]);
+
   return null;
 }
 
+// Subcomponent: Live Location follower
 function LiveLocationFollower({ liveLocation, isFollowing }) {
   const map = useMap();
   useEffect(() => {
     if (isFollowing && liveLocation && Number.isFinite(liveLocation.lat) && Number.isFinite(liveLocation.lon)) {
-      map.panTo([liveLocation.lat, liveLocation.lon], { animate: true, duration: 1.0 });
+      map.panTo([liveLocation.lat, liveLocation.lon], { animate: true, duration: 0.8 });
     }
   }, [liveLocation?.lat, liveLocation?.lon, isFollowing, map]);
   return null;
 }
 
-function MapClickHandler({ onMapClick, setIsFollowing }) {
+// Subcomponent: Map click & drag handler
+function MapInteractionHandler({ onMapClick, setIsFollowing }) {
   useMapEvents({
     click(e) {
       if (setIsFollowing) setIsFollowing(false);
@@ -159,232 +215,333 @@ function MapClickHandler({ onMapClick, setIsFollowing }) {
 }
 
 const MapArea = React.memo(function MapArea({
-  mapCenter, mapZoom, hasSearched, mapSelectionMode, onMapClick,
-  fromLocation, toLocation, activeRoute, walkingPathStart, walkingPathEnd,
-  activeLineData, isSplitLayout, activeLineDirIdx,
-  liveLocation, isFollowing, setIsFollowing, isWatching, toggleWatching
+  mapCenter = [41.6771, 26.5557],
+  mapZoom = 14,
+  mapType = 'Standart', // 'Standart' | 'Uydu'
+  fromLocation,
+  toLocation,
+  activeRoute,
+  walkingPathStart = [],
+  walkingPathEnd = [],
+  roadSnappedBusPath = null,
+  roadSnappedBusPath1 = null,
+  roadSnappedBusPath2 = null,
+  activeLineData = null,
+  activeLineDirIdx = 0,
+  liveLocation = null,
+  isFollowing = false,
+  setIsFollowing,
+  recenterTarget = null,
+  onMapClick
 }) {
-  const safeMapCenter = (Array.isArray(mapCenter) && mapCenter.length === 2 && Number.isFinite(mapCenter[0]) && Number.isFinite(mapCenter[1])) 
-    ? mapCenter 
-    : [41.6771, 26.5557];
+  const mapRef = useRef(null);
 
   const isValidCoord = (coord) => Array.isArray(coord) && coord.length >= 2 && Number.isFinite(coord[0]) && Number.isFinite(coord[1]);
 
-  const validGeom1 = useMemo(() => {
-    const g = activeRoute?.routeGeometry1 || activeRoute?.routeGeometry || [];
-    return g.filter(isValidCoord);
-  }, [activeRoute?.id]);
+  // Google Maps tile URL based on mapType
+  const tileUrl = mapType === 'Uydu'
+    ? 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}'
+    : 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}';
 
-  const validGeom2 = useMemo(() => {
-    const g = activeRoute?.routeGeometry2 || [];
-    return g.filter(isValidCoord);
-  }, [activeRoute?.id]);
-
-  const validMainGeom = useMemo(() => {
-    const g = activeRoute?.routeGeometry || [];
-    return g.filter(isValidCoord);
-  }, [activeRoute?.id]);
-
-  const mapRef = React.useRef(null);
-
+  // User live location icon
   const userLiveIcon = useMemo(() => {
     if (!liveLocation) return null;
     const rotateStyle = liveLocation.heading !== null && !isNaN(liveLocation.heading) ? `transform: rotate(${liveLocation.heading}deg);` : '';
     return L.divIcon({
-      className: 'live-location-container',
+      className: '',
       html: `
-        <div class="live-location-ring"></div>
-        <div class="live-location-dot" style="${rotateStyle}">
-          ${liveLocation.heading !== null && !isNaN(liveLocation.heading) ? '<div class="live-location-arrow"></div>' : ''}
+        <div class="user-puck-container">
+          <div class="user-puck-pulse"></div>
+          <div class="user-puck-dot" style="${rotateStyle}">
+            ${liveLocation.heading !== null && !isNaN(liveLocation.heading) ? '<div class="user-puck-arrow"></div>' : ''}
+          </div>
         </div>
       `,
-      iconSize: [24, 24],
-      iconAnchor: [12, 12]
+      iconSize: [26, 26],
+      iconAnchor: [13, 13]
     });
   }, [liveLocation?.heading]);
 
+  // Direct route transit geometry & stops
+  const directGeometry = useMemo(() => {
+    if (!activeRoute || activeRoute.isTransfer) return [];
+    const geom = roadSnappedBusPath || activeRoute.routeGeometry || [];
+    return geom.filter(isValidCoord);
+  }, [activeRoute, roadSnappedBusPath]);
+
+  // Transfer route geometry & stops
+  const transferGeometry1 = useMemo(() => {
+    if (!activeRoute || !activeRoute.isTransfer) return [];
+    const geom = roadSnappedBusPath1 || activeRoute.routeGeometry1 || [];
+    return geom.filter(isValidCoord);
+  }, [activeRoute, roadSnappedBusPath1]);
+
+  const transferGeometry2 = useMemo(() => {
+    if (!activeRoute || !activeRoute.isTransfer) return [];
+    const geom = roadSnappedBusPath2 || activeRoute.routeGeometry2 || [];
+    return geom.filter(isValidCoord);
+  }, [activeRoute, roadSnappedBusPath2]);
+
+  // Direct route stops list
+  const directStops = useMemo(() => {
+    if (!activeRoute || activeRoute.isTransfer) return [];
+    return (activeRoute.directStops || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+  }, [activeRoute]);
+
+  // Transfer route stops lists
+  const transferLeg1Stops = useMemo(() => {
+    if (!activeRoute || !activeRoute.isTransfer) return [];
+    return (activeRoute.stops1 || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+  }, [activeRoute]);
+
+  const transferLeg2Stops = useMemo(() => {
+    if (!activeRoute || !activeRoute.isTransfer) return [];
+    return (activeRoute.stops2 || []).filter(s => s && isValidCoord([s.lat, s.lon]));
+  }, [activeRoute]);
+
+  // Origin & Destination pins
+  const showOriginPin = fromLocation?.lat && fromLocation?.lon && fromLocation.name !== 'Konumunuz' && fromLocation.name !== 'Mevcut Konumunuz';
+  const showDestinationPin = toLocation?.lat && toLocation?.lon;
+
   return (
-    <div className="desktop-map-area">
-      <div className="map-container-wrapper animate-in" style={{ animationDelay: '100ms' }}>
-        <MapContainer
-          center={safeMapCenter}
-          zoom={mapZoom}
-          style={{ width: '100%', height: '100%' }}
-          scrollWheelZoom={true}
-          preferCanvas={true}
-          ref={mapRef}
-        >
-          <TileLayer
-            url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
-            attribution='&copy; Google Maps'
-          />
-          {/* Use MapUpdater only if we are not following the user live. */}
-          {!isFollowing && !activeRoute && <MapUpdater center={safeMapCenter} zoom={mapZoom} />}
-          <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
-          
-          <MapContainerObserver />
-          <MapResizeHandler isVisible={isSplitLayout} />
-          <MapAutoFitter 
-            activeRoute={activeRoute} 
-            activeLineData={activeLineData} 
-            activeLineDirIdx={activeLineDirIdx} 
-            fromLocation={fromLocation} 
-            toLocation={toLocation} 
-            walkingPathStart={walkingPathStart} 
-            walkingPathEnd={walkingPathEnd} 
-          />
-          
-          <MapClickHandler 
-            onMapClick={onMapClick} 
-            setIsFollowing={setIsFollowing} 
-          />
+    <div className="map-viewport-fixed">
+      <MapContainer
+        center={mapCenter}
+        zoom={mapZoom}
+        style={{ width: '100%', height: '100%' }}
+        zoomControl={false}
+        attributionControl={false}
+        preferCanvas={true}
+        ref={mapRef}
+      >
+        <TileLayer
+          key={mapType}
+          url={tileUrl}
+          maxZoom={20}
+          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+        />
 
-          {isValidCoord([fromLocation.lat, fromLocation.lon]) && (
-            <Marker position={[fromLocation.lat, fromLocation.lon]} icon={customIcons.start}>
-              <Popup><b>Başlangıç:</b><br/>{fromLocation.name}</Popup>
+        <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
+        <MapInteractionHandler onMapClick={onMapClick} setIsFollowing={setIsFollowing} />
+        <MapAutoFitter
+          activeRoute={activeRoute}
+          activeLineData={activeLineData}
+          activeLineDirIdx={activeLineDirIdx}
+          fromLocation={fromLocation}
+          toLocation={toLocation}
+          walkingPathStart={walkingPathStart}
+          walkingPathEnd={walkingPathEnd}
+          roadSnappedBusPath={roadSnappedBusPath}
+          roadSnappedBusPath1={roadSnappedBusPath1}
+          roadSnappedBusPath2={roadSnappedBusPath2}
+          recenterTarget={recenterTarget}
+        />
+
+        {/* 1. User Live GPS Location */}
+        {liveLocation && isValidCoord([liveLocation.lat, liveLocation.lon]) && (
+          <Marker position={[liveLocation.lat, liveLocation.lon]} icon={userLiveIcon} zIndexOffset={999}>
+            <Popup>
+              <b>Mevcut Konumunuz</b>
+              <br />
+              Doğruluk: ±{Math.round(liveLocation.accuracy || 10)}m
+            </Popup>
+          </Marker>
+        )}
+
+        {/* 2. Custom Origin Location Pin */}
+        {showOriginPin && (
+          <Marker position={[fromLocation.lat, fromLocation.lon]} icon={createPinIcon('#0284C7', false)}>
+            <Popup><b>Başlangıç:</b><br />{fromLocation.name}</Popup>
+          </Marker>
+        )}
+
+        {/* 3. Destination Pin */}
+        {showDestinationPin && (
+          <Marker position={[toLocation.lat, toLocation.lon]} icon={createPinIcon('#EF4444', true)}>
+            <Popup><b>Varış Noktası:</b><br />{toLocation.name}</Popup>
+          </Marker>
+        )}
+
+        {/* 4. Pedestrian Walking Polylines */}
+        {walkingPathStart.length > 1 && (
+          <Polyline
+            positions={walkingPathStart}
+            pathOptions={{ color: '#38BDF8', weight: 4, dashArray: '6, 6', opacity: 0.95 }}
+          />
+        )}
+        {walkingPathEnd.length > 1 && (
+          <Polyline
+            positions={walkingPathEnd}
+            pathOptions={{ color: '#38BDF8', weight: 4, dashArray: '6, 6', opacity: 0.95 }}
+          />
+        )}
+
+        {/* 5. Direct Transit Route Display (Double Polylines for Road Snapping) */}
+        {activeRoute && !activeRoute.isTransfer && directGeometry.length > 1 && (
+          <>
+            {/* Outer casing */}
+            <Polyline
+              positions={directGeometry}
+              pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7, lineCap: 'round', lineJoin: 'round' }}
+            />
+            {/* Vibrant core line */}
+            <Polyline
+              positions={directGeometry}
+              pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 4.5, lineCap: 'round', lineJoin: 'round' }}
+            />
+          </>
+        )}
+
+        {/* Direct Route Prominent Stops with Direction Arrows */}
+        {activeRoute && !activeRoute.isTransfer && directStops.map((stop, idx) => {
+          if (idx === 0) {
+            return (
+              <Marker key={`sstop_${idx}_${stop.id || stop.lat}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+                <Popup><b>Biniş Durağı:</b><br />{stop.name}</Popup>
+              </Marker>
+            );
+          }
+          if (idx === directStops.length - 1) {
+            return (
+              <Marker key={`estop_${idx}_${stop.id || stop.lat}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+                <Popup><b>İniş Durağı:</b><br />{stop.name}</Popup>
+              </Marker>
+            );
+          }
+
+          const nextStop = directStops[idx + 1];
+          const prevStop = directStops[idx - 1];
+          const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
+
+          return (
+            <Marker
+              key={`mstop_${idx}_${stop.id || stop.lat}`}
+              position={[stop.lat, stop.lon]}
+              icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}
+            >
+              <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{idx + 1}</span></Popup>
             </Marker>
-          )}
+          );
+        })}
 
-          {isValidCoord([toLocation.lat, toLocation.lon]) && (
-            <Marker position={[toLocation.lat, toLocation.lon]} icon={customIcons.end}>
-              <Popup><b>Hedef:</b><br/>{toLocation.name}</Popup>
-            </Marker>
-          )}
+        {/* 6. Transfer Transit Route Display */}
+        {activeRoute && activeRoute.isTransfer && (
+          <>
+            {/* Leg 1: Outer Casing + Core */}
+            {transferGeometry1.length > 1 && (
+              <>
+                <Polyline positions={transferGeometry1} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
+                <Polyline positions={transferGeometry1} pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 4.5 }} />
+              </>
+            )}
 
-          {hasSearched && activeRoute && (
+            {/* Leg 2: Outer Casing + Core */}
+            {transferGeometry2.length > 1 && (
+              <>
+                <Polyline positions={transferGeometry2} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
+                <Polyline positions={transferGeometry2} pathOptions={{ color: activeRoute.color2 || '#F59E0B', weight: 4.5 }} />
+              </>
+            )}
+
+            {/* Leg 1 Stops */}
+            {transferLeg1Stops.map((stop, idx) => {
+              if (idx === 0) {
+                return (
+                  <Marker key={`t1_start_${idx}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+                    <Popup><b>1. Biniş:</b><br />{stop.name}</Popup>
+                  </Marker>
+                );
+              }
+              if (idx === transferLeg1Stops.length - 1) {
+                return (
+                  <Marker key={`t1_trans_${idx}`} position={[stop.lat, stop.lon]} icon={createTransferStopIcon()}>
+                    <Popup><b>Aktarma Durağı:</b><br />{stop.name}</Popup>
+                  </Marker>
+                );
+              }
+              const nextStop = transferLeg1Stops[idx + 1];
+              const prevStop = transferLeg1Stops[idx - 1];
+              const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
+              return (
+                <Marker key={`t1_mid_${idx}`} position={[stop.lat, stop.lon]} icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}>
+                  <Popup><b>{stop.name}</b></Popup>
+                </Marker>
+              );
+            })}
+
+            {/* Leg 2 Stops */}
+            {transferLeg2Stops.map((stop, idx) => {
+              if (idx === 0) return null; // Already rendered as transfer stop in Leg 1
+              if (idx === transferLeg2Stops.length - 1) {
+                return (
+                  <Marker key={`t2_end_${idx}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+                    <Popup><b>İniş:</b><br />{stop.name}</Popup>
+                  </Marker>
+                );
+              }
+              const nextStop = transferLeg2Stops[idx + 1];
+              const prevStop = transferLeg2Stops[idx - 1];
+              const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
+              return (
+                <Marker key={`t2_mid_${idx}`} position={[stop.lat, stop.lon]} icon={createIntermediateStopIcon(bearing, activeRoute.color2 || '#F59E0B')}>
+                  <Popup><b>{stop.name}</b></Popup>
+                </Marker>
+              );
+            })}
+          </>
+        )}
+
+        {/* 7. Line Preview Mode (Browsing a line in LinesExplorer) */}
+        {activeLineData && activeLineData.directions?.[activeLineDirIdx] && (() => {
+          const dirData = activeLineData.directions[activeLineDirIdx];
+          const path = dirData.path || [];
+          const stopIds = dirData.stopIds || [];
+          return (
             <>
-              {isValidCoord([activeRoute.startStop?.lat, activeRoute.startStop?.lon]) && (
-                <Marker key={`sstop_${activeRoute.id}`} position={[activeRoute.startStop.lat, activeRoute.startStop.lon]} icon={customIcons.busStart}>
-                  <Popup><b>Biniş Durağı:</b><br/>{activeRoute.startStop.name}</Popup>
-                </Marker>
-              )}
-              {isValidCoord([activeRoute.endStop?.lat, activeRoute.endStop?.lon]) && (
-                <Marker key={`estop_${activeRoute.id}`} position={[activeRoute.endStop.lat, activeRoute.endStop.lon]} icon={customIcons.busStart}>
-                  <Popup><b>İniş Durağı:</b><br/>{activeRoute.endStop.name}</Popup>
-                </Marker>
-              )}
-
-              {walkingPathStart.length > 0 && (
-                <Polyline key={`walk_start_${activeRoute.id}`} positions={walkingPathStart} pathOptions={{ color: '#64748b', dashArray: '5, 8', weight: 4 }} />
-              )}
-              {walkingPathEnd.length > 0 && (
-                <Polyline key={`walk_end_${activeRoute.id}`} positions={walkingPathEnd} pathOptions={{ color: '#64748b', dashArray: '5, 8', weight: 4 }} />
-              )}
-              
-              {activeRoute.isTransfer ? (
+              {path.length > 1 && (
                 <>
-                  {validGeom1.length > 0 && (
-                    <Polyline key={`geom1_${activeRoute.id}`} positions={validGeom1} pathOptions={{ color: activeRoute.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
-                  )}
-                  {isValidCoord([activeRoute.transferStop?.lat, activeRoute.transferStop?.lon]) && (
-                    <Marker key={`tstop_${activeRoute.id}`} position={[activeRoute.transferStop.lat, activeRoute.transferStop.lon]} icon={customIcons.transfer}>
-                      <Popup><b>Aktarma Durağı:</b><br/>{activeRoute.transferStop.name}</Popup>
-                    </Marker>
-                  )}
-                  {validGeom2.length > 0 && (
-                    <Polyline key={`geom2_${activeRoute.id}`} positions={validGeom2} pathOptions={{ color: activeRoute.color2 || '#ef4444', weight: 5, opacity: 0.9 }} />
-                  )}
-                </>
-              ) : (
-                <>
-                  {validMainGeom.length > 0 && (
-                    <Polyline key={`geom_${activeRoute.id}`} positions={validMainGeom} pathOptions={{ color: activeRoute.color || activeRoute.routes?.[0]?.color || '#3b82f6', weight: 5, opacity: 0.9 }} />
-                  )}
+                  <Polyline positions={path} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
+                  <Polyline positions={path} pathOptions={{ color: activeLineData.color || '#3B82F6', weight: 4.5 }} />
                 </>
               )}
+              {stopIds.map((sid, i) => {
+                const stop = allStopsDB[sid];
+                if (!stop || !isValidCoord([stop.lat, stop.lon])) return null;
 
-              {activeRoute.passedStopCoords && activeRoute.passedStopCoords.length > 0 && activeRoute.passedStopCoords.map((coord, i) => {
-                if (isValidCoord([coord[0], coord[1]])) {
+                if (i === 0) {
                   return (
-                    <CircleMarker key={`passed_${activeRoute.id}_${i}`} center={[coord[0], coord[1]]} radius={4} pathOptions={{ color: '#fff', fillColor: '#94a3b8', fillOpacity: 1, weight: 1 }}>
-                      <Popup>{coord[2]}</Popup>
-                    </CircleMarker>
+                    <Marker key={`line_s_${sid}_${i}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+                      <Popup><b>İlk Durak:</b><br />{stop.name}</Popup>
+                    </Marker>
                   );
                 }
-                return null;
+                if (i === stopIds.length - 1) {
+                  return (
+                    <Marker key={`line_e_${sid}_${i}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+                      <Popup><b>Son Durak:</b><br />{stop.name}</Popup>
+                    </Marker>
+                  );
+                }
+
+                const nextStop = allStopsDB[stopIds[i + 1]];
+                const prevStop = allStopsDB[stopIds[i - 1]];
+                const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
+
+                return (
+                  <Marker
+                    key={`line_m_${sid}_${i}`}
+                    position={[stop.lat, stop.lon]}
+                    icon={createIntermediateStopIcon(bearing, activeLineData.color || '#3B82F6')}
+                  >
+                    <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{i + 1}</span></Popup>
+                  </Marker>
+                );
               })}
             </>
-          )}
+          );
+        })()}
 
-          {activeLineData && activeLineData.directions?.[activeLineDirIdx] && (() => {
-             const dirData = activeLineData.directions[activeLineDirIdx];
-             return (
-               <>
-                 {/* Draw the main route line with a glowing effect */}
-                 <Polyline 
-                   positions={dirData.path} 
-                   pathOptions={{ color: activeLineData.color, weight: 6, opacity: 0.8 }} 
-                 />
-                 <Polyline 
-                   positions={dirData.path} 
-                   pathOptions={{ color: '#ffffff', weight: 2, opacity: 0.5 }} 
-                 />
-
-                 {/* Draw glowing stops */}
-                 {dirData.stopIds.map((sid, i) => {
-                   const stop = allStopsDB[sid];
-                   if (!stop) return null;
-                   return (
-                     <CircleMarker 
-                       key={`line_stop_${sid}_${i}`} 
-                       center={[stop.lat, stop.lon]} 
-                       radius={5} 
-                       pathOptions={{ color: '#fff', fillColor: activeLineData.color, fillOpacity: 1, weight: 2 }}
-                     >
-                       <Popup><b>{stop.name}</b></Popup>
-                     </CircleMarker>
-                   )
-                 })}
-               </>
-             )
-          })()}
-
-          {liveLocation && isValidCoord([liveLocation.lat, liveLocation.lon]) && (
-            <Marker position={[liveLocation.lat, liveLocation.lon]} icon={userLiveIcon} zIndexOffset={1000}>
-               <Popup>
-                 <b>Şu Anki Konumunuz</b>
-                 <br />
-                 Hata Payı: ~{Math.round(liveLocation.accuracy)}m
-               </Popup>
-            </Marker>
-          )}
-
-        </MapContainer>
-        
-        {/* Canlı Takip Butonu (Compass) */}
-        {isWatching && (
-          <button 
-            className={`follow-me-btn ${isFollowing ? 'following' : ''}`}
-            onClick={(e) => { 
-              e.preventDefault(); 
-              setIsFollowing(true); 
-              if (mapRef.current && liveLocation) {
-                mapRef.current.flyTo([liveLocation.lat, liveLocation.lon], 16);
-              }
-            }}
-            title="Beni Takip Et"
-            style={{
-              position: 'absolute',
-              top: '16px',
-              right: '16px',
-              zIndex: 1000,
-              background: 'var(--surface)',
-              border: isFollowing ? '2px solid var(--primary)' : '1px solid var(--border-color)',
-              borderRadius: '50%',
-              width: '48px',
-              height: '48px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-              cursor: 'pointer',
-              transition: 'all 0.2s ease'
-            }}
-          >
-            <Navigation size={22} fill={isFollowing ? 'var(--primary)' : 'transparent'} color={isFollowing ? 'var(--primary)' : 'var(--text-main)'} />
-          </button>
-        )}
-      </div>
+      </MapContainer>
     </div>
   );
 });
