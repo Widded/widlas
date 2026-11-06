@@ -5,7 +5,8 @@ import {
   Bookmark,
   ArrowRight,
   ChevronDown,
-  Menu
+  Menu,
+  MapPin
 } from 'lucide-react';
 import MapArea from './components/MapArea';
 import SearchModal from './components/SearchModal';
@@ -47,6 +48,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
   const [routeSheetMinimized, setRouteSheetMinimized] = useState(false);
+  const [mapSelectionMode, setMapSelectionMode] = useState(null); // null | 'from' | 'to'
 
   // Geometry: Walking & Bus Roads
   const [walkingPathStart, setWalkingPathStart] = useState([]);
@@ -267,6 +269,7 @@ export default function App() {
     setSearchResults(null);
     setSelectedRouteIdx(0);
     setRouteSheetMinimized(false);
+    setMapSelectionMode(null);
     setToLocation({ name: '', lat: null, lon: null });
     setWalkingPathStart([]);
     setWalkingPathEnd([]);
@@ -286,10 +289,24 @@ export default function App() {
     showToast(`"${toLocation.name || 'Hedef'}" kaydedildi.`, 'success');
   };
 
-  // Map click handler (pick point from map)
+  // Map click handler: only active after "Haritadan Seç"
   const handleMapClick = async (lat, lon) => {
+    if (!mapSelectionMode) return;
+
+    const target = mapSelectionMode;
+    setMapSelectionMode(null);
+
     const placeName = await reverseGeocodeCoord(lat, lon);
     const picked = { name: placeName, lat, lon };
+
+    if (target === 'from') {
+      setFromLocation(picked);
+      showToast(`Kalkış noktası seçildi: ${placeName}`);
+      if (toLocation?.lat && toLocation?.lon) {
+        await calculateRoute(picked, toLocation);
+      }
+      return;
+    }
 
     let origin = fromLocation;
     if (!origin?.lat || !origin?.lon) {
@@ -310,6 +327,10 @@ export default function App() {
     setToLocation(picked);
     showToast(`Hedef seçildi: ${placeName}`);
     await calculateRoute(origin, picked);
+  };
+
+  const handleSelectFromMap = (target) => {
+    setMapSelectionMode(target);
   };
 
   // Line Explorer selection
@@ -351,6 +372,18 @@ export default function App() {
         routeSheetMinimized={routeSheetMinimized}
         onMapClick={handleMapClick}
       />
+
+      {mapSelectionMode && (
+        <div className="map-select-banner">
+          <MapPin size={15} />
+          <span>
+            {mapSelectionMode === 'from'
+              ? 'Haritada kalkış noktasını seç'
+              : 'Haritada varış noktasını seç'}
+          </span>
+          <button onClick={() => setMapSelectionMode(null)}>İptal</button>
+        </div>
+      )}
 
       {/* 2. Floating Top Header */}
       <div className="floating-top-container">
@@ -496,7 +529,7 @@ export default function App() {
       )}
 
       {/* 6. Minimal home menu */}
-      {!searchResults && (
+      {!searchResults && !mapSelectionMode && (
         <button
           className="home-menu-btn"
           onClick={() => setHomeMenuOpen(true)}
@@ -518,6 +551,7 @@ export default function App() {
         userLocation={liveLocation}
         onSelectLocation={handleSelectLocation}
         onUseMyLocation={handleUseMyLocation}
+        onSelectFromMap={handleSelectFromMap}
       />
 
       {/* 8. Lines Explorer Modal */}

@@ -29,6 +29,7 @@ export default function SearchModal({
   toLocation,
   onSelectLocation,
   onUseMyLocation,
+  onSelectFromMap,
   userLocation
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
@@ -152,6 +153,12 @@ export default function SearchModal({
     } else {
       setFromQuery(place.name || 'Mevcut Konumum');
     }
+  };
+
+  const handleSelectFromMap = () => {
+    if (!onSelectFromMap) return;
+    onSelectFromMap(activeTab);
+    onClose();
   };
 
   // Konum seçimi olduğu için hat sonuçlarını listede gösterme.
@@ -329,29 +336,41 @@ export default function SearchModal({
           {!isSearching && !hasQuery && (
             <div className="search-default-state">
               <div className="search-default-label">Popüler noktalar</div>
-              <div className="search-results-list">
+              <div className="search-quick-picks">
                 <button
                   type="button"
-                  className="search-result-item location-item"
+                  className="search-quick-pick"
                   onClick={handleUseMyLocation}
                   disabled={isLocating}
                 >
-                  <span className="search-item-badge-icon location-icon">
-                    {isLocating ? <span className="search-spinner" /> : <Crosshair size={17} />}
+                  <span className="search-quick-pick-icon">
+                    {isLocating ? <span className="search-spinner" /> : <Crosshair size={18} />}
                   </span>
-                  <span className="search-item-info">
-                    <span className="search-item-name">Konumum</span>
-                    <span className="search-item-sub">
-                      {isLocating
-                        ? 'Konum alınıyor…'
-                        : activeTab === 'from'
-                          ? 'Mevcut konumunu kullan'
-                          : 'Kalkış noktası olarak kullan'}
-                    </span>
+                  <span className="search-quick-pick-text">
+                    <b>{isLocating ? 'Konum alınıyor…' : 'Konumum'}</b>
+                    <small>
+                      {activeTab === 'from' ? 'Mevcut konumumu kullan' : 'Kalkış noktası yap'}
+                    </small>
                   </span>
-                  <ChevronRight size={16} className="search-item-arrow" />
                 </button>
+                <button
+                  type="button"
+                  className="search-quick-pick"
+                  onClick={handleSelectFromMap}
+                >
+                  <span className="search-quick-pick-icon">
+                    <MapPin size={18} />
+                  </span>
+                  <span className="search-quick-pick-text">
+                    <b>Haritadan Seç</b>
+                    <small>
+                      {activeTab === 'from' ? 'Haritada kalkış seç' : 'Haritada varış seç'}
+                    </small>
+                  </span>
+                </button>
+              </div>
 
+              <div className="search-results-list">
                 {POPULAR_PLACES.map((place, idx) => (
                   <button
                     type="button"
