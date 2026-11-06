@@ -172,10 +172,23 @@ const tokenMatchScore = (variant, token) => {
   return 0;
 };
 
-const queryTokenGroups = (query) => {
-  const tokens = normalizeText(query)
+const STOP_WORDS = new Set([
+  'edirne', 'merkez', 'mahalle', 'sokak', 'cadde', 'caddesi', 'bulvar', 'bulvari'
+]);
+
+const queryTokens = (query) => {
+  const allTokens = normalizeText(query)
     .split(' ')
     .filter((token) => token.length >= 2);
+
+  const meaningful = allTokens.filter((token) => !STOP_WORDS.has(token));
+  return meaningful.length > 0 ? meaningful : allTokens;
+};
+
+const compactQueryFor = (query) => queryTokens(query).join('');
+
+const queryTokenGroups = (query) => {
+  const tokens = queryTokens(query);
 
   return tokens.map((token) => {
     const variants = new Set([token]);
@@ -190,7 +203,7 @@ const queryTokenGroups = (query) => {
 };
 
 const nameMatchScore = (entry, query, groups) => {
-  const compactQuery = normalizeTr(query);
+  const compactQuery = compactQueryFor(query);
   const compactName = entry.compact || '';
 
   let compactScore = 0;
