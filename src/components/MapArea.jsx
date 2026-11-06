@@ -100,9 +100,9 @@ const createPinIcon = (color, isDestination = false) => {
         <div class="pin-arrow" style="border-top-color: ${color}"></div>
       </div>
     `,
-    iconSize: [30, 36],
-    iconAnchor: [15, 36],
-    popupAnchor: [0, -38]
+    iconSize: [30, 34],
+    iconAnchor: [15, 34],
+    popupAnchor: [0, -36]
   });
 };
 
@@ -187,6 +187,30 @@ function MapAutoFitter({
               animate: true
             });
           }
+        }
+        return;
+      }
+
+      // 4. Henüz rota yok: seçilen kalkış/varış noktalarına odaklan
+      const points = [];
+      if (Number.isFinite(fromLocation?.lat) && Number.isFinite(fromLocation?.lon)) {
+        points.push([fromLocation.lat, fromLocation.lon]);
+      }
+      if (Number.isFinite(toLocation?.lat) && Number.isFinite(toLocation?.lon)) {
+        points.push([toLocation.lat, toLocation.lon]);
+      }
+
+      if (points.length === 1) {
+        map.flyTo(points[0], 16, { duration: 0.9 });
+      } else if (points.length >= 2) {
+        const bounds = L.latLngBounds(points);
+        if (bounds.isValid()) {
+          map.fitBounds(bounds, {
+            paddingTopLeft: [60, 130],
+            paddingBottomRight: [60, 110],
+            maxZoom: 16,
+            animate: true
+          });
         }
       }
     }, 320);

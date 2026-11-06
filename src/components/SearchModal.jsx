@@ -19,7 +19,7 @@ const POPULAR_PLACES = [
   { id: 'p4', name: 'Edirne Otogar', subtitle: 'Şehirlerarası Terminal', lat: 41.6320, lon: 26.6184 }
 ];
 
-const PLACEHOLDER_QUERIES = ['Konumunuz', 'Mevcut Konumunuz', 'Mevcut Konum'];
+const PLACEHOLDER_QUERIES = ['Konumunuz', 'Mevcut Konumunuz', 'Mevcut Konum', 'Mevcut Konumum', 'Konumum'];
 const isPlaceholderQuery = (query) =>
   !query || query.trim().length < 2 || PLACEHOLDER_QUERIES.includes(query);
 
