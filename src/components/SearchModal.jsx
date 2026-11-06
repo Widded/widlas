@@ -6,11 +6,9 @@ import {
   ArrowUpDown,
   Bus,
   ChevronRight,
-  Eye,
   Crosshair
 } from 'lucide-react';
 import { searchPlacesOnline } from '../services/api';
-import { etusLines } from '../data/db';
 
 const POPULAR_PLACES = [
   { id: 'p1', name: 'Selimiye Camii', subtitle: 'Edirne Merkez', lat: 41.6781, lon: 26.5594 },
@@ -30,9 +28,7 @@ export default function SearchModal({
   fromLocation,
   toLocation,
   onSelectLocation,
-  onUseMyLocation,
-  onOpenLines,
-  onSelectLineOnMap
+  onUseMyLocation
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
   const [fromQuery, setFromQuery] = useState(fromLocation?.name || 'Konumunuz');
@@ -141,71 +137,44 @@ export default function SearchModal({
     }
   };
 
-  const handleResultSelect = (item) => {
-    if (item.type === 'line') {
-      const lineData = etusLines[item.lineCode];
-      if (lineData && onSelectLineOnMap) {
-        onSelectLineOnMap(lineData, 0);
-        onClose();
-        return;
-      }
-      if (onOpenLines) {
-        onOpenLines(item.lineCode);
-        onClose();
-        return;
-      }
-    }
-    handleSelectPlace(item);
-  };
+  // Konum seçimi olduğu için hat sonuçlarını listede gösterme.
+  const locationResults = searchResults.filter((item) => item.type !== 'line');
 
   const handleInputKeyDown = (event) => {
     if (event.key === 'Enter') {
-      const first = searchResults[0];
+      const first = locationResults[0];
       if (first) {
         event.preventDefault();
-        handleResultSelect(first);
+        handleSelectPlace(first);
       }
     }
   };
 
-  const renderResult = (item, idx) => {
-    const isLine = item.type === 'line';
-
-    return (
-      <button
-        type="button"
-        key={`res_${idx}_${item.name}`}
-        className="search-result-item"
-        style={{ animationDelay: `${Math.min(idx, 8) * 24}ms` }}
-        onClick={() => handleResultSelect(item)}
+  const renderResult = (item, idx) => (
+    <button
+      type="button"
+      key={`res_${idx}_${item.name}`}
+      className="search-result-item"
+      style={{ animationDelay: `${Math.min(idx, 8) * 24}ms` }}
+      onClick={() => handleSelectPlace(item)}
+    >
+      <span
+        className="search-item-badge-icon"
+        style={{ backgroundColor: 'rgba(255, 255, 255, 0.06)', color: 'var(--text-muted)' }}
       >
-        <span
-          className="search-item-badge-icon"
-          style={{
-            backgroundColor: isLine ? (item.lineColor || '#3B82F6') : 'rgba(255, 255, 255, 0.06)',
-            color: isLine ? '#FFFFFF' : 'var(--text-muted)'
-          }}
-        >
-          {isLine || item.type === 'stop' ? <Bus size={17} /> : <MapPin size={17} />}
-        </span>
+        {item.type === 'stop' ? <Bus size={17} /> : <MapPin size={17} />}
+      </span>
 
-        <span className="search-item-info">
-          <span className="search-item-name">{item.name}</span>
-          <span className="search-item-sub">
-            {item.detail || (item.type === 'stop' ? 'ETUS Durağı' : 'Edirne')}
-          </span>
+      <span className="search-item-info">
+        <span className="search-item-name">{item.name}</span>
+        <span className="search-item-sub">
+          {item.detail || (item.type === 'stop' ? 'ETUS Durağı' : 'Edirne')}
         </span>
+      </span>
 
-        {isLine ? (
-          <span className="search-item-line-action">
-            <Eye size={16} />
-          </span>
-        ) : (
-          <ChevronRight size={16} className="search-item-arrow" />
-        )}
-      </button>
-    );
-  };
+      <ChevronRight size={16} className="search-item-arrow" />
+    </button>
+  );
 
   return (
     <div className="search-modal-backdrop" onClick={onClose}>
@@ -322,13 +291,13 @@ export default function SearchModal({
             </div>
           )}
 
-          {!isSearching && hasQuery && searchResults.length > 0 && (
+          {!isSearching && hasQuery && locationResults.length > 0 && (
             <div className="search-results-list">
-              {searchResults.map(renderResult)}
+              {locationResults.map(renderResult)}
             </div>
           )}
 
-          {!isSearching && hasQuery && searchResults.length === 0 && (
+          {!isSearching && hasQuery && locationResults.length === 0 && (
             <div className="search-empty-state">
               <div className="search-empty-icon">
                 <Search size={24} />

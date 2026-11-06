@@ -505,12 +505,6 @@ export default function App() {
         toLocation={toLocation}
         onSelectLocation={handleSelectLocation}
         onUseMyLocation={handleUseMyLocation}
-        onOpenLines={(code) => {
-          setSelectedLineForModal(code || null);
-          setSearchModalOpen(false);
-          setLinesModalOpen(true);
-        }}
-        onSelectLineOnMap={handleSelectLineOnMap}
       />
 
       {/* 8. Lines Explorer Modal */}

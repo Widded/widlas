@@ -1492,18 +1492,6 @@ html, body {
   flex-shrink: 0;
 }
 
-.search-item-line-action {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--primary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 /* Loading skeleton */
 .search-skeleton-list {
   display: flex;
