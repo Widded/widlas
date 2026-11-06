@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { etusLines, allStopsDB } from '../data/db';
 import { ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 

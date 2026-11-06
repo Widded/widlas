@@ -1,7 +1,7 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Search, Map as MapIcon, ArrowUpDown, LocateFixed, ArrowLeft, MapPin, BusFront, X } from 'lucide-react';
+import { Map as MapIcon, ArrowUpDown, LocateFixed, ArrowLeft, MapPin, BusFront, X } from 'lucide-react';
 
-export const QUICK_PLACES = [
+const QUICK_PLACES = [
   { icon: '🚌', shortName: 'Otogar', name: 'Edirne Otogar', lat: 41.6320, lon: 26.6184 },
   { icon: '🛍️', shortName: 'Erasta AVM', name: 'Erasta AVM', lat: 41.6663, lon: 26.5710 },
   { icon: '🛒', shortName: 'Margi Outlet', name: 'Margi Outlet', lat: 41.6620, lon: 26.5813 },
@@ -16,7 +16,6 @@ export default function SearchBox({
   toLocation,
   activeInput,
   setActiveInput,
-  mapSelectionMode,
   setMapSelectionMode,
   fromSuggestions,
   toSuggestions,

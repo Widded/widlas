@@ -1,13 +1,10 @@
 import { LOCAL_PLACES, normalizeTr } from '../data/places';
 import { allStopsDB, etusLines } from '../data/db';
 
-const MB_PART_A = 'pk.eyJ1Ijoid2lkZGVkIiwiYSI6ImNtdXNpdXBnOTB4YmMyd3Mxd2NsYXo2ZzMifQ';
-const MB_PART_B = 'bEWk1zPyEYmByrckZXW4bA';
-export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || `${MB_PART_A}.${MB_PART_B}`;
-
-const TT_PART_A = 'YQZmtoZAt9wAdjbuwA1';
-const TT_PART_B = 'kcoeUoTYLttry';
-export const TOMTOM_TOKEN = import.meta.env.VITE_TOMTOM_TOKEN || `${TT_PART_A}${TT_PART_B}`;
+// API anahtarları yalnızca ortam değişkenlerinden okunur (.env).
+// .env dosyası git'e dahil edilmez; örnek değerler için .env.example dosyasına bakın.
+export const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN || '';
+export const TOMTOM_TOKEN = import.meta.env.VITE_TOMTOM_TOKEN || '';
 
 // Helper: Get user-friendly category badge & icon metadata
 export const getCategoryMeta = (item) => {
@@ -410,7 +407,7 @@ export const reverseGeocodeCoord = async (lat, lon) => {
         return addr.freeformAddress.replace(', Türkiye', '').replace(' Edirne', '');
       }
     }
-  } catch (e) {
+  } catch {
     // fallback
   }
 

@@ -3,13 +3,9 @@ import {
   Search,
   X,
   Bus,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
-  MapPin,
-  Eye,
-  Navigation,
-  ArrowUpDown
+  Eye
 } from 'lucide-react';
 import { etusLines, allStopsDB } from '../data/db';
 
@@ -51,6 +47,8 @@ export default function LinesExplorerModal({
 
   useEffect(() => {
     if (initialLineCode) {
+      // Modal her açıldığında seçili hattı aç: dış prop'tan gelen senkronizasyon.
+      // oxlint-disable-next-line react/set-state-in-effect
       setExpandedLineCode(initialLineCode);
       setActiveDirIdx(0);
     }

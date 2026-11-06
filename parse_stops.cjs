@@ -207,7 +207,6 @@ lines.forEach(l => {
   // Actually a simpler way: find the sequence of route tokens at the end.
   const words = l.split(' ');
   const routeTokens = [];
-  const nameTokens = [];
   
   // A route token is something like '1A', '1F', '3AYM', '6', '7A', etc.
   const isRouteToken = (str) => /^[0-9]+[A-Z]*$/.test(str) && str.length <= 4;

@@ -3,11 +3,7 @@ import {
   CreditCard,
   X,
   CheckCircle,
-  Clock,
-  Info,
-  ShieldCheck,
-  Zap,
-  Repeat
+  Info
 } from 'lucide-react';
 import { FARES, formatFare } from '../data/fares';
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Footprints, ArrowRight, BusFront } from 'lucide-react';
-import RouteItinerary, { terminalOf, buildItinerary } from './RouteItinerary';
+import RouteItinerary from './RouteItinerary';
+import { buildItinerary } from '../lib/itinerary';
 import { calculateFare, formatFare } from '../data/fares';
 
 const fmtWalk = (km) => {

@@ -1,32 +1,21 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import {
   Search,
-  Navigation,
-  Layers,
   X,
-  Compass,
-  Bus,
-  CreditCard,
   Bookmark,
-  Home,
-  Briefcase,
-  GraduationCap,
-  ShoppingBag,
-  Landmark,
   ArrowRight,
-  MapPin,
-  Mic,
-  SlidersHorizontal,
-  RefreshCw,
-  Clock
+  ChevronDown,
+  Menu
 } from 'lucide-react';
 import MapArea from './components/MapArea';
 import SearchModal from './components/SearchModal';
 import RouteResultSheet from './components/RouteResultSheet';
 import LinesExplorerModal from './components/LinesExplorerModal';
 import FaresModal from './components/FaresModal';
+import SavedPlacesModal from './components/SavedPlacesModal';
+import HomeMenuModal from './components/HomeMenuModal';
 import { calculateSmartRoute } from './data/routes';
-import { etusLines } from './data/db';
+import { savePlace } from './lib/savedPlaces';
 import {
   fetchWalkingPath,
   fetchRoadSnappedBusPath,
@@ -35,41 +24,29 @@ import {
 import useLiveLocation from './hooks/useLiveLocation';
 import './index.css';
 
-// Quick home & work presets
-const QUICK_SAVED_PRESETS = [
-  { id: 'q_uni', label: 'Trakya Üni', icon: GraduationCap, lat: 41.6389, lon: 26.6150, name: 'Trakya Üniversitesi Balkan Kampüsü' },
-  { id: 'q_erasta', label: 'Erasta AVM', icon: ShoppingBag, lat: 41.6663, lon: 26.5710, name: 'Erasta AVM' },
-  { id: 'q_selimiye', label: 'Selimiye', icon: Landmark, lat: 41.6781, lon: 26.5594, name: 'Selimiye Camii' },
-  { id: 'q_otogar', label: 'Otogar', icon: Bus, lat: 41.6320, lon: 26.6184, name: 'Edirne Otogar' },
-  { id: 'q_ev', label: 'Ev', icon: Home, lat: 41.6771, lon: 26.5557, name: 'Evim (Edirne Merkez)' },
-  { id: 'q_is', label: 'İş', icon: Briefcase, lat: 41.6735, lon: 26.5537, name: 'İş Yeri (Saraçlar)' }
-];
-
 export default function App() {
   // Navigation & UI Modals
-  const [activeTab, setActiveTab] = useState('explore'); // 'explore' | 'lines' | 'fares' | 'saved'
   const [searchModalOpen, setSearchModalOpen] = useState(false);
   const [searchTargetType, setSearchTargetType] = useState('to'); // 'from' | 'to'
   const [linesModalOpen, setLinesModalOpen] = useState(false);
   const [selectedLineForModal, setSelectedLineForModal] = useState(null);
   const [faresModalOpen, setFaresModalOpen] = useState(false);
-
-  // Map Controls
-  const [mapType, setMapType] = useState('Standart'); // 'Standart' | 'Uydu'
-  const [recenterTarget, setRecenterTarget] = useState(null);
+  const [savedModalOpen, setSavedModalOpen] = useState(false);
+  const [homeMenuOpen, setHomeMenuOpen] = useState(false);
 
   // Locations State
   const [fromLocation, setFromLocation] = useState({ name: 'Mevcut Konum', lat: null, lon: null });
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
 
   // Live Location & GPS
-  const { liveLocation, isWatching, isFollowing, setIsFollowing, startWatching } = useLiveLocation();
+  const { liveLocation, isFollowing, setIsFollowing } = useLiveLocation();
 
   // Routing State
   const [searchResults, setSearchResults] = useState(null);
   const [selectedRouteIdx, setSelectedRouteIdx] = useState(0);
   const [loading, setLoading] = useState(false);
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
+  const [routeSheetMinimized, setRouteSheetMinimized] = useState(false);
 
   // Geometry: Walking & Bus Roads
   const [walkingPathStart, setWalkingPathStart] = useState([]);
@@ -153,6 +130,7 @@ export default function App() {
     setLoading(true);
     // Clear any previous line preview
     setActiveLineData(null);
+    setRouteSheetMinimized(false);
 
     let fromLat = from?.lat;
     let fromLon = from?.lon;
@@ -186,30 +164,97 @@ export default function App() {
     }
   }, [liveLocation, showToast, updateRouteGeometry]);
 
-  // Handle selecting location from search modal
-  const handleSelectLocation = (place, target) => {
-    if (target === 'from') {
-      setFromLocation(place);
-      if (toLocation?.lat && toLocation?.lon) {
-        calculateRoute(place, toLocation);
-      }
-    } else {
-      setToLocation(place);
-      calculateRoute(fromLocation, place);
+  // Browser geolocation (tek seferlik)
+  const getCurrentCoords = useCallback(() => new Promise((resolve, reject) => {
+    if (!window.isSecureContext) {
+      reject(new Error('insecure-context'));
+      return;
     }
-  };
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude }),
+      (error) => reject(error),
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
+    );
+  }), []);
 
-  // Quick chips click
-  const handleQuickChipSelect = (preset) => {
-    const dest = { name: preset.name, lat: preset.lat, lon: preset.lon };
-    setToLocation(dest);
-    calculateRoute(fromLocation, dest);
+  // "Konumum" seçimi
+  const handleUseMyLocation = useCallback(async (target) => {
+    try {
+      const coords = await getCurrentCoords();
+      const place = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+
+      if (target === 'from') {
+        setFromLocation(place);
+        if (toLocation?.lat && toLocation?.lon) {
+          await calculateRoute(place, toLocation);
+        }
+        showToast('Kalkış noktanız konumunuz olarak ayarlandı.', 'success');
+      } else {
+        setFromLocation(place);
+        showToast('Konumunuz kalkış noktası olarak alındı.', 'success');
+      }
+
+      return place;
+    } catch (error) {
+      if (!window.isSecureContext) {
+        showToast('Konum için HTTPS gerekli. Canlı site veya localhost kullanın.', 'error', 6000);
+      } else if (error?.code === 1) {
+        showToast('Konum izni verilmedi. Tarayıcı ayarlarından izin verin.', 'error', 5000);
+      } else {
+        showToast('Konum alınamadı. Lütfen tekrar deneyin.', 'error');
+      }
+      return null;
+    }
+  }, [getCurrentCoords, toLocation, calculateRoute, showToast]);
+
+  // Handle selecting location from search modal
+  const handleSelectLocation = async (place, target) => {
+    const resolved = (!place?.lat || !place?.lon) && liveLocation?.lat
+      ? { ...place, lat: liveLocation.lat, lon: liveLocation.lon }
+      : place;
+
+    if (target === 'from') {
+      setFromLocation(resolved);
+      if (toLocation?.lat && toLocation?.lon) {
+        await calculateRoute(resolved, toLocation);
+      }
+      return;
+    }
+
+    if (!resolved?.lat || !resolved?.lon) {
+      showToast('Konumunuz henüz alınamadı. Lütfen haritadan bir nokta seçin.', 'warning');
+      return;
+    }
+
+    let origin = fromLocation;
+    if (!origin?.lat || !origin?.lon) {
+      showToast('Konumunuz alınıyor...', 'info', 4000);
+      try {
+        const coords = await getCurrentCoords();
+        origin = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+        setFromLocation(origin);
+      } catch (error) {
+        if (!window.isSecureContext) {
+          showToast('Konum yalnızca HTTPS veya localhost üzerinde alınabilir.', 'warning', 5000);
+        } else if (error?.code === 1) {
+          showToast('Konum izni verilmedi. Başlangıç Edirne merkezi kabul edildi.', 'warning', 5000);
+        }
+      }
+    }
+
+    setToLocation(resolved);
+    await calculateRoute(origin, resolved);
   };
 
   // Clear active route & return to explore
   const handleClearRoute = () => {
     setSearchResults(null);
     setSelectedRouteIdx(0);
+    setRouteSheetMinimized(false);
     setToLocation({ name: '', lat: null, lon: null });
     setWalkingPathStart([]);
     setWalkingPathEnd([]);
@@ -219,32 +264,40 @@ export default function App() {
     setActiveLineData(null);
   };
 
+  // Save current destination to localStorage
+  const handleSaveDestination = () => {
+    if (!toLocation?.lat || !toLocation?.lon) {
+      showToast('Kaydetmek için önce bir hedef seçin.', 'warning');
+      return;
+    }
+    savePlace(toLocation);
+    showToast(`"${toLocation.name || 'Hedef'}" kaydedildi.`, 'success');
+  };
+
   // Map click handler (pick point from map)
   const handleMapClick = async (lat, lon) => {
-    // If not in route mode, ask to route to this point
     const placeName = await reverseGeocodeCoord(lat, lon);
-    const dest = { name: placeName, lat, lon };
-    setToLocation(dest);
-    showToast(`Hedef seçildi: ${placeName}`);
-    calculateRoute(fromLocation, dest);
-  };
+    const picked = { name: placeName, lat, lon };
 
-  // Recenter GPS button
-  const handleRecenter = () => {
-    if (liveLocation && Number.isFinite(liveLocation.lat) && Number.isFinite(liveLocation.lon)) {
-      setRecenterTarget({ lat: liveLocation.lat, lon: liveLocation.lon, zoom: 16 });
-      setIsFollowing(true);
-      showToast('Konumunuza odaklanıldı.');
-    } else {
-      startWatching();
-      showToast('Konumunuz tespit ediliyor...');
+    let origin = fromLocation;
+    if (!origin?.lat || !origin?.lon) {
+      showToast('Konumunuz alınıyor...', 'info', 4000);
+      try {
+        const coords = await getCurrentCoords();
+        origin = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+        setFromLocation(origin);
+      } catch (error) {
+        if (!window.isSecureContext) {
+          showToast('Konum yalnızca HTTPS veya localhost üzerinde alınabilir.', 'warning', 5000);
+        } else if (error?.code === 1) {
+          showToast('Konum izni verilmedi. Başlangıç Edirne merkezi kabul edildi.', 'warning', 5000);
+        }
+      }
     }
-  };
 
-  // Layer toggle button
-  const handleToggleLayer = () => {
-    setMapType(prev => (prev === 'Standart' ? 'Uydu' : 'Standart'));
-    showToast(`Harita modu: ${mapType === 'Standart' ? 'Uydu (Google Hybrid)' : 'Standart'}`);
+    setToLocation(picked);
+    showToast(`Hedef seçildi: ${placeName}`);
+    await calculateRoute(origin, picked);
   };
 
   // Line Explorer selection
@@ -265,6 +318,7 @@ export default function App() {
 
   const activeRoute = searchResults?.[selectedRouteIdx] || null;
 
+  // Homepage: closest stops to the user (or city center as fallback)
   return (
     <div className="mobile-web-app">
       {/* 1. Full-Screen Fixed Leaflet Background Map */}
@@ -282,54 +336,49 @@ export default function App() {
         liveLocation={liveLocation}
         isFollowing={isFollowing}
         setIsFollowing={setIsFollowing}
-        mapType={mapType}
-        recenterTarget={recenterTarget}
+        routeSheetMinimized={routeSheetMinimized}
         onMapClick={handleMapClick}
       />
 
-      {/* 2. Floating Top Header & Controls */}
+      {/* 2. Floating Top Header */}
       <div className="floating-top-container">
         {!activeRoute ? (
-          /* Normal State: Floating Search Bar & Quick Chips */
+          /* Home: minimal route planner */
           <div className="explore-header-wrapper">
-            {/* Search Pill Trigger */}
-            <div
-              className="floating-search-bar"
-              onClick={() => {
-                setSearchTargetType('to');
-                setSearchModalOpen(true);
-              }}
-            >
-              <div className="search-bar-left">
-                <Search size={18} className="search-icon-svg text-primary" />
-                <span className="search-bar-placeholder">Varış noktası veya hat ara...</span>
-              </div>
-              <div className="search-bar-right">
-                <div className="search-mic-badge">
-                  <Mic size={15} />
-                </div>
-              </div>
-            </div>
+            <div className="home-route-stack">
+              <button
+                className="home-input-pill origin"
+                onClick={() => {
+                  setSearchTargetType('from');
+                  setSearchModalOpen(true);
+                }}
+              >
+                <span className="home-route-dot origin" />
+                <span className="home-input-text" title={fromLocation.name}>
+                  {fromLocation.name || 'Konumum'}
+                </span>
+                <ChevronDown size={16} className="home-input-tail" />
+              </button>
 
-            {/* Quick Chips Carousel */}
-            <div className="quick-chips-carousel">
-              {QUICK_SAVED_PRESETS.map(preset => {
-                const IconComp = preset.icon;
-                return (
-                  <button
-                    key={preset.id}
-                    className="quick-chip-button"
-                    onClick={() => handleQuickChipSelect(preset)}
-                  >
-                    <IconComp size={13} className="quick-chip-icon" />
-                    <span>{preset.label}</span>
-                  </button>
-                );
-              })}
+              <button
+                className="home-input-pill dest"
+                onClick={() => {
+                  setSearchTargetType('to');
+                  setSearchModalOpen(true);
+                }}
+              >
+                <span className="home-route-dot dest" />
+                <span className={`home-input-text ${!toLocation.name ? 'is-placeholder' : ''}`} title={toLocation.name}>
+                  {toLocation.name || 'Nereye gitmek istiyorsun?'}
+                </span>
+                <span className="home-input-search">
+                  <Search size={16} />
+                </span>
+              </button>
             </div>
           </div>
         ) : (
-          /* Active Route State: Spec-Accurate Pill Header with Aligned Close Button */
+          /* Active Route State: Pill Header with Close Button */
           <div className="route-header-wrapper">
             <div className="route-active-pill-bar">
               {/* Left: Origin Chip */}
@@ -363,38 +412,31 @@ export default function App() {
                 <span className="route-chip-text" title={toLocation.name}>
                   {toLocation.name || 'Varış Noktası'}
                 </span>
+                <button
+                  className="route-chip-save-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSaveDestination();
+                  }}
+                  title="Hedefi Kaydet"
+                  aria-label="Hedefi Kaydet"
+                >
+                  <Bookmark size={13} />
+                </button>
               </div>
             </div>
 
-            {/* Far Right: Circular 44x44 Close Button Aligned with Map Controls */}
+            {/* Close route button */}
             <button
               className="route-pill-close-btn"
               onClick={handleClearRoute}
               title="Rotayı Kapat"
+              aria-label="Rotayı kapat"
             >
               <X size={20} />
             </button>
           </div>
         )}
-
-        {/* Floating Map Controls (Top Right: Recenter & Layer) */}
-        <div className="floating-map-controls">
-          <button
-            className={`map-ctrl-btn ${isFollowing ? 'active' : ''}`}
-            onClick={handleRecenter}
-            title="Konumuma Git"
-          >
-            <Navigation size={20} className={isFollowing ? 'text-primary' : ''} />
-          </button>
-
-          <button
-            className={`map-ctrl-btn ${mapType === 'Uydu' ? 'active' : ''}`}
-            onClick={handleToggleLayer}
-            title={`Harita Tipi (${mapType})`}
-          >
-            <Layers size={20} />
-          </button>
-        </div>
       </div>
 
       {/* 3. Loading Indicator */}
@@ -436,56 +478,22 @@ export default function App() {
           }}
           toLocation={toLocation}
           fromLocation={fromLocation}
-          fareType={fareType}
-          onFareTypeChange={setFareType}
+          onMinimizedChange={setRouteSheetMinimized}
           onClose={handleClearRoute}
         />
       )}
 
-      {/* 6. Floating Bottom Navigation Bar (Hidden when active route sheet is open) */}
+      {/* 6. Minimal home menu */}
       {!searchResults && (
-        <nav className="floating-bottom-nav">
-          <button
-            className={`bottom-nav-item ${activeTab === 'explore' ? 'active' : ''}`}
-            onClick={() => setActiveTab('explore')}
-          >
-            <Compass size={20} />
-            <span>Keşfet</span>
-          </button>
-
-          <button
-            className={`bottom-nav-item ${activeTab === 'lines' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('lines');
-              setLinesModalOpen(true);
-            }}
-          >
-            <Bus size={20} />
-            <span>Hatlar</span>
-          </button>
-
-          <button
-            className={`bottom-nav-item ${activeTab === 'fares' ? 'active' : ''}`}
-            onClick={() => {
-              setActiveTab('fares');
-              setFaresModalOpen(true);
-            }}
-          >
-            <CreditCard size={20} />
-            <span>Tarife</span>
-          </button>
-
-          <button
-            className={`bottom-nav-item ${activeTab === 'saved' ? 'active' : ''}`}
-            onClick={() => {
-              setSearchTargetType('to');
-              setSearchModalOpen(true);
-            }}
-          >
-            <Bookmark size={20} />
-            <span>Kaydedilenler</span>
-          </button>
-        </nav>
+        <button
+          className="home-menu-btn"
+          onClick={() => setHomeMenuOpen(true)}
+          aria-label="Menüyü aç"
+          title="Menü"
+        >
+          <Menu size={17} />
+          <span>Menü</span>
+        </button>
       )}
 
       {/* 7. Search Modal */}
@@ -496,10 +504,7 @@ export default function App() {
         fromLocation={fromLocation}
         toLocation={toLocation}
         onSelectLocation={handleSelectLocation}
-        onSelectFromMap={(target) => {
-          setSearchTargetType(target);
-          showToast('Haritada istediğiniz noktaya dokunun.');
-        }}
+        onUseMyLocation={handleUseMyLocation}
         onOpenLines={(code) => {
           setSelectedLineForModal(code || null);
           setSearchModalOpen(false);
@@ -515,7 +520,6 @@ export default function App() {
         onClose={() => {
           setLinesModalOpen(false);
           setSelectedLineForModal(null);
-          setActiveTab('explore');
         }}
         onSelectLineOnMap={handleSelectLineOnMap}
       />
@@ -525,13 +529,42 @@ export default function App() {
         isOpen={faresModalOpen}
         onClose={() => {
           setFaresModalOpen(false);
-          setActiveTab('explore');
         }}
         fareType={fareType}
         onSelectFareType={setFareType}
       />
 
-      {/* 10. Toast Notification */}
+      {/* 10. Saved Places Modal */}
+      <SavedPlacesModal
+        isOpen={savedModalOpen}
+        onClose={() => {
+          setSavedModalOpen(false);
+        }}
+        onSelectPlace={(place) => {
+          handleSelectLocation(place, 'to');
+        }}
+      />
+
+      {/* 11. Home Menu Modal */}
+      <HomeMenuModal
+        isOpen={homeMenuOpen}
+        onClose={() => setHomeMenuOpen(false)}
+        onOpenLines={() => {
+          setHomeMenuOpen(false);
+          setSelectedLineForModal(null);
+          setLinesModalOpen(true);
+        }}
+        onOpenFares={() => {
+          setHomeMenuOpen(false);
+          setFaresModalOpen(true);
+        }}
+        onOpenSaved={() => {
+          setHomeMenuOpen(false);
+          setSavedModalOpen(true);
+        }}
+      />
+
+      {/* 12. Toast Notification */}
       {toast && (
         <div className={`floating-toast ${toast.type}`}>
           <span>{toast.message}</span>

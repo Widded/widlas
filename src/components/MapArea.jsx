@@ -118,71 +118,97 @@ function MapAutoFitter({
   roadSnappedBusPath,
   roadSnappedBusPath1,
   roadSnappedBusPath2,
+  routeSheetMinimized,
   recenterTarget
 }) {
   const map = useMap();
+  const fitTimerRef = useRef(null);
 
   useEffect(() => {
-    // 1. Recenter target if provided
-    if (recenterTarget && Number.isFinite(recenterTarget.lat) && Number.isFinite(recenterTarget.lon)) {
-      map.flyTo([recenterTarget.lat, recenterTarget.lon], recenterTarget.zoom || 15, { duration: 1.0 });
-      return;
-    }
+    // Yürüme yolu ve road-snap geometrileri art arda geldiği için her birinde
+    // fitBounds çağırmak haritayı sürekli zıplatıyordu. Kısa debounce ile
+    // tüm geometri oturduktan sonra tek seferde sığdırıyoruz.
+    if (fitTimerRef.current) clearTimeout(fitTimerRef.current);
 
-    // 2. Active Line Explorer Mode
-    if (activeLineData?.directions?.[activeLineDirIdx]?.path?.length > 1) {
-      const path = activeLineData.directions[activeLineDirIdx].path;
-      const bounds = L.latLngBounds(path);
-      if (bounds.isValid()) {
-        map.fitBounds(bounds, {
-          paddingTopLeft: [70, 30],
-          paddingBottomRight: [30, window.innerWidth < 768 ? 200 : 70],
-          maxZoom: 15,
-          animate: true
-        });
+    fitTimerRef.current = setTimeout(() => {
+      // 1. Recenter target if provided
+      if (recenterTarget && Number.isFinite(recenterTarget.lat) && Number.isFinite(recenterTarget.lon)) {
+        map.flyTo([recenterTarget.lat, recenterTarget.lon], recenterTarget.zoom || 15, { duration: 1.0 });
+        return;
       }
-      return;
-    }
 
-    // 3. Active Route Mode
-    if (activeRoute) {
-      const coords = [];
-      if (fromLocation?.lat && fromLocation?.lon) coords.push([fromLocation.lat, fromLocation.lon]);
-      if (toLocation?.lat && toLocation?.lon) coords.push([toLocation.lat, toLocation.lon]);
-
-      if (roadSnappedBusPath?.length) coords.push(...roadSnappedBusPath);
-      else if (activeRoute.routeGeometry?.length) coords.push(...activeRoute.routeGeometry);
-
-      if (roadSnappedBusPath1?.length) coords.push(...roadSnappedBusPath1);
-      else if (activeRoute.routeGeometry1?.length) coords.push(...activeRoute.routeGeometry1);
-
-      if (roadSnappedBusPath2?.length) coords.push(...roadSnappedBusPath2);
-      else if (activeRoute.routeGeometry2?.length) coords.push(...activeRoute.routeGeometry2);
-
-      if (walkingPathStart?.length) coords.push(...walkingPathStart);
-      if (walkingPathEnd?.length) coords.push(...walkingPathEnd);
-
-      const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]));
-      if (validCoords.length >= 2) {
-        const bounds = L.latLngBounds(validCoords);
+      // 2. Active Line Explorer Mode
+      if (activeLineData?.directions?.[activeLineDirIdx]?.path?.length > 1) {
+        const path = activeLineData.directions[activeLineDirIdx].path;
+        const bounds = L.latLngBounds(path);
         if (bounds.isValid()) {
           map.fitBounds(bounds, {
-            paddingTopLeft: [80, 24],
-            paddingBottomRight: [24, window.innerWidth < 768 ? 240 : 80],
-            maxZoom: 16,
+            paddingTopLeft: [70, 30],
+            paddingBottomRight: [30, window.innerWidth < 768 ? 200 : 70],
+            maxZoom: 15,
             animate: true
           });
         }
+        return;
       }
-    }
+
+      // 3. Active Route Mode
+      if (activeRoute) {
+        const coords = [];
+        if (fromLocation?.lat && fromLocation?.lon) coords.push([fromLocation.lat, fromLocation.lon]);
+        if (toLocation?.lat && toLocation?.lon) coords.push([toLocation.lat, toLocation.lon]);
+
+        if (roadSnappedBusPath?.length) coords.push(...roadSnappedBusPath);
+        else if (activeRoute.routeGeometry?.length) coords.push(...activeRoute.routeGeometry);
+
+        if (roadSnappedBusPath1?.length) coords.push(...roadSnappedBusPath1);
+        else if (activeRoute.routeGeometry1?.length) coords.push(...activeRoute.routeGeometry1);
+
+        if (roadSnappedBusPath2?.length) coords.push(...roadSnappedBusPath2);
+        else if (activeRoute.routeGeometry2?.length) coords.push(...activeRoute.routeGeometry2);
+
+        if (walkingPathStart?.length) coords.push(...walkingPathStart);
+        if (walkingPathEnd?.length) coords.push(...walkingPathEnd);
+
+        const validCoords = coords.filter(c => Array.isArray(c) && c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]));
+        if (validCoords.length >= 2) {
+          const bounds = L.latLngBounds(validCoords);
+          if (bounds.isValid()) {
+            const isMobile = window.innerWidth < 768;
+            // Rota paneli açıkken haritanın görünen üst kısmına sığdır.
+            // Panel yüksekliği CSS'te 64dvh (max 720px) olduğu için aynı değeri kullan.
+            const bottomPad = activeRoute && !routeSheetMinimized
+              ? Math.min(Math.round(window.innerHeight * 0.64), 720)
+              : (isMobile ? 110 : 80);
+            map.fitBounds(bounds, {
+              paddingTopLeft: [80, 24],
+              paddingBottomRight: [24, bottomPad],
+              maxZoom: 16,
+              animate: true
+            });
+          }
+        }
+      }
+    }, 320);
+
+    return () => {
+      if (fitTimerRef.current) clearTimeout(fitTimerRef.current);
+    };
   }, [
-    activeRoute?.id, 
-    activeLineData?.code, 
-    activeLineDirIdx, 
-    recenterTarget, 
-    roadSnappedBusPath, 
-    roadSnappedBusPath1, 
-    roadSnappedBusPath2, 
+    activeRoute,
+    activeLineData,
+    activeLineDirIdx,
+    fromLocation?.lat,
+    fromLocation?.lon,
+    toLocation?.lat,
+    toLocation?.lon,
+    walkingPathStart,
+    walkingPathEnd,
+    routeSheetMinimized,
+    recenterTarget,
+    roadSnappedBusPath,
+    roadSnappedBusPath1,
+    roadSnappedBusPath2,
     map
   ]);
 
@@ -196,7 +222,7 @@ function LiveLocationFollower({ liveLocation, isFollowing }) {
     if (isFollowing && liveLocation && Number.isFinite(liveLocation.lat) && Number.isFinite(liveLocation.lon)) {
       map.panTo([liveLocation.lat, liveLocation.lon], { animate: true, duration: 0.8 });
     }
-  }, [liveLocation?.lat, liveLocation?.lon, isFollowing, map]);
+  }, [liveLocation, isFollowing, map]);
   return null;
 }
 
@@ -232,6 +258,7 @@ const MapArea = React.memo(function MapArea({
   isFollowing = false,
   setIsFollowing,
   recenterTarget = null,
+  routeSheetMinimized = false,
   onMapClick
 }) {
   const mapRef = useRef(null);
@@ -260,7 +287,7 @@ const MapArea = React.memo(function MapArea({
       iconSize: [26, 26],
       iconAnchor: [13, 13]
     });
-  }, [liveLocation?.heading]);
+  }, [liveLocation]);
 
   // Direct route transit geometry & stops
   const directGeometry = useMemo(() => {
@@ -358,6 +385,7 @@ const MapArea = React.memo(function MapArea({
           roadSnappedBusPath={roadSnappedBusPath}
           roadSnappedBusPath1={roadSnappedBusPath1}
           roadSnappedBusPath2={roadSnappedBusPath2}
+          routeSheetMinimized={routeSheetMinimized}
           recenterTarget={recenterTarget}
         />
 
@@ -374,14 +402,14 @@ const MapArea = React.memo(function MapArea({
 
         {/* 2. Custom Origin Location Pin */}
         {showOriginPin && (
-          <Marker position={[fromLocation.lat, fromLocation.lon]} icon={createPinIcon('#0284C7', false)}>
+          <Marker position={[fromLocation.lat, fromLocation.lon]} icon={createPinIcon('#1E2530', false)}>
             <Popup><b>Başlangıç:</b><br />{fromLocation.name}</Popup>
           </Marker>
         )}
 
         {/* 3. Destination Pin */}
         {showDestinationPin && (
-          <Marker position={[toLocation.lat, toLocation.lon]} icon={createPinIcon('#EF4444', true)}>
+          <Marker position={[toLocation.lat, toLocation.lon]} icon={createPinIcon('#1E2530', true)}>
             <Popup><b>Varış Noktası:</b><br />{toLocation.name}</Popup>
           </Marker>
         )}
@@ -390,13 +418,13 @@ const MapArea = React.memo(function MapArea({
         {walkingPathStart.length > 1 && (
           <Polyline
             positions={walkingPathStart}
-            pathOptions={{ color: '#38BDF8', weight: 4, dashArray: '6, 6', opacity: 0.95 }}
+            pathOptions={{ color: '#F3F4F6', weight: 4, dashArray: '6, 6', opacity: 0.9 }}
           />
         )}
         {walkingPathEnd.length > 1 && (
           <Polyline
             positions={walkingPathEnd}
-            pathOptions={{ color: '#38BDF8', weight: 4, dashArray: '6, 6', opacity: 0.95 }}
+            pathOptions={{ color: '#F3F4F6', weight: 4, dashArray: '6, 6', opacity: 0.9 }}
           />
         )}
 

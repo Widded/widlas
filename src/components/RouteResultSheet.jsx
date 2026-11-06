@@ -1,23 +1,16 @@
 import React, { useState, useMemo } from 'react';
 import {
-  SlidersHorizontal,
-  Clock,
   Repeat,
   Footprints,
   Bus,
-  ChevronRight,
   ChevronDown,
   ChevronUp,
-  Navigation,
   Maximize2,
   RefreshCw,
   ArrowRight,
   MapPin,
-  X,
-  CreditCard,
   CheckCircle2
 } from 'lucide-react';
-import { calculateFare, formatFare } from '../data/fares';
 
 const fmtDuration = (totalMinutes) => {
   if (!totalMinutes) return '0 dk';
@@ -41,9 +34,7 @@ export default function RouteResultSheet({
   selectedIdx = 0,
   onSelectIdx,
   toLocation,
-  fromLocation,
-  fareType = 'ogrenci', // 'ogrenci' | 'tam'
-  onFareTypeChange,
+  onMinimizedChange,
   onClose
 }) {
   const routes = useMemo(() => {
@@ -52,9 +43,13 @@ export default function RouteResultSheet({
     return [];
   }, [incomingRoutes]);
 
-  const [filterType, setFilterType] = useState('fastest'); // 'fastest' | 'least_transfers'
   const [isMinimized, setIsMinimized] = useState(false);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
+
+  const setMinimized = (value) => {
+    setIsMinimized(value);
+    if (onMinimizedChange) onMinimizedChange(value);
+  };
 
   // Preserve original indices for selection
   const indexedRoutes = useMemo(() => {
@@ -62,29 +57,20 @@ export default function RouteResultSheet({
     return routes.map((r, idx) => ({ ...r, _originalIdx: idx }));
   }, [routes]);
 
-  // Sort routes based on filter
-  const sortedRoutes = useMemo(() => {
-    const list = [...indexedRoutes];
-    if (filterType === 'fastest') {
-      return list.sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0));
-    }
-    if (filterType === 'least_transfers') {
-      return list.sort((a, b) => {
-        const transA = a.isWalkOnly ? 0 : a.isTransfer ? 1 : 0;
-        const transB = b.isWalkOnly ? 0 : b.isTransfer ? 1 : 0;
-        if (transA !== transB) return transA - transB;
-        return (a.totalTime || 0) - (b.totalTime || 0);
-      });
-    }
-    return list;
-  }, [indexedRoutes, filterType]);
+  // En hızlıdan yavaşa sırala, ilk 6 alternatifi göster
+  const sortedRoutes = useMemo(
+    () => [...indexedRoutes]
+      .sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0))
+      .slice(0, 6),
+    [indexedRoutes]
+  );
 
   const currentRoute = routes[selectedIdx] || routes[0];
 
   // 1. EMPTY STATE
   if (!routes || routes.length === 0) {
     return (
-      <div className="route-sheet-container">
+      <div className="route-sheet-container is-empty">
         <div className="route-sheet-grabber-box">
           <div className="route-sheet-grabber-bar" />
         </div>
@@ -107,13 +93,11 @@ export default function RouteResultSheet({
     );
   }
 
-  const fare = calculateFare(fareType, currentRoute?.isTransfer);
-
   // 2. MINIMIZED FLOATING CAPSULE VIEW (For inspecting the map freely)
   if (isMinimized) {
     return (
       <div className="route-minimized-wrapper">
-        <div className="route-minimized-card" onClick={() => setIsMinimized(false)}>
+        <div className="route-minimized-card" onClick={() => setMinimized(false)}>
           <div className="route-minimized-row">
             <div
               className="route-mini-badge"
@@ -132,7 +116,7 @@ export default function RouteResultSheet({
             <div className="route-minimized-info">
               <span className="route-minimized-dest">{toLocation?.name || 'Seçilen Hedef'}</span>
               <span className="route-minimized-sub">
-                {fmtDuration(currentRoute?.totalTime)} • {fmtDist(currentRoute)} • {formatFare(fare)}
+                {fmtDuration(currentRoute?.totalTime)} • {fmtDist(currentRoute)}
               </span>
             </div>
 
@@ -149,59 +133,27 @@ export default function RouteResultSheet({
   return (
     <div className="route-sheet-container">
       {/* Top Grabber Handle */}
-      <div className="route-sheet-grabber-box" onClick={() => setIsMinimized(true)}>
+      <div className="route-sheet-grabber-box" onClick={() => setMinimized(true)}>
         <div className="route-sheet-grabber-bar" />
       </div>
 
-      {/* Header: Title, Filters & Fare Toggle */}
+      {/* Header */}
       <div className="route-sheet-header">
         <div className="route-sheet-title-col">
           <div className="route-sheet-title-row">
-            <SlidersHorizontal size={17} className="text-muted" />
-            <span className="route-sheet-main-title">Tüm Rotalar</span>
-            <span className="route-sheet-count-tag">{routes.length} seçenek</span>
+            <span className="route-sheet-main-title">Rotalar</span>
+            <span className="route-sheet-count-tag">{sortedRoutes.length} seçenek</span>
           </div>
         </div>
 
-        {/* Filter Pills */}
-        <div className="route-filter-pills-group">
-          <button
-            className={`route-filter-pill ${filterType === 'fastest' ? 'active' : ''}`}
-            onClick={() => setFilterType('fastest')}
-          >
-            <Clock size={13} />
-            <span>En hızlı</span>
-          </button>
-          <button
-            className={`route-filter-pill ${filterType === 'least_transfers' ? 'active' : ''}`}
-            onClick={() => setFilterType('least_transfers')}
-          >
-            <Repeat size={13} />
-            <span>En az aktarma</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Fare Preference Bar */}
-      <div className="route-fare-type-bar">
-        <span className="route-fare-bar-label">
-          <CreditCard size={14} />
-          <span>Ücret Tarifesi:</span>
-        </span>
-        <div className="route-fare-toggle-group">
-          <button
-            className={`route-fare-toggle-btn ${fareType === 'ogrenci' ? 'active' : ''}`}
-            onClick={() => onFareTypeChange && onFareTypeChange('ogrenci')}
-          >
-            Öğrenci (28,50 ₺)
-          </button>
-          <button
-            className={`route-fare-toggle-btn ${fareType === 'tam' ? 'active' : ''}`}
-            onClick={() => onFareTypeChange && onFareTypeChange('tam')}
-          >
-            Tam (42,00 ₺)
-          </button>
-        </div>
+        <button
+          className="route-sheet-minimize-btn"
+          onClick={() => setMinimized(true)}
+          title="Haritayı Gör"
+          aria-label="Haritayı Gör"
+        >
+          <ChevronDown size={18} />
+        </button>
       </div>
 
       {/* Route Cards Scrollable List */}
@@ -209,7 +161,6 @@ export default function RouteResultSheet({
         {sortedRoutes.map((route) => {
           const isSelected = route._originalIdx === selectedIdx;
           const isExpanded = expandedRouteId === route.id;
-          const cardFare = calculateFare(fareType, route.isTransfer);
 
           return (
             <div
@@ -278,7 +229,6 @@ export default function RouteResultSheet({
                 {/* Duration & Fare Badges */}
                 <div className="route-card-stats">
                   <span className="route-stat-time">{fmtDuration(route.totalTime)}</span>
-                  <span className="route-stat-fare">{formatFare(cardFare)}</span>
                 </div>
               </div>
 

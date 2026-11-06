@@ -208,7 +208,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
       const line1Data = etusLines[line1Code];
       if (!line1Data) continue;
 
-      line1Data.directions.forEach((dir1, dir1Idx) => {
+      line1Data.directions.forEach((dir1) => {
         const idxA = dir1.stopIds.indexOf(sStop.id);
         if (idxA === -1) return;
 
