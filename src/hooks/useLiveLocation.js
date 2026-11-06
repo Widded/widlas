@@ -132,6 +132,7 @@ export default function useLiveLocation() {
 
   return {
     liveLocation,
+    setLiveLocation,
     isWatching,
     isFollowing,
     setIsFollowing,

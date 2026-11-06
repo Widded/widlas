@@ -28,7 +28,8 @@ export default function SearchModal({
   fromLocation,
   toLocation,
   onSelectLocation,
-  onUseMyLocation
+  onUseMyLocation,
+  userLocation
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
   const [fromQuery, setFromQuery] = useState(fromLocation?.name || 'Konumunuz');
@@ -40,6 +41,8 @@ export default function SearchModal({
   const toInputRef = useRef(null);
   const fromInputRef = useRef(null);
   const debounceTimer = useRef(null);
+  const abortRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -82,6 +85,8 @@ export default function SearchModal({
     if (!isOpen) return;
 
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    abortRef.current?.abort();
+    const requestId = ++requestIdRef.current;
 
     if (isPlaceholderQuery(activeQuery)) {
       // oxlint-disable-next-line react/set-state-in-effect
@@ -90,23 +95,35 @@ export default function SearchModal({
       return;
     }
 
+    const controller = new AbortController();
+    abortRef.current = controller;
     setIsSearching(true);
 
     debounceTimer.current = setTimeout(async () => {
       try {
-        const results = await searchPlacesOnline(activeQuery);
+        const results = await searchPlacesOnline(activeQuery, {
+          signal: controller.signal,
+          userLocation
+        });
+        if (controller.signal.aborted || requestId !== requestIdRef.current) return;
         setSearchResults(results);
       } catch (err) {
+        if (err?.name === 'AbortError') return;
         console.error('Search error:', err);
+        if (requestId === requestIdRef.current) setSearchResults([]);
       } finally {
-        setIsSearching(false);
+        if (requestId === requestIdRef.current) setIsSearching(false);
       }
-    }, 250);
+    }, 280);
 
     return () => {
       if (debounceTimer.current) clearTimeout(debounceTimer.current);
+      controller.abort();
     };
-  }, [activeQuery, activeTab, isOpen]);
+    // Koordinat değişimine göre yeniden ara; userLocation objesi her GPS
+    // güncellemesinde yeni referans olduğu için objeyi bağımlılık yapmıyoruz.
+    // oxlint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeQuery, activeTab, isOpen, userLocation?.lat, userLocation?.lon]);
 
   if (!isOpen) return null;
 

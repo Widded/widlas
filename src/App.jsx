@@ -39,7 +39,7 @@ export default function App() {
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
 
   // Live Location & GPS
-  const { liveLocation, isFollowing, setIsFollowing } = useLiveLocation();
+  const { liveLocation, setLiveLocation, isFollowing, setIsFollowing } = useLiveLocation();
 
   // Routing State
   const [searchResults, setSearchResults] = useState(null);
@@ -175,11 +175,23 @@ export default function App() {
       return;
     }
     navigator.geolocation.getCurrentPosition(
-      (position) => resolve({ lat: position.coords.latitude, lon: position.coords.longitude }),
+      (position) => {
+        const coords = {
+          lat: position.coords.latitude,
+          lon: position.coords.longitude
+        };
+        setLiveLocation({
+          ...coords,
+          heading: null,
+          accuracy: position.coords.accuracy,
+          speed: position.coords.speed
+        });
+        resolve(coords);
+      },
       (error) => reject(error),
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
     );
-  }), []);
+  }), [setLiveLocation]);
 
   // "Konumum" seçimi
   const handleUseMyLocation = useCallback(async (target) => {
@@ -503,6 +515,7 @@ export default function App() {
         targetType={searchTargetType}
         fromLocation={fromLocation}
         toLocation={toLocation}
+        userLocation={liveLocation}
         onSelectLocation={handleSelectLocation}
         onUseMyLocation={handleUseMyLocation}
       />
