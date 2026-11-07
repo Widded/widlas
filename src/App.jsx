@@ -4,6 +4,7 @@ import {
   X,
   Bookmark,
   ArrowRight,
+  ArrowLeftRight,
   Crosshair,
   Navigation,
   Menu,
@@ -583,12 +584,35 @@ export default function App() {
               {activeLineData.code}
             </span>
             <span className="line-preview-text">
-              {activeLineData.name || `Hat ${activeLineData.code}`} inceleniyor
+              {activeLineData.directions?.[activeLineDirIdx]?.headSign ||
+                activeLineData.name ||
+                `Hat ${activeLineData.code}`}
             </span>
           </div>
-          <button className="line-preview-close" onClick={() => setActiveLineData(null)}>
-            <X size={16} />
-          </button>
+          <div className="line-preview-actions">
+            {activeLineData.directions?.length > 1 && (
+              <button
+                type="button"
+                className="line-preview-dir-btn"
+                onClick={() =>
+                  setActiveLineDirIdx((prev) => (prev + 1) % activeLineData.directions.length)
+                }
+                title="Yönü değiştir"
+                aria-label="Yönü değiştir"
+              >
+                <ArrowLeftRight size={14} />
+              </button>
+            )}
+            <button
+              type="button"
+              className="line-preview-close"
+              onClick={() => setActiveLineData(null)}
+              aria-label="Kapat"
+              title="Kapat"
+            >
+              <X size={16} />
+            </button>
+          </div>
         </div>
       )}
 
