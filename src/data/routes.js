@@ -1,5 +1,9 @@
 import { allStopsDB, etusLines } from './db.js';
+import { buildPlatformData } from './platforms.js';
 import { getLineColor } from '../lib/lineColors.js';
+
+// Gidiş/dönüş platformları ayrılmış kopya (orijinal db değişmez).
+const { lines: platformLines, stops: platformStops } = buildPlatformData(etusLines, allStopsDB);
 
 // Haversine Formula (Mesafe hesaplama)
 const getDistance = (lat1, lon1, lat2, lon2) => {
@@ -16,7 +20,7 @@ const getDistance = (lat1, lon1, lat2, lon2) => {
 // Yakındaki tüm durakları bulur (maxRadiusKm çapında)
 export const findNearbyStops = (stopsDB, lat, lon, maxRadiusKm = 0.8) => {
   const nearby = [];
-  const db = stopsDB || allStopsDB;
+  const db = stopsDB || platformStops;
   Object.values(db).forEach(stop => {
     if (stop.lat && stop.lon) {
       const distance = getDistance(lat, lon, stop.lat, stop.lon);
@@ -40,7 +44,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   const geometryForStops = (dir, iFrom, iTo) => {
     const seq = dir.stopIds
       .slice(Math.min(iFrom, iTo), Math.max(iFrom, iTo) + 1)
-      .map(id => allStopsDB[id])
+      .map(id => platformStops[id])
       .filter(s => s?.lat && s?.lon)
       .map(s => [s.lat, s.lon]);
     const path = dir.path;
@@ -107,7 +111,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
 
   // Detaylı tarif için durak nesnesi (koordinatı olmayan duraklar da isimle listelenir)
   const toStopObj = (id) => {
-    const s = allStopsDB[id];
+    const s = platformStops[id];
     return s ? { id: s.id, name: s.name, lat: s.lat || null, lon: s.lon || null } : null;
   };
 
@@ -115,11 +119,11 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   const totalDistKm = getDistance(fromLat, fromLon, toLat, toLon);
 
   // Arama çapı: 800m standart yürüme mesafesi, durak yoksa 1.2km'ye genişlet
-  let startStops = findNearbyStops(allStopsDB, fromLat, fromLon, 0.85);
-  if (startStops.length === 0) startStops = findNearbyStops(allStopsDB, fromLat, fromLon, 1.25);
+  let startStops = findNearbyStops(platformStops, fromLat, fromLon, 0.85);
+  if (startStops.length === 0) startStops = findNearbyStops(platformStops, fromLat, fromLon, 1.25);
 
-  let endStops = findNearbyStops(allStopsDB, toLat, toLon, 0.85);
-  if (endStops.length === 0) endStops = findNearbyStops(allStopsDB, toLat, toLon, 1.25);
+  let endStops = findNearbyStops(platformStops, toLat, toLon, 0.85);
+  if (endStops.length === 0) endStops = findNearbyStops(platformStops, toLat, toLon, 1.25);
 
   if (startStops.length === 0 || endStops.length === 0) return null;
 
@@ -135,7 +139,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
       const commonRoutes = sLines.filter(r => eLines.includes(r));
 
       for (const code of commonRoutes) {
-        const lineData = etusLines[code];
+        const lineData = platformLines[code];
         if (!lineData) continue;
 
         // Hangi yönde A durağı B durağından önce geliyor? (Ring hatlar ve döngüler için tüm indeksleri tara)
@@ -177,7 +181,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
               const passedStops = [];
               const passedStopCoords = [];
               passedStopIds.forEach(id => {
-                const s = allStopsDB[id];
+                const s = platformStops[id];
                 if (s) {
                   passedStops.push(s.name);
                   if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]);
@@ -229,7 +233,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   const linesToEnd = {}; 
   for (const eStop of endStops) {
     for (const lineCode of (eStop.routes || [])) {
-      const lineData = etusLines[lineCode];
+      const lineData = platformLines[lineCode];
       if (!lineData) continue;
       lineData.directions.forEach((dir, dirIdx) => {
         dir.stopIds.forEach((id, idxB) => {
@@ -243,7 +247,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   }
 
   // Transfer durakları için yakın durak arama önbelleği (O(n²) tekrarını önler)
-  const stopList = Object.values(allStopsDB);
+  const stopList = Object.values(platformStops);
   const transferNeighborsCache = new Map();
   const getTransferNeighbors = (stop) => {
     if (transferNeighborsCache.has(stop.id)) {
@@ -262,7 +266,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   // Başlangıç duraklarından yola çık ve aktarma duraklarını kontrol et
   for (const sStop of startStops) {
     for (const line1Code of (sStop.routes || [])) {
-      const line1Data = etusLines[line1Code];
+      const line1Data = platformLines[line1Code];
       if (!line1Data) continue;
 
       line1Data.directions.forEach((dir1) => {
@@ -272,7 +276,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
         // Bu hattın güzergahındaki sonraki durakları aktarma noktası olarak tara
         for (let tIdx = idxA + 1; tIdx < dir1.stopIds.length; tIdx++) {
           const tStopId = dir1.stopIds[tIdx];
-          const tStop = allStopsDB[tStopId];
+          const tStop = platformStops[tStopId];
           if (!tStop) continue;
 
           const nearbyTransferStops = getTransferNeighbors(tStop);
@@ -294,7 +298,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
               if (goesDirect) continue;
 
               for (const match of endMatches) {
-                 const dir2 = etusLines[line2Code].directions[match.dirIdx];
+                 const dir2 = platformLines[line2Code].directions[match.dirIdx];
                  const indicesT = [];
                  dir2.stopIds.forEach((id, i) => {
                    if (id === actualTransferStop.id) indicesT.push(i);
@@ -325,7 +329,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                       
                       // 1. bacak
                       dir1.stopIds.slice(idxA + 1, tIdx).forEach(id => {
-                        const s = allStopsDB[id];
+                        const s = platformStops[id];
                         if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
                       });
                       
@@ -333,7 +337,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                       
                       // 2. bacak
                       passedStopIds2.forEach(id => {
-                        const s = allStopsDB[id];
+                        const s = platformStops[id];
                         if (s) { passedStops.push(s.name); if (s.lat && s.lon) passedStopCoords.push([s.lat, s.lon, s.name]); }
                       });
 
@@ -344,7 +348,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         line1: line1Code,
                         line2: line2Code,
                         color: getLineColor(line1Code, line1Data.color),
-                        color2: getLineColor(line2Code, etusLines[line2Code]?.color),
+                        color2: getLineColor(line2Code, platformLines[line2Code]?.color),
                         busTimeMins: Math.ceil(leg1Time + leg2Time + transferWaitTime),
                         totalTime: Math.ceil(totalTime),
                         startStop: sStop,
@@ -374,7 +378,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                           },
                           {
                             line: line2Code,
-                            color: getLineColor(line2Code, etusLines[line2Code]?.color),
+                            color: getLineColor(line2Code, platformLines[line2Code]?.color),
                             headSign: dir2.headSign,
                             fromStop: toStopObj(actualTransferStop.id),
                             toStop: toStopObj(match.eStop.id),
