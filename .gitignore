@@ -35,3 +35,7 @@ dist-ssr
 search_*.txt
 render_pages/
 pdf_text.txt
+
+belediye_ulasim.pdf
+belediye_ulasim.txt
+belediye_clean.txt
