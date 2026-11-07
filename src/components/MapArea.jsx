@@ -74,6 +74,42 @@ function buildDirectionArrows(points, { maxArrows = 12, minSpacingM = 220 } = {}
   return arrows;
 }
 
+// Hat önizleme geometrisi: dir.path güvenilir değilse durak koordinatlarıyla çiz.
+function getDistanceMetersPts(lat1, lon1, lat2, lon2) {
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function buildLineGeometry(dir, stopsDB) {
+  const stopIds = dir?.stopIds || [];
+  const stopsCoords = stopIds
+    .map(id => stopsDB[id])
+    .filter(s => s && s.lat && s.lon)
+    .map(s => [s.lat, s.lon]);
+  const rawPath = (dir?.path?.length > 1) ? dir.path : [];
+
+  if (rawPath.length && stopsCoords.length > 1) {
+    // Duraklar patikadan ne kadar uzak? (500m'den büyükse patika bozuktur)
+    let maxGap = 0;
+    stopsCoords.forEach(sc => {
+      let min = Infinity;
+      rawPath.forEach(pc => {
+        const d = getDistanceMetersPts(sc[0], sc[1], pc[0], pc[1]);
+        if (d < min) min = d;
+      });
+      if (min > maxGap) maxGap = min;
+    });
+    if (maxGap <= 500) return rawPath;
+  }
+
+  return (rawPath.length > 1) ? rawPath : stopsCoords;
+}
+
 // Rota üzerinde belirli bir orana denk gelen noktayı bulur (hat etiketi için).
 function pointAlongPath(points, fraction) {
   if (!Array.isArray(points) || points.length < 2) return null;
@@ -253,8 +289,8 @@ function MapAutoFitter({
       }
 
       // 2. Active Line Explorer Mode
-      if (activeLineData?.directions?.[activeLineDirIdx]?.path?.length > 1) {
-        const path = activeLineData.directions[activeLineDirIdx].path;
+      if (activeLineData?.directions?.[activeLineDirIdx]) {
+        const path = buildLineGeometry(activeLineData.directions[activeLineDirIdx], allStopsDB);
         const bounds = L.latLngBounds(path);
         if (bounds.isValid()) {
           map.fitBounds(bounds, {
@@ -806,7 +842,8 @@ const MapArea = React.memo(function MapArea({
         {/* 7. Line Preview Mode (Browsing a line in LinesExplorer) */}
         {activeLineData && activeLineData.directions?.[activeLineDirIdx] && (() => {
           const dirData = activeLineData.directions[activeLineDirIdx];
-          const path = dirData.path || [];
+          // Bozuk/eksik dir.path'e karşı durak koordinatlarıyla güvenilir geometri seç
+          const path = buildLineGeometry(dirData, allStopsDB);
           const stopIds = dirData.stopIds || [];
           const lineColor = getLineColor(activeLineData.code, activeLineData.color);
           const arrows = buildDirectionArrows(path, { maxArrows: 18 });

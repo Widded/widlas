@@ -32,21 +32,18 @@ export const findNearbyStops = (stopsDB, lat, lon, maxRadiusKm = 0.8) => {
 export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   if (!fromLat || !fromLon || !toLat || !toLon) return null;
 
-  const slicePath = (path, startStop, endStop) => {
-    if (!path || path.length === 0) return [];
-    if (!startStop || !endStop || !startStop.lat || !endStop.lat) return path;
-    const dist = (c, stop) => Math.pow(c[0] - stop.lat, 2) + Math.pow(c[1] - stop.lon, 2);
-    const findIdx = (stop) => {
-      let minIdx = 0; let minD = Infinity;
-      path.forEach((c, i) => {
-        let d = dist(c, stop);
-        if (d < minD) { minD = d; minIdx = i; }
-      });
-      return minIdx;
-    };
-    const i1 = findIdx(startStop);
-    const i2 = findIdx(endStop);
-    return path.slice(Math.min(i1, i2), Math.max(i1, i2) + 1);
+  // Durak dizisinden temiz [lat, lon] poliline çıkarır.
+  // dir.path verisi bazı hatlarda eksik/yanlış (ör. 3AYM'de 4km, 4A'da 7km sapma)
+  // olduğu için geometri artık durağan durak koordinatından üretilir; yol sağırı
+  // Mapbox/OSRM hizalaması bunu gerçek yollara oturtur.
+  const stopsToPath = (stopIds, iFrom, iTo) => {
+    const seg = stopIds.slice(Math.min(iFrom, iTo), Math.max(iFrom, iTo) + 1);
+    return seg
+      .map(id => {
+        const s = allStopsDB[id];
+        return s?.lat && s?.lon ? [s.lat, s.lon] : null;
+      })
+      .filter(Boolean);
   };
 
   // Detaylı tarif için durak nesnesi (koordinatı olmayan duraklar da isimle listelenir)
@@ -137,7 +134,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 totalTime: Math.ceil(totalTime),
                 startStop: sStop,
                 endStop: eStop,
-                routeGeometry: slicePath(dir.path, sStop, eStop),
+                routeGeometry: stopsToPath(dir.stopIds, bestIdxA, bestIdxB),
                 walkDistanceStart: sStop.distanceKm,
                 walkDistanceEnd: eStop.distanceKm,
                 passedStops: passedStops,
@@ -295,8 +292,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         transferStop: actualTransferStop,
                         endStop: match.eStop,
                         routeGeometry: [], // fallback
-                        routeGeometry1: slicePath(dir1.path, sStop, tStop),
-                        routeGeometry2: slicePath(dir2.path, actualTransferStop, match.eStop),
+                        routeGeometry1: stopsToPath(dir1.stopIds, idxA, tIdx),
+                        routeGeometry2: stopsToPath(dir2.stopIds, idxT, match.idxB),
                         walkDistanceStart: sStop.distanceKm,
                         walkDistanceEnd: match.walkEnd,
                         transferWalkDistance: transferWalkDist,
