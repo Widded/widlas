@@ -143,7 +143,7 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
     return nearestForDir(line, dirIdx, pos);
   }, [nearestForDir]);
 
-  const loadLive = useCallback(async (code, pos, { dirIdx = null, autoDir = false, silent, stopId = null } = {}) => {
+  const loadLive = useCallback(async (code, pos, { silent, stopId = null, pickBest = false } = {}) => {
     if (!pos) return;
     const line = etusLines[code];
     if (!line) return;
@@ -152,14 +152,14 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
     setError('');
 
     const computeDirection = async (idx) => {
-      const nearest = stopForDirection(line, idx, pos, stopId);
-      if (!nearest) return null;
+      const target = stopForDirection(line, idx, pos, stopId);
+      if (!target) return null;
 
       const dirData = line.directions?.[idx];
       const path = dirData?.path || [];
       const metrics = buildPathMetrics(path);
       const stopProj = metrics
-        ? projectPoint(path, metrics.cum, nearest.stop.lat, nearest.stop.lon)
+        ? projectPoint(path, metrics.cum, target.stop.lat, target.stop.lon)
         : null;
 
       const busList = await getLineBuses({ code, direction: idx });
@@ -188,34 +188,34 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         .filter((b) => b.eta !== null)
         .sort((a, b) => a.eta - b.eta);
 
-      return { dirIdx: idx, nearest, buses };
+      return { dirIdx: idx, stop: target.stop, distance: target.distance, buses };
     };
 
     try {
-      let result = null;
+      // Her iki yönü de hesapla; böylece tek yön gizlenmez.
+      const directions = (await Promise.all(
+        (line.directions || []).map((_, idx) => computeDirection(idx))
+      )).filter(Boolean);
 
-      if (autoDir) {
-        const candidates = (await Promise.all(
-          (line.directions || []).map((_, idx) => computeDirection(idx))
-        )).filter(Boolean);
+      if (!directions.length) throw new Error('no-stop');
 
-        const withBuses = candidates.filter((c) => c.buses.length > 0);
-        const pool = withBuses.length ? withBuses : candidates;
-        pool.sort((a, b) => {
-          if (a.buses.length && b.buses.length) return a.buses[0].eta - b.buses[0].eta;
-          if (a.buses.length) return -1;
-          if (b.buses.length) return 1;
-          return a.nearest.distance - b.nearest.distance;
-        });
-        result = pool[0] || null;
-      } else {
-        result = await computeDirection(dirIdx ?? 0);
-      }
+      const withBuses = directions.filter((d) => d.buses.length > 0);
+      const pool = withBuses.length ? withBuses : directions;
+      const best = pool.slice().sort((a, b) => {
+        if (a.buses.length && b.buses.length) return a.buses[0].eta - b.buses[0].eta;
+        if (a.buses.length) return -1;
+        if (b.buses.length) return 1;
+        return a.distance - b.distance;
+      })[0];
 
-      if (!result) throw new Error('no-stop');
+      setLive({ directions, bestDirIdx: best.dirIdx });
 
-      setActiveDir(result.dirIdx);
-      setLive({ stop: result.nearest.stop, distance: result.nearest.distance, buses: result.buses });
+      // Yön seçimi: yeni durak/hat için en iyi yönü seç, otomatik yenilemede seçimi koru.
+      setActiveDir((prev) => {
+        if (pickBest) return best.dirIdx;
+        return directions.some((d) => d.dirIdx === prev) ? prev : best.dirIdx;
+      });
+
       setUpdatedAt(Date.now());
       setStatus('ready');
     } catch (e) {
@@ -241,7 +241,7 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         const p = { lat: pos.coords.latitude, lon: pos.coords.longitude };
         setPosition(p);
         if (selectedCode) {
-          loadLive(selectedCode, p, { autoDir: true, stopId: chosenStopId });
+          loadLive(selectedCode, p, { stopId: chosenStopId, pickBest: true });
         } else {
           setStatus('idle');
         }
@@ -268,17 +268,17 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
     const line = etusLines[selectedCode];
     if (!line) return;
     // oxlint-disable-next-line react/set-state-in-effect
-    loadLive(selectedCode, position, { autoDir: true, stopId: chosenStopId });
+    loadLive(selectedCode, position, { stopId: chosenStopId, pickBest: true });
   }, [isOpen, selectedCode, position, chosenStopId, loadLive]);
 
-  // 20 saniyede bir otomatik yenile
+  // 20 saniyede bir otomatik yenile (seçili yönü korur)
   useEffect(() => {
     if (!isOpen || !selectedCode || !position) return undefined;
     const timer = setInterval(() => {
-      loadLive(selectedCode, position, { dirIdx: activeDir, silent: true, stopId: chosenStopId });
+      loadLive(selectedCode, position, { silent: true, stopId: chosenStopId });
     }, 20000);
     return () => clearInterval(timer);
-  }, [isOpen, selectedCode, activeDir, position, chosenStopId, loadLive]);
+  }, [isOpen, selectedCode, position, chosenStopId, loadLive]);
 
   const handleChangeLine = () => {
     setSelectedCode(null);
@@ -290,28 +290,14 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
   };
 
   const handleDir = (idx) => {
-    if (idx === activeDir) return;
     setActiveDir(idx);
-    if (!position) return;
-
-    let sid = chosenStopId;
-    if (sid) {
-      const base = allStopsDB[sid];
-      const ids = etusLines[selectedCode]?.directions?.[idx]?.stopIds || [];
-      if (base && !ids.includes(sid)) {
-        const target = normalizeName(base.name);
-        sid = ids.find((x) => normalizeName(allStopsDB[x]?.name) === target) || null;
-        setChosenStopId(sid);
-      }
-    }
-    loadLive(selectedCode, position, { dirIdx: idx, stopId: sid });
   };
 
   const handlePickStop = (id) => {
     setChosenStopId(id);
     setStopPickerOpen(false);
     setStopQuery('');
-    if (position) loadLive(selectedCode, position, { autoDir: true, stopId: id });
+    if (position) loadLive(selectedCode, position, { stopId: id, pickBest: true });
   };
 
   if (!isOpen) return null;
@@ -320,6 +306,14 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
   const color = line ? getLineColor(line.code, line.color) : '#94A3B8';
   const dirs = line?.directions || [];
   const activeDirData = dirs[activeDir];
+  const liveDirections = live?.directions || [];
+  const activeResult = liveDirections.find((d) => d.dirIdx === activeDir) || liveDirections[0] || null;
+  const activeBuses = activeResult?.buses || [];
+
+  const destOf = (headSign) => {
+    const parts = String(headSign || '').split(' - ');
+    return parts.length > 1 ? parts[parts.length - 1] : (headSign || '');
+  };
 
   const filteredLines = lines.filter((l) => {
     const q = query.trim().toLocaleLowerCase('tr');
@@ -406,24 +400,6 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
               <span className="bus-live-live-dot" />
             </div>
 
-            {dirs.length > 1 && (
-              <div className="bus-live-dirs" role="tablist" aria-label="Yön">
-                {dirs.map((d, idx) => (
-                  <button
-                    key={`d_${idx}`}
-                    type="button"
-                    role="tab"
-                    aria-selected={activeDir === idx}
-                    className={`bus-live-dir ${activeDir === idx ? 'active' : ''}`}
-                    onClick={() => handleDir(idx)}
-                    title={d.headSign}
-                  >
-                    {d.headSign}
-                  </button>
-                ))}
-              </div>
-            )}
-
             {status === 'locating' && (
               <div className="bus-live-state">
                 <LocateFixed size={22} className="bus-live-spin" />
@@ -454,20 +430,50 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                 >
                   <span className="bus-live-stop-icon"><MapPin size={14} /></span>
                   <span className="bus-live-stop-text">
-                    <b>{live.stop.name}</b>
+                    <b>{activeResult?.stop?.name}</b>
                     <small>
-                      Size {fmtDistance(live.distance)} uzaklıkta ·{' '}
+                      Size {fmtDistance(activeResult?.distance)} uzaklıkta ·{' '}
                       {chosenStopId ? 'seçili durak' : 'en yakın durak'}
                     </small>
                   </span>
                   <ChevronRight size={16} className="bus-live-stop-chev" />
                 </button>
 
-                {live.buses.length === 0 ? (
+                {liveDirections.length > 1 && (
+                  <div className="bus-live-dirs" role="tablist" aria-label="Yön seçimi">
+                    <span className="bus-live-dirs-label">Yön</span>
+                    {liveDirections.map((d) => {
+                      const dirData = dirs[d.dirIdx];
+                      const isActive = activeResult?.dirIdx === d.dirIdx;
+                      const first = d.buses[0];
+                      return (
+                        <button
+                          key={`dir_${d.dirIdx}`}
+                          type="button"
+                          role="tab"
+                          aria-selected={isActive}
+                          className={`bus-live-dir ${isActive ? 'active' : ''}`}
+                          onClick={() => handleDir(d.dirIdx)}
+                          title={dirData?.headSign}
+                        >
+                          <span className="bus-live-dir-dest">
+                            <span className="bus-live-dir-arrow">→</span>
+                            {destOf(dirData?.headSign)}
+                          </span>
+                          <span className={`bus-live-dir-eta ${first ? '' : 'none'}`}>
+                            {first ? `${first.eta} dk` : 'yaklaşan yok'}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {activeBuses.length === 0 ? (
                   <div className="bus-live-empty">
                     <Bus size={22} />
-                    <p>Şu an bu durakta yaklaşan otobüs görünmüyor.</p>
-                    <small>Başka bir durağı seçerek kontrol edebilirsin.</small>
+                    <p>Bu yönde durağa yaklaşan canlı araç yok.</p>
+                    <small>Diğer yönü seçebilir veya başka bir durak deneyebilirsin.</small>
                     <button
                       type="button"
                       className="bus-live-empty-btn"
@@ -482,23 +488,23 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                 ) : (
                   <div className="bus-live-result" style={{ '--line-color': color }}>
                     <div className="bus-live-eta-main">
-                      <span className="bus-live-eta">{live.buses[0].eta}</span>
+                      <span className="bus-live-eta">{activeBuses[0].eta}</span>
                       <span className="bus-live-eta-unit">dk</span>
                       <span className="bus-live-eta-sub">
-                        {live.buses[0].stopsLeft ? `${live.buses[0].stopsLeft} durak kaldı` : 'yaklaşıyor'}
+                        {activeBuses[0].stopsLeft ? `${activeBuses[0].stopsLeft} durak kaldı` : 'yaklaşıyor'}
                       </span>
                     </div>
 
                     <div className="bus-live-bus-meta">
-                      <span>{live.buses[0].plateNumber || live.buses[0].plate || 'ETUS'}</span>
+                      <span>{activeBuses[0].plateNumber || activeBuses[0].plate || 'ETUS'}</span>
                       <span className="bus-live-dot-sep" />
-                      <span>{live.buses[0].headSign || activeDirData?.headSign}</span>
+                      <span>{activeBuses[0].headSign || activeDirData?.headSign}</span>
                     </div>
 
-                    {live.buses.length > 1 && (
+                    {activeBuses.length > 1 && (
                       <div className="bus-live-next">
                         <span className="bus-live-next-title">Sonraki otobüsler</span>
-                        {live.buses.slice(1, 4).map((b, i) => (
+                        {activeBuses.slice(1, 4).map((b, i) => (
                           <div className="bus-live-next-row" key={`${b.busId}_${i}`}>
                             <span>{b.plateNumber || b.plate || 'ETUS'}</span>
                             <span>{b.eta} dk</span>
@@ -523,7 +529,7 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
               <button
                 type="button"
                 className="bus-live-refresh"
-                onClick={() => position && loadLive(selectedCode, position, { dirIdx: activeDir, stopId: chosenStopId })}
+                onClick={() => position && loadLive(selectedCode, position, { stopId: chosenStopId })}
                 disabled={status === 'loading'}
               >
                 <RefreshCw size={14} className={status === 'loading' ? 'bus-live-spin' : ''} />
