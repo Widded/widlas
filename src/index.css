@@ -277,7 +277,7 @@ html, body {
   width: 46px;
   height: 34px;
   clip-path: polygon(50% 100%, 2% 0%, 98% 0%);
-  background: linear-gradient(to top, rgba(96, 165, 250, 0.05), rgba(96, 165, 250, 0.65));
+  background: linear-gradient(to top, rgba(96, 165, 250, 0.55), rgba(96, 165, 250, 0.02));
   border-radius: 4px 4px 0 0;
   pointer-events: none;
 }
