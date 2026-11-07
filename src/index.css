@@ -1287,16 +1287,18 @@ html, body {
    ========================================================================== */
 .search-modal-backdrop {
   position: fixed;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 0;
   z-index: 1200;
-  background: rgba(4, 7, 10, 0.72);
+  background: rgba(4, 7, 10, 0.82);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  /* Klavye açıldığında ekranın görünür kısmına göre yükselir (JS ile set edilir) */
-  padding-bottom: var(--kb-offset, 0px);
+  /* JS klavye açılınca height'ı görünür alana ayarlar; altında harita asla görünmez */
+  height: 100%;
   animation: searchBackdropIn 0.2s ease;
 }
 
@@ -1314,7 +1316,7 @@ html, body {
 .search-modal-sheet {
   width: 100%;
   max-width: 600px;
-  /* Mobilde ekranın tamamını kaplar; klavye açılınca maxHeight JS ile daralır */
+  /* Mobilde ekranın tamamını kaplar; klavye açılınca JS sheet+backdrop'ı görünür alana göre daraltır */
   height: 100dvh;
   max-height: 100dvh;
   min-height: 0;
@@ -1389,8 +1391,8 @@ html, body {
 }
 
 .search-modal-close-btn {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid var(--border-color);
@@ -1401,6 +1403,11 @@ html, body {
   cursor: pointer;
   flex-shrink: 0;
   transition: all 0.15s ease;
+}
+
+.search-modal-close-btn svg {
+  width: 16px;
+  height: 16px;
 }
 
 .search-modal-close-btn:hover {
@@ -1477,9 +1484,9 @@ html, body {
 }
 
 .search-input-label {
-  font-size: 9.5px;
+  font-size: 8.5px;
   font-weight: 700;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--text-dim);
 }
@@ -1490,7 +1497,7 @@ html, body {
   border: none;
   outline: none;
   padding: 0;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-main);
   font-family: inherit;
@@ -1502,8 +1509,8 @@ html, body {
 }
 
 .search-clear-input-btn {
-  width: 26px;
-  height: 26px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.06);
   border: none;
@@ -1523,12 +1530,12 @@ html, body {
 
 .search-swap-fab {
   position: absolute;
-  left: 12px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 2;
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   background: var(--surface);
   border: 1px solid var(--border-color);
@@ -1569,13 +1576,13 @@ html, body {
 
 .search-result-item {
   width: 100%;
-  border-radius: 16px;
+  border-radius: 13px;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--border-subtle);
-  padding: 12px 14px;
+  padding: 9px 11px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   color: inherit;
   font-family: inherit;
   text-align: left;
@@ -1596,13 +1603,18 @@ html, body {
 }
 
 .search-item-badge-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.search-item-badge-icon svg {
+  width: 15px;
+  height: 15px;
 }
 
 .recent-icon {
@@ -1696,7 +1708,7 @@ html, body {
 }
 
 .search-item-name {
-  font-size: 14.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-main);
   white-space: nowrap;
@@ -1705,7 +1717,7 @@ html, body {
 }
 
 .search-item-sub {
-  font-size: 12px;
+  font-size: 10.5px;
   color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
@@ -1715,6 +1727,11 @@ html, body {
 .search-item-arrow {
   color: var(--text-dim);
   flex-shrink: 0;
+}
+
+.search-item-arrow svg {
+  width: 14px;
+  height: 14px;
 }
 
 /* Loading skeleton */
@@ -1727,17 +1744,17 @@ html, body {
 .search-skeleton-row {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
-  border-radius: 16px;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 13px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
 }
 
 .search-skeleton-icon {
-  width: 40px;
-  height: 40px;
-  border-radius: 13px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
   background: rgba(255, 255, 255, 0.06);
   flex-shrink: 0;
   animation: skeletonPulse 1.2s ease-in-out infinite;

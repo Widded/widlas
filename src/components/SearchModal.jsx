@@ -119,13 +119,17 @@ export default function SearchModal({
   useEffect(() => {
     if (!isOpen) return;
     const vv = window.visualViewport;
+    if (!vv) return;
+    const backdrop = sheetRef.current?.parentElement;
     const sheet = sheetRef.current;
-    if (!vv || !sheet) return;
+    if (!backdrop || !sheet) return;
 
     const apply = () => {
-      const kb = Math.max(0, window.innerHeight - vv.height);
-      sheet.style.maxHeight = `${vv.height}px`;
-      document.documentElement.style.setProperty('--kb-offset', `${kb}px`);
+      // Sheet ve arka plan tamamen görünür alan içinde kalır; altında harita görünmez.
+      const visibleH = vv.height;
+      sheet.style.maxHeight = `${visibleH}px`;
+      backdrop.style.height = `${visibleH}px`;
+      document.documentElement.style.setProperty('--kb-offset', `${Math.max(0, window.innerHeight - visibleH)}px`);
     };
 
     apply();
@@ -135,6 +139,7 @@ export default function SearchModal({
       vv.removeEventListener('resize', apply);
       vv.removeEventListener('scroll', apply);
       sheet.style.maxHeight = '';
+      backdrop.style.height = '';
       document.documentElement.style.setProperty('--kb-offset', '0px');
     };
   }, [isOpen]);
