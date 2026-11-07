@@ -33,7 +33,7 @@ export default function SearchModal({
   userLocation
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
-  const [fromQuery, setFromQuery] = useState(fromLocation?.name || 'Konumunuz');
+  const [fromQuery, setFromQuery] = useState(fromLocation?.name || '');
   const [toQuery, setToQuery] = useState(toLocation?.name || '');
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -50,7 +50,7 @@ export default function SearchModal({
 
     // oxlint-disable-next-line react/set-state-in-effect
     setActiveTab(targetType);
-    setFromQuery(fromLocation?.name || 'Konumunuz');
+    setFromQuery(fromLocation?.name || '');
     setToQuery(toLocation?.name || '');
     setSearchResults([]);
     setIsSearching(false);
@@ -248,7 +248,7 @@ export default function SearchModal({
                 autoComplete="off"
               />
             </div>
-            {fromQuery && fromQuery !== 'Konumunuz' && (
+            {fromQuery && (
               <button
                 className="search-clear-input-btn"
                 onClick={() => setFromQuery('')}

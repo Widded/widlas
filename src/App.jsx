@@ -17,6 +17,7 @@ import SavedPlacesModal from './components/SavedPlacesModal';
 import HomeMenuModal from './components/HomeMenuModal';
 import { calculateSmartRoute } from './data/routes';
 import { savePlace } from './lib/savedPlaces';
+import { getLineColor } from './lib/lineColors';
 import {
   fetchWalkingPath,
   fetchRoadSnappedBusPath,
@@ -36,7 +37,7 @@ export default function App() {
   const [homeMenuOpen, setHomeMenuOpen] = useState(false);
 
   // Locations State
-  const [fromLocation, setFromLocation] = useState({ name: 'Mevcut Konum', lat: null, lon: null });
+  const [fromLocation, setFromLocation] = useState({ name: '', lat: null, lon: null });
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
 
   // Live Location & GPS
@@ -77,8 +78,8 @@ export default function App() {
   const updateRouteGeometry = useCallback(async (route, from, to) => {
     if (!route) return;
 
-    let fromLat = from?.lat || liveLocation?.lat || 41.6771;
-    let fromLon = from?.lon || liveLocation?.lon || 26.5557;
+    let fromLat = from?.lat || liveLocation?.lat;
+    let fromLon = from?.lon || liveLocation?.lon;
 
     // 1. Walking Start
     if (route.startStop && fromLat && fromLon) {
@@ -129,11 +130,6 @@ export default function App() {
   const calculateRoute = useCallback(async (from, to) => {
     if (!to || !to.lat || !to.lon) return;
 
-    setLoading(true);
-    // Clear any previous line preview
-    setActiveLineData(null);
-    setRouteSheetMinimized(false);
-
     let fromLat = from?.lat;
     let fromLon = from?.lon;
 
@@ -141,11 +137,19 @@ export default function App() {
       if (liveLocation?.lat && liveLocation?.lon) {
         fromLat = liveLocation.lat;
         fromLon = liveLocation.lon;
-      } else {
-        fromLat = 41.6771;
-        fromLon = 26.5557;
       }
     }
+
+    // Başlangıç yoksa şehir merkezine düşmüyoruz; kullanıcıdan kalkış noktası beklenir.
+    if (!fromLat || !fromLon) {
+      showToast('Başlangıç noktası seçilmedi. Lütfen kalkış noktası seçin.', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    // Clear any previous line preview
+    setActiveLineData(null);
+    setRouteSheetMinimized(false);
 
     try {
       const result = await calculateSmartRoute(fromLat, fromLon, to.lat, to.lon);
@@ -225,6 +229,34 @@ export default function App() {
     }
   }, [getCurrentCoords, toLocation, calculateRoute, showToast]);
 
+  // Başlangıç noktasını çözer. İzin yoksa boş bırakır (şehir merkezine düşmez).
+  const resolveOrigin = useCallback(async () => {
+    if (fromLocation?.lat && fromLocation?.lon) return fromLocation;
+
+    if (liveLocation?.lat && liveLocation?.lon) {
+      const place = { name: 'Mevcut Konumum', lat: liveLocation.lat, lon: liveLocation.lon };
+      setFromLocation(place);
+      return place;
+    }
+
+    showToast('Konumunuz alınıyor...', 'info', 4000);
+    try {
+      const coords = await getCurrentCoords();
+      const place = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+      setFromLocation(place);
+      return place;
+    } catch (error) {
+      if (!window.isSecureContext) {
+        showToast('Konum yalnızca HTTPS veya localhost üzerinde alınabilir. Başlangıç noktasını seçin.', 'warning', 5000);
+      } else if (error?.code === 1) {
+        showToast('Konum izni verilmedi. Başlangıç noktasını seçin.', 'warning', 5000);
+      } else {
+        showToast('Konum alınamadı. Başlangıç noktasını seçin.', 'warning', 5000);
+      }
+      return null;
+    }
+  }, [fromLocation, liveLocation, getCurrentCoords, showToast]);
+
   // Handle selecting location from search modal
   const handleSelectLocation = async (place, target) => {
     const resolved = (!place?.lat || !place?.lon) && liveLocation?.lat
@@ -240,27 +272,21 @@ export default function App() {
     }
 
     if (!resolved?.lat || !resolved?.lon) {
-      showToast('Konumunuz henüz alınamadı. Lütfen haritadan bir nokta seçin.', 'warning');
+      showToast('Hedefin konumu alınamadı. Lütfen haritadan bir nokta seçin.', 'warning');
       return;
     }
 
-    let origin = fromLocation;
-    if (!origin?.lat || !origin?.lon) {
-      showToast('Konumunuz alınıyor...', 'info', 4000);
-      try {
-        const coords = await getCurrentCoords();
-        origin = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
-        setFromLocation(origin);
-      } catch (error) {
-        if (!window.isSecureContext) {
-          showToast('Konum yalnızca HTTPS veya localhost üzerinde alınabilir.', 'warning', 5000);
-        } else if (error?.code === 1) {
-          showToast('Konum izni verilmedi. Başlangıç Edirne merkezi kabul edildi.', 'warning', 5000);
-        }
-      }
+    // Hedefi kaydet, ardından başlangıç noktasını çöz.
+    setToLocation(resolved);
+
+    const origin = await resolveOrigin();
+    if (!origin) {
+      // Konum izni yok: başlangıç boş kalır, kullanıcı kalkış noktasını seçer.
+      setSearchTargetType('from');
+      setSearchModalOpen(true);
+      return;
     }
 
-    setToLocation(resolved);
     await calculateRoute(origin, resolved);
   };
 
@@ -308,24 +334,17 @@ export default function App() {
       return;
     }
 
-    let origin = fromLocation;
-    if (!origin?.lat || !origin?.lon) {
-      showToast('Konumunuz alınıyor...', 'info', 4000);
-      try {
-        const coords = await getCurrentCoords();
-        origin = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
-        setFromLocation(origin);
-      } catch (error) {
-        if (!window.isSecureContext) {
-          showToast('Konum yalnızca HTTPS veya localhost üzerinde alınabilir.', 'warning', 5000);
-        } else if (error?.code === 1) {
-          showToast('Konum izni verilmedi. Başlangıç Edirne merkezi kabul edildi.', 'warning', 5000);
-        }
-      }
-    }
-
     setToLocation(picked);
     showToast(`Hedef seçildi: ${placeName}`);
+
+    const origin = await resolveOrigin();
+    if (!origin) {
+      // Konum izni yok: başlangıç boş kalır, kullanıcı kalkış noktasını seçer.
+      setSearchTargetType('from');
+      setSearchModalOpen(true);
+      return;
+    }
+
     await calculateRoute(origin, picked);
   };
 
@@ -399,8 +418,11 @@ export default function App() {
                 }}
               >
                 <span className="home-route-dot origin" />
-                <span className="home-input-text" title={fromLocation.name}>
-                  {fromLocation.name || 'Konumum'}
+                <span
+                  className={`home-input-text ${!fromLocation.name ? 'is-placeholder' : ''}`}
+                  title={fromLocation.name}
+                >
+                  {fromLocation.name || 'Başlangıç noktası'}
                 </span>
                 <ChevronDown size={16} className="home-input-tail" />
               </button>
@@ -436,7 +458,7 @@ export default function App() {
               >
                 <div className="route-chip-dot green-dot" />
                 <span className="route-chip-text" title={fromLocation.name}>
-                  {fromLocation.name || 'Mevcut Konum'}
+                  {fromLocation.name || 'Başlangıç noktası'}
                 </span>
               </div>
 
@@ -498,7 +520,7 @@ export default function App() {
           <div className="line-preview-info">
             <span
               className="line-preview-badge"
-              style={{ backgroundColor: activeLineData.color || '#3B82F6' }}
+              style={{ backgroundColor: getLineColor(activeLineData.code, activeLineData.color) }}
             >
               {activeLineData.code}
             </span>

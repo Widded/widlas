@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { allStopsDB } from '../data/db';
+import { getLineColor } from '../lib/lineColors';
 
 // Helper: Calculate travel bearing between two coordinates (degrees)
 function getBearing(lat1, lon1, lat2, lon2) {
@@ -16,12 +17,93 @@ function getBearing(lat1, lon1, lat2, lon2) {
   return Math.round((brng + 360) % 360);
 }
 
+function getDistanceMeters(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos((lat1 * Math.PI) / 180) *
+    Math.cos((lat2 * Math.PI) / 180) *
+    Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+// Rota çizgisi boyunca yön okları üretir.
+function buildDirectionArrows(points, { maxArrows = 12, minSpacingM = 220 } = {}) {
+  if (!Array.isArray(points) || points.length < 2) return [];
+
+  const cumulative = [0];
+  for (let i = 1; i < points.length; i += 1) {
+    const [lat1, lon1] = points[i - 1];
+    const [lat2, lon2] = points[i];
+    if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return [];
+    cumulative.push(cumulative[i - 1] + getDistanceMeters(lat1, lon1, lat2, lon2));
+  }
+
+  const total = cumulative[cumulative.length - 1];
+  if (total < 40) return [];
+
+  const count = Math.min(maxArrows, Math.max(1, Math.floor(total / minSpacingM)));
+  const spacing = total / (count + 1);
+  const arrows = [];
+
+  for (let i = 1; i <= count; i += 1) {
+    const target = spacing * i;
+    let segment = 1;
+    while (segment < cumulative.length && cumulative[segment] < target) segment += 1;
+    if (segment >= points.length) break;
+
+    const segmentLength = Math.max(1, cumulative[segment] - cumulative[segment - 1]);
+    const t = (target - cumulative[segment - 1]) / segmentLength;
+    const [lat1, lon1] = points[segment - 1];
+    const [lat2, lon2] = points[segment];
+    const lat = lat1 + (lat2 - lat1) * t;
+    const lon = lon1 + (lon2 - lon1) * t;
+    const bearing = getBearing(lat1, lon1, lat2, lon2);
+
+    arrows.push({ lat, lon, bearing });
+  }
+
+  return arrows;
+}
+
+// Rota üzerinde belirli bir orana denk gelen noktayı bulur (hat etiketi için).
+function pointAlongPath(points, fraction) {
+  if (!Array.isArray(points) || points.length < 2) return null;
+
+  const cumulative = [0];
+  for (let i = 1; i < points.length; i += 1) {
+    const [lat1, lon1] = points[i - 1];
+    const [lat2, lon2] = points[i];
+    if (![lat1, lon1, lat2, lon2].every(Number.isFinite)) return null;
+    cumulative.push(cumulative[i - 1] + getDistanceMeters(lat1, lon1, lat2, lon2));
+  }
+
+  const total = cumulative[cumulative.length - 1];
+  if (total < 1) return null;
+
+  const target = total * fraction;
+  let segment = 1;
+  while (segment < cumulative.length && cumulative[segment] < target) segment += 1;
+  if (segment >= points.length) segment = points.length - 1;
+
+  const segmentLength = Math.max(1, cumulative[segment] - cumulative[segment - 1]);
+  const t = (target - cumulative[segment - 1]) / segmentLength;
+  const [lat1, lon1] = points[segment - 1];
+  const [lat2, lon2] = points[segment];
+
+  return {
+    lat: lat1 + (lat2 - lat1) * t,
+    lon: lon1 + (lon2 - lon1) * t
+  };
+}
+
 // Marker Icons Generators
-const createStartStopIcon = () => {
+const createStartStopIcon = (color = '#0D9488') => {
   return L.divIcon({
     className: '',
     html: `
-      <div class="start-stop-badge">
+      <div class="start-stop-badge" style="border-color: ${color}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <path d="M8 6v6"></path><path d="M15 6v6"></path><path d="M2 12h19.6"></path>
           <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"></path>
@@ -35,11 +117,11 @@ const createStartStopIcon = () => {
   });
 };
 
-const createEndStopIcon = () => {
+const createEndStopIcon = (color = '#0D9488') => {
   return L.divIcon({
     className: '',
     html: `
-      <div class="end-stop-badge">
+      <div class="end-stop-badge" style="border-color: ${color}">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
@@ -51,11 +133,11 @@ const createEndStopIcon = () => {
   });
 };
 
-const createTransferStopIcon = () => {
+const createTransferStopIcon = (color1 = '#0D9488', color2 = '#F59E0B') => {
   return L.divIcon({
     className: '',
     html: `
-      <div class="transfer-stop-badge">
+      <div class="transfer-stop-badge" style="background: linear-gradient(135deg, ${color1} 0 50%, ${color2} 50% 100%)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
@@ -72,17 +154,43 @@ const createIntermediateStopIcon = (bearing, color = '#3B82F6') => {
     className: '',
     html: `
       <div class="stop-badge" style="border-color: ${color}">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${bearing}deg)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="transform: rotate(${bearing}deg)">
           <line x1="12" y1="19" x2="12" y2="5"></line>
           <polyline points="5 12 12 5 19 12"></polyline>
         </svg>
       </div>
     `,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
-    popupAnchor: [0, -14]
+    iconSize: [22, 22],
+    iconAnchor: [11, 11],
+    popupAnchor: [0, -12]
   });
 };
+
+const createDirectionArrowIcon = (color, bearing) => {
+  return L.divIcon({
+    className: '',
+    html: `
+      <div class="route-direction-arrow" style="transform: rotate(${bearing}deg)">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="${color}" stroke="#FFFFFF" stroke-width="2.2" stroke-linejoin="round">
+          <path d="M12 3l7 10h-4v8h-6v-8H5z"></path>
+        </svg>
+      </div>
+    `,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8]
+  });
+};
+
+const createLineLabelIcon = (code, color) => {
+  const width = Math.max(32, String(code || '').length * 8 + 16);
+  return L.divIcon({
+    className: '',
+    html: `<div class="route-line-label" style="border-color: ${color}">${code}</div>`,
+    iconSize: [width, 22],
+    iconAnchor: [width / 2, 11]
+  });
+};
+
 
 const createPinIcon = (color, isDestination = false) => {
   return L.divIcon({
@@ -333,6 +441,16 @@ const MapArea = React.memo(function MapArea({
     return geom.filter(isValidCoord);
   }, [activeRoute, roadSnappedBusPath2]);
 
+  // Yön okları: rota geometrisi boyunca eşit aralıklarla
+  const directArrows = useMemo(() => buildDirectionArrows(directGeometry), [directGeometry]);
+  const transferArrows1 = useMemo(() => buildDirectionArrows(transferGeometry1), [transferGeometry1]);
+  const transferArrows2 = useMemo(() => buildDirectionArrows(transferGeometry2), [transferGeometry2]);
+
+  // Hat etiketi: rota çizgisinin yaklaşık ortasında
+  const directLabel = useMemo(() => pointAlongPath(directGeometry, 0.45), [directGeometry]);
+  const transferLabel1 = useMemo(() => pointAlongPath(transferGeometry1, 0.45), [transferGeometry1]);
+  const transferLabel2 = useMemo(() => pointAlongPath(transferGeometry2, 0.45), [transferGeometry2]);
+
   // Direct route stops list
   const directStops = useMemo(() => {
     if (!activeRoute || activeRoute.isTransfer) return [];
@@ -440,31 +558,49 @@ const MapArea = React.memo(function MapArea({
 
         {/* 4. Pedestrian Walking Polylines */}
         {walkingPathStart.length > 1 && (
-          <Polyline
-            positions={walkingPathStart}
-            pathOptions={{ color: '#F3F4F6', weight: 4, dashArray: '6, 6', opacity: 0.9 }}
-          />
+          <>
+            <Polyline positions={walkingPathStart} pathOptions={{ color: 'rgba(15, 23, 42, 0.55)', weight: 6, dashArray: '5, 7', lineCap: 'round' }} />
+            <Polyline positions={walkingPathStart} pathOptions={{ color: '#FFFFFF', weight: 3, dashArray: '5, 7', lineCap: 'round', opacity: 0.95 }} />
+          </>
         )}
         {walkingPathEnd.length > 1 && (
-          <Polyline
-            positions={walkingPathEnd}
-            pathOptions={{ color: '#F3F4F6', weight: 4, dashArray: '6, 6', opacity: 0.9 }}
-          />
+          <>
+            <Polyline positions={walkingPathEnd} pathOptions={{ color: 'rgba(15, 23, 42, 0.55)', weight: 6, dashArray: '5, 7', lineCap: 'round' }} />
+            <Polyline positions={walkingPathEnd} pathOptions={{ color: '#FFFFFF', weight: 3, dashArray: '5, 7', lineCap: 'round', opacity: 0.95 }} />
+          </>
         )}
 
-        {/* 5. Direct Transit Route Display (Double Polylines for Road Snapping) */}
+        {/* 5. Direct Transit Route Display (Casing + Core + Direction Arrows) */}
         {activeRoute && !activeRoute.isTransfer && directGeometry.length > 1 && (
           <>
-            {/* Outer casing */}
             <Polyline
               positions={directGeometry}
-              pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7, lineCap: 'round', lineJoin: 'round' }}
+              pathOptions={{ color: 'rgba(15, 23, 42, 0.8)', weight: 8, lineCap: 'round', lineJoin: 'round' }}
             />
-            {/* Vibrant core line */}
             <Polyline
               positions={directGeometry}
-              pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 4.5, lineCap: 'round', lineJoin: 'round' }}
+              pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 5, lineCap: 'round', lineJoin: 'round', opacity: 0.98 }}
             />
+            {directArrows.map((arrow, idx) => (
+              <Marker
+                key={`darrow_${idx}`}
+                position={[arrow.lat, arrow.lon]}
+                icon={createDirectionArrowIcon(activeRoute.color || '#3B82F6', arrow.bearing)}
+                interactive={false}
+                zIndexOffset={-300}
+              />
+            ))}
+            {directLabel && (
+              <Marker
+                position={[directLabel.lat, directLabel.lon]}
+                icon={createLineLabelIcon(
+                  activeRoute.legs?.[0]?.line || activeRoute.name || 'Hat',
+                  activeRoute.color || '#3B82F6'
+                )}
+                interactive={false}
+                zIndexOffset={-250}
+              />
+            )}
           </>
         )}
 
@@ -472,14 +608,26 @@ const MapArea = React.memo(function MapArea({
         {activeRoute && !activeRoute.isTransfer && directStops.map((stop, idx) => {
           if (idx === 0) {
             return (
-              <Marker key={`sstop_${idx}_${stop.id || stop.lat}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+              <Marker
+                key={`sstop_${idx}_${stop.id || stop.lat}`}
+                position={[stop.lat, stop.lon]}
+                icon={createStartStopIcon(activeRoute.color || '#3B82F6')}
+                riseOnHover
+                zIndexOffset={1000}
+              >
                 <Popup><b>Biniş Durağı:</b><br />{stop.name}</Popup>
               </Marker>
             );
           }
           if (idx === directStops.length - 1) {
             return (
-              <Marker key={`estop_${idx}_${stop.id || stop.lat}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+              <Marker
+                key={`estop_${idx}_${stop.id || stop.lat}`}
+                position={[stop.lat, stop.lon]}
+                icon={createEndStopIcon(activeRoute.color || '#3B82F6')}
+                riseOnHover
+                zIndexOffset={1000}
+              >
                 <Popup><b>İniş Durağı:</b><br />{stop.name}</Popup>
               </Marker>
             );
@@ -494,7 +642,9 @@ const MapArea = React.memo(function MapArea({
               key={`mstop_${idx}_${stop.id || stop.lat}`}
               position={[stop.lat, stop.lon]}
               icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}
+              riseOnHover
             >
+              <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
               <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{idx + 1}</span></Popup>
             </Marker>
           );
@@ -503,19 +653,59 @@ const MapArea = React.memo(function MapArea({
         {/* 6. Transfer Transit Route Display */}
         {activeRoute && activeRoute.isTransfer && (
           <>
-            {/* Leg 1: Outer Casing + Core */}
+            {/* Leg 1: Outer Casing + Core + Arrows */}
             {transferGeometry1.length > 1 && (
               <>
-                <Polyline positions={transferGeometry1} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
-                <Polyline positions={transferGeometry1} pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 4.5 }} />
+                <Polyline positions={transferGeometry1} pathOptions={{ color: 'rgba(15, 23, 42, 0.8)', weight: 8, lineCap: 'round', lineJoin: 'round' }} />
+                <Polyline positions={transferGeometry1} pathOptions={{ color: activeRoute.color || '#3B82F6', weight: 5, lineCap: 'round', lineJoin: 'round', opacity: 0.98 }} />
+                {transferArrows1.map((arrow, idx) => (
+                  <Marker
+                    key={`t1arrow_${idx}`}
+                    position={[arrow.lat, arrow.lon]}
+                    icon={createDirectionArrowIcon(activeRoute.color || '#3B82F6', arrow.bearing)}
+                    interactive={false}
+                    zIndexOffset={-300}
+                  />
+                ))}
+                {transferLabel1 && (
+                  <Marker
+                    position={[transferLabel1.lat, transferLabel1.lon]}
+                    icon={createLineLabelIcon(
+                      activeRoute.line1 || activeRoute.legs?.[0]?.line || 'Hat',
+                      activeRoute.color || '#3B82F6'
+                    )}
+                    interactive={false}
+                    zIndexOffset={-250}
+                  />
+                )}
               </>
             )}
 
-            {/* Leg 2: Outer Casing + Core */}
+            {/* Leg 2: Outer Casing + Core + Arrows */}
             {transferGeometry2.length > 1 && (
               <>
-                <Polyline positions={transferGeometry2} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
-                <Polyline positions={transferGeometry2} pathOptions={{ color: activeRoute.color2 || '#F59E0B', weight: 4.5 }} />
+                <Polyline positions={transferGeometry2} pathOptions={{ color: 'rgba(15, 23, 42, 0.8)', weight: 8, lineCap: 'round', lineJoin: 'round' }} />
+                <Polyline positions={transferGeometry2} pathOptions={{ color: activeRoute.color2 || '#F59E0B', weight: 5, lineCap: 'round', lineJoin: 'round', opacity: 0.98 }} />
+                {transferArrows2.map((arrow, idx) => (
+                  <Marker
+                    key={`t2arrow_${idx}`}
+                    position={[arrow.lat, arrow.lon]}
+                    icon={createDirectionArrowIcon(activeRoute.color2 || '#F59E0B', arrow.bearing)}
+                    interactive={false}
+                    zIndexOffset={-300}
+                  />
+                ))}
+                {transferLabel2 && (
+                  <Marker
+                    position={[transferLabel2.lat, transferLabel2.lon]}
+                    icon={createLineLabelIcon(
+                      activeRoute.line2 || activeRoute.legs?.[1]?.line || 'Hat',
+                      activeRoute.color2 || '#F59E0B'
+                    )}
+                    interactive={false}
+                    zIndexOffset={-250}
+                  />
+                )}
               </>
             )}
 
@@ -523,14 +713,26 @@ const MapArea = React.memo(function MapArea({
             {transferLeg1Stops.map((stop, idx) => {
               if (idx === 0) {
                 return (
-                  <Marker key={`t1_start_${idx}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+                  <Marker
+                    key={`t1_start_${idx}`}
+                    position={[stop.lat, stop.lon]}
+                    icon={createStartStopIcon(activeRoute.color || '#3B82F6')}
+                    riseOnHover
+                    zIndexOffset={1000}
+                  >
                     <Popup><b>1. Biniş:</b><br />{stop.name}</Popup>
                   </Marker>
                 );
               }
               if (idx === transferLeg1Stops.length - 1) {
                 return (
-                  <Marker key={`t1_trans_${idx}`} position={[stop.lat, stop.lon]} icon={createTransferStopIcon()}>
+                  <Marker
+                    key={`t1_trans_${idx}`}
+                    position={[stop.lat, stop.lon]}
+                    icon={createTransferStopIcon(activeRoute.color || '#3B82F6', activeRoute.color2 || '#F59E0B')}
+                    riseOnHover
+                    zIndexOffset={900}
+                  >
                     <Popup><b>Aktarma Durağı:</b><br />{stop.name}</Popup>
                   </Marker>
                 );
@@ -539,7 +741,13 @@ const MapArea = React.memo(function MapArea({
               const prevStop = transferLeg1Stops[idx - 1];
               const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
               return (
-                <Marker key={`t1_mid_${idx}`} position={[stop.lat, stop.lon]} icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}>
+                <Marker
+                  key={`t1_mid_${idx}`}
+                  position={[stop.lat, stop.lon]}
+                  icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}
+                  riseOnHover
+                >
+                  <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                   <Popup><b>{stop.name}</b></Popup>
                 </Marker>
               );
@@ -550,7 +758,13 @@ const MapArea = React.memo(function MapArea({
               if (idx === 0) return null; // Already rendered as transfer stop in Leg 1
               if (idx === transferLeg2Stops.length - 1) {
                 return (
-                  <Marker key={`t2_end_${idx}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+                  <Marker
+                    key={`t2_end_${idx}`}
+                    position={[stop.lat, stop.lon]}
+                    icon={createEndStopIcon(activeRoute.color2 || '#F59E0B')}
+                    riseOnHover
+                    zIndexOffset={1000}
+                  >
                     <Popup><b>İniş:</b><br />{stop.name}</Popup>
                   </Marker>
                 );
@@ -559,7 +773,13 @@ const MapArea = React.memo(function MapArea({
               const prevStop = transferLeg2Stops[idx - 1];
               const bearing = nextStop ? getBearing(stop.lat, stop.lon, nextStop.lat, nextStop.lon) : (prevStop ? getBearing(prevStop.lat, prevStop.lon, stop.lat, stop.lon) : 0);
               return (
-                <Marker key={`t2_mid_${idx}`} position={[stop.lat, stop.lon]} icon={createIntermediateStopIcon(bearing, activeRoute.color2 || '#F59E0B')}>
+                <Marker
+                  key={`t2_mid_${idx}`}
+                  position={[stop.lat, stop.lon]}
+                  icon={createIntermediateStopIcon(bearing, activeRoute.color2 || '#F59E0B')}
+                  riseOnHover
+                >
+                  <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                   <Popup><b>{stop.name}</b></Popup>
                 </Marker>
               );
@@ -572,12 +792,33 @@ const MapArea = React.memo(function MapArea({
           const dirData = activeLineData.directions[activeLineDirIdx];
           const path = dirData.path || [];
           const stopIds = dirData.stopIds || [];
+          const lineColor = getLineColor(activeLineData.code, activeLineData.color);
+          const arrows = buildDirectionArrows(path, { maxArrows: 18 });
+          const labelPoint = pointAlongPath(path, 0.5);
+
           return (
             <>
               {path.length > 1 && (
                 <>
-                  <Polyline positions={path} pathOptions={{ color: 'rgba(15, 23, 42, 0.75)', weight: 7 }} />
-                  <Polyline positions={path} pathOptions={{ color: activeLineData.color || '#3B82F6', weight: 4.5 }} />
+                  <Polyline positions={path} pathOptions={{ color: 'rgba(15, 23, 42, 0.8)', weight: 8, lineCap: 'round', lineJoin: 'round' }} />
+                  <Polyline positions={path} pathOptions={{ color: lineColor, weight: 5, lineCap: 'round', lineJoin: 'round', opacity: 0.98 }} />
+                  {arrows.map((arrow, idx) => (
+                    <Marker
+                      key={`line_arrow_${idx}`}
+                      position={[arrow.lat, arrow.lon]}
+                      icon={createDirectionArrowIcon(lineColor, arrow.bearing)}
+                      interactive={false}
+                      zIndexOffset={-300}
+                    />
+                  ))}
+                  {labelPoint && (
+                    <Marker
+                      position={[labelPoint.lat, labelPoint.lon]}
+                      icon={createLineLabelIcon(activeLineData.code, lineColor)}
+                      interactive={false}
+                      zIndexOffset={-250}
+                    />
+                  )}
                 </>
               )}
               {stopIds.map((sid, i) => {
@@ -586,14 +827,26 @@ const MapArea = React.memo(function MapArea({
 
                 if (i === 0) {
                   return (
-                    <Marker key={`line_s_${sid}_${i}`} position={[stop.lat, stop.lon]} icon={createStartStopIcon()}>
+                    <Marker
+                      key={`line_s_${sid}_${i}`}
+                      position={[stop.lat, stop.lon]}
+                      icon={createStartStopIcon(lineColor)}
+                      riseOnHover
+                      zIndexOffset={1000}
+                    >
                       <Popup><b>İlk Durak:</b><br />{stop.name}</Popup>
                     </Marker>
                   );
                 }
                 if (i === stopIds.length - 1) {
                   return (
-                    <Marker key={`line_e_${sid}_${i}`} position={[stop.lat, stop.lon]} icon={createEndStopIcon()}>
+                    <Marker
+                      key={`line_e_${sid}_${i}`}
+                      position={[stop.lat, stop.lon]}
+                      icon={createEndStopIcon(lineColor)}
+                      riseOnHover
+                      zIndexOffset={1000}
+                    >
                       <Popup><b>Son Durak:</b><br />{stop.name}</Popup>
                     </Marker>
                   );
@@ -607,8 +860,10 @@ const MapArea = React.memo(function MapArea({
                   <Marker
                     key={`line_m_${sid}_${i}`}
                     position={[stop.lat, stop.lon]}
-                    icon={createIntermediateStopIcon(bearing, activeLineData.color || '#3B82F6')}
+                    icon={createIntermediateStopIcon(bearing, lineColor)}
+                    riseOnHover
                   >
+                    <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                     <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{i + 1}</span></Popup>
                   </Marker>
                 );

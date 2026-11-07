@@ -39,7 +39,7 @@ export default function RouteList({
         <div className="journey-path">
           <div className="journey-node">
             <span className="journey-dot start" />
-            <span>{fromLocation.name || 'Konumunuz'}</span>
+            <span>{fromLocation.name || 'Başlangıç noktası'}</span>
           </div>
           <ArrowRight size={14} color="var(--text-muted)" style={{ flexShrink: 0 }} />
           <div className="journey-node">

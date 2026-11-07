@@ -1,4 +1,5 @@
 import { allStopsDB, etusLines } from './db.js';
+import { getLineColor } from '../lib/lineColors.js';
 
 // Haversine Formula (Mesafe hesaplama)
 const getDistance = (lat1, lon1, lat2, lon2) => {
@@ -131,7 +132,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 id: `${code}_${sStop.id}_${eStop.id}`,
                 name: code,
                 description: `${dir.headSign} yönü, ${stopCount} durak`,
-                color: lineData.color || '#4f46e5',
+                color: getLineColor(code, lineData.color),
                 busTimeMins: Math.ceil(estimatedBusTime),
                 totalTime: Math.ceil(totalTime),
                 startStop: sStop,
@@ -146,7 +147,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 transferWaitMins: 0,
                 legs: [{
                   line: code,
-                  color: lineData.color || '#4f46e5',
+                  color: getLineColor(code, lineData.color),
                   headSign: dir.headSign,
                   fromStop: toStopObj(sStop.id),
                   toStop: toStopObj(eStop.id),
@@ -286,8 +287,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         name: `${line1Code} ➔ ${line2Code}`,
                         line1: line1Code,
                         line2: line2Code,
-                        color: line1Data.color || '#4f46e5',
-                        color2: etusLines[line2Code]?.color || '#f59e0b',
+                        color: getLineColor(line1Code, line1Data.color),
+                        color2: getLineColor(line2Code, etusLines[line2Code]?.color),
                         busTimeMins: Math.ceil(leg1Time + leg2Time + transferWaitTime),
                         totalTime: Math.ceil(totalTime),
                         startStop: sStop,
@@ -307,7 +308,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         legs: [
                           {
                             line: line1Code,
-                            color: line1Data.color || '#4f46e5',
+                            color: getLineColor(line1Code, line1Data.color),
                             headSign: dir1.headSign,
                             fromStop: toStopObj(sStop.id),
                             toStop: toStopObj(tStopId),
@@ -317,7 +318,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                           },
                           {
                             line: line2Code,
-                            color: etusLines[line2Code]?.color || '#f59e0b',
+                            color: getLineColor(line2Code, etusLines[line2Code]?.color),
                             headSign: dir2.headSign,
                             fromStop: toStopObj(actualTransferStop.id),
                             toStop: toStopObj(match.eStop.id),
@@ -353,7 +354,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
       name: 'Sadece Yürü',
       isWalkOnly: true,
       description: 'Otobüs kullanmadan doğrudan hedefe yürüme',
-      color: '#10b981', // Yeşil renk
+      color: '#64748B', // Yürüyüş rotası için nötr renk
       busTimeMins: 0,
       totalTime: directWalkMins,
       startStop: { name: 'Başlangıç Konumu', lat: fromLat, lon: fromLon },

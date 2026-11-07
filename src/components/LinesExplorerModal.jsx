@@ -8,6 +8,7 @@ import {
   Eye
 } from 'lucide-react';
 import { etusLines, allStopsDB } from '../data/db';
+import { getLineColor } from '../lib/lineColors';
 
 const CORRIDORS = [
   { id: 'all', title: 'Tüm Hatlar' },
@@ -217,7 +218,7 @@ export default function LinesExplorerModal({
                   >
                     <div
                       className="lines-item-badge"
-                      style={{ backgroundColor: line.color || '#3B82F6' }}
+                      style={{ backgroundColor: getLineColor(line.code, line.color) }}
                     >
                       <span>{line.code}</span>
                     </div>
@@ -285,7 +286,7 @@ export default function LinesExplorerModal({
                             const stop = allStopsDB[sid];
                             return (
                               <div key={`stop_${sid}_${idx}`} className="lines-stop-row">
-                                <div className="lines-stop-dot" style={{ borderColor: line.color || '#3B82F6' }}>
+                                <div className="lines-stop-dot" style={{ borderColor: getLineColor(line.code, line.color) }}>
                                   <span className="lines-stop-idx">{idx + 1}</span>
                                 </div>
                                 <span className="lines-stop-name">{stop?.name || sid}</span>
