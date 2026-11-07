@@ -29,6 +29,26 @@ const fmtDist = (route) => {
   return `${Number(km).toFixed(1).replace('.', ',')} km`;
 };
 
+const walkDistanceKm = (route, side) => {
+  const value = Number(side === 'start' ? route?.walkDistanceStart : route?.walkDistanceEnd);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+};
+
+const walkMinutes = (route, side) => {
+  const value = Number(side === 'start' ? route?.walkStartMins : route?.walkEndMins);
+  if (Number.isFinite(value) && value > 0) return Math.round(value);
+  const legacy = Number(side === 'start' ? route?.walkTimeStart : route?.walkTimeEnd);
+  return Number.isFinite(legacy) && legacy > 0 ? Math.round(legacy) : 0;
+};
+
+const fmtWalkKm = (km) => {
+  const meters = Number(km) * 1000;
+  if (!Number.isFinite(meters) || meters <= 0) return '';
+  return meters >= 1000
+    ? `${(meters / 1000).toFixed(1).replace('.', ',')} km`
+    : `${Math.round(meters)} m`;
+};
+
 export default function RouteResultSheet({
   routes: incomingRoutes = [],
   selectedIdx = 0,
@@ -161,6 +181,10 @@ export default function RouteResultSheet({
         {sortedRoutes.map((route) => {
           const isSelected = route._originalIdx === selectedIdx;
           const isExpanded = expandedRouteId === route.id;
+          const startWalkKm = walkDistanceKm(route, 'start');
+          const endWalkKm = walkDistanceKm(route, 'end');
+          const startWalkMin = walkMinutes(route, 'start');
+          const endWalkMin = walkMinutes(route, 'end');
 
           return (
             <div
@@ -177,48 +201,63 @@ export default function RouteResultSheet({
                       <Footprints size={14} />
                       <span>{fmtDuration(route.totalTime)} Yürüyüş</span>
                     </div>
-                  ) : route.isTransfer ? (
-                    <>
-                      <div
-                        className="route-crumb-badge bus-crumb"
-                        style={{ backgroundColor: route.color || '#3B82F6' }}
-                      >
-                        <Bus size={13} />
-                        <span>{route.line1 || route.legs?.[0]?.line || 'Hat'}</span>
-                      </div>
-                      <ArrowRight size={13} className="text-dim" />
-                      <div
-                        className="route-crumb-badge bus-crumb"
-                        style={{ backgroundColor: route.color2 || '#F59E0B' }}
-                      >
-                        <Bus size={13} />
-                        <span>{route.line2 || route.legs?.[1]?.line || 'Hat'}</span>
-                      </div>
-                      {route.walkTimeEnd > 0 && (
-                        <>
-                          <ArrowRight size={13} className="text-dim" />
-                          <div className="route-crumb-badge walk-crumb">
-                            <Footprints size={12} />
-                            <span>{Math.round(route.walkTimeEnd)} dk</span>
-                          </div>
-                        </>
-                      )}
-                    </>
                   ) : (
                     <>
-                      <div
-                        className="route-crumb-badge bus-crumb"
-                        style={{ backgroundColor: route.color || '#3B82F6' }}
-                      >
-                        <Bus size={13} />
-                        <span>{route.name || route.lineCode || route.legs?.[0]?.line || 'Hat'}</span>
-                      </div>
-                      {route.walkTimeEnd > 0 && (
+                      {walkDistanceKm(route, 'start') > 0 && (
+                        <>
+                          <div className="route-crumb-badge walk-crumb">
+                            <Footprints size={12} />
+                            <span>{fmtWalkKm(walkDistanceKm(route, 'start'))}</span>
+                          </div>
+                          <ArrowRight size={13} className="text-dim" />
+                        </>
+                      )}
+
+                      {route.isTransfer ? (
+                        <>
+                          <div
+                            className="route-crumb-badge bus-crumb"
+                            style={{ backgroundColor: route.color || '#3B82F6' }}
+                          >
+                            <Bus size={13} />
+                            <span>{route.line1 || route.legs?.[0]?.line || 'Hat'}</span>
+                          </div>
+
+                          {Number(route.transferWalkDistance) > 0 && (
+                            <>
+                              <ArrowRight size={13} className="text-dim" />
+                              <div className="route-crumb-badge walk-crumb">
+                                <Footprints size={12} />
+                                <span>{fmtWalkKm(route.transferWalkDistance)}</span>
+                              </div>
+                            </>
+                          )}
+
+                          <ArrowRight size={13} className="text-dim" />
+                          <div
+                            className="route-crumb-badge bus-crumb"
+                            style={{ backgroundColor: route.color2 || '#F59E0B' }}
+                          >
+                            <Bus size={13} />
+                            <span>{route.line2 || route.legs?.[1]?.line || 'Hat'}</span>
+                          </div>
+                        </>
+                      ) : (
+                        <div
+                          className="route-crumb-badge bus-crumb"
+                          style={{ backgroundColor: route.color || '#3B82F6' }}
+                        >
+                          <Bus size={13} />
+                          <span>{route.name || route.lineCode || route.legs?.[0]?.line || 'Hat'}</span>
+                        </div>
+                      )}
+
+                      {walkDistanceKm(route, 'end') > 0 && (
                         <>
                           <ArrowRight size={13} className="text-dim" />
                           <div className="route-crumb-badge walk-crumb">
                             <Footprints size={12} />
-                            <span>{Math.round(route.walkTimeEnd)} dk</span>
+                            <span>{fmtWalkKm(walkDistanceKm(route, 'end'))}</span>
                           </div>
                         </>
                       )}
@@ -254,12 +293,31 @@ export default function RouteResultSheet({
                 </button>
               </div>
 
+              {!route.isWalkOnly && (startWalkKm > 0 || endWalkKm > 0) && (
+                <div className="route-walk-summary">
+                  {startWalkKm > 0 && (
+                    <span className="route-walk-chip">
+                      <Footprints size={12} />
+                      Binişe <b>{fmtWalkKm(startWalkKm)}</b>
+                      {startWalkMin > 0 && <small>({startWalkMin} dk)</small>}
+                    </span>
+                  )}
+                  {endWalkKm > 0 && (
+                    <span className="route-walk-chip">
+                      <Footprints size={12} />
+                      İnişten sonra <b>{fmtWalkKm(endWalkKm)}</b>
+                      {endWalkMin > 0 && <small>({endWalkMin} dk)</small>}
+                    </span>
+                  )}
+                </div>
+              )}
+
               {/* Detailed Step-by-Step Itinerary (Accordion) */}
               {isExpanded && (
                 <div className="route-itinerary-box" onClick={(e) => e.stopPropagation()}>
                   <div className="itinerary-timeline">
                     {/* Step 1: Walk to Start Stop */}
-                    {route.walkTimeStart > 0 && (
+                    {(startWalkKm > 0 || startWalkMin > 0) && (
                       <div className="itinerary-step">
                         <div className="itinerary-node walk-node">
                           <Footprints size={13} />
@@ -269,7 +327,8 @@ export default function RouteResultSheet({
                             {route.startStop?.name || 'Biniş Durağı'} durağına yürü
                           </span>
                           <span className="itinerary-step-meta">
-                            ~{Math.round(route.walkTimeStart)} dk ({Math.round((route.walkDistanceStart || 0.2) * 1000)}m)
+                            {startWalkMin > 0 ? `~${startWalkMin} dk` : 'Yürüme'}
+                            {startWalkKm > 0 ? ` (${fmtWalkKm(startWalkKm)})` : ''}
                           </span>
                         </div>
                       </div>
@@ -308,6 +367,9 @@ export default function RouteResultSheet({
                             </span>
                             <span className="itinerary-step-meta">
                               <b>{route.line2}</b> hattına geçiş yapın
+                              {Number(route.transferWalkDistance) > 0
+                                ? ` · ${fmtWalkKm(route.transferWalkDistance)} yürüme`
+                                : ''}
                             </span>
                           </div>
                         </div>
@@ -340,7 +402,9 @@ export default function RouteResultSheet({
                             {route.endStop?.name} durağında in
                           </span>
                           <span className="itinerary-step-meta">
-                            Hedefe kalan yürüme: ~{Math.round(route.walkTimeEnd || 3)} dk
+                            {endWalkKm > 0
+                              ? `Hedefe yürüme: ${fmtWalkKm(endWalkKm)}${endWalkMin > 0 ? ` (~${endWalkMin} dk)` : ''}`
+                              : 'İndiğiniz durak hedefe yakın'}
                           </span>
                         </div>
                       </div>
