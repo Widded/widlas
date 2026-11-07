@@ -166,13 +166,27 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
         const eta = bus && bus.timeDiff !== '' && Number.isFinite(Number(bus.timeDiff))
           ? Number(bus.timeDiff)
           : null;
+
+        // Durak, bu yönün ilk/son durağı mı? (terminal davranışını netleştirir)
+        const dir = etusLines[code]?.directions?.[Number(direction)];
+        const ids = dir?.stopIds || [];
+        let role = null;
+        if (dir && ids.length) {
+          const idx = ids.findIndex((sid) =>
+            sid === stop.id || normalize(allStopsDB[sid]?.name) === normalize(stop.name)
+          );
+          if (idx === 0) role = 'origin';
+          else if (idx === ids.length - 1) role = 'terminus';
+        }
+
         return {
           key: `${code}_${direction}`,
           code,
           direction,
-          headSign: route.headSign || etusLines[code]?.directions?.[Number(direction)]?.headSign || '',
+          headSign: route.headSign || dir?.headSign || '',
           bus,
           eta,
+          role,
           color: getLineColor(code, etusLines[code]?.color)
         };
       });
@@ -302,7 +316,11 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
     >
       <span className="stop-live-code">{row.code}</span>
       <span className="stop-live-main">
-        <span className="stop-live-dest">→ {destOf(row.headSign)}</span>
+        <span className="stop-live-dest">
+          → {destOf(row.headSign)}
+          {row.role === 'origin' && <span className="stop-live-tag">kalkış</span>}
+          {row.role === 'terminus' && <span className="stop-live-tag">son durak</span>}
+        </span>
         <span className="stop-live-sub">
           {row.bus
             ? [
@@ -354,9 +372,10 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
           <span className="bus-live-stop-text">
             <b>{currentStop?.name || 'Durak seç'}</b>
             <small>
+              {currentStop ? `Durak ${currentStop.id} · ` : ''}
               {currentDistance != null
-                ? `Size ${fmtDistance(currentDistance)} uzaklıkta · durak değiştir`
-                : 'Durak değiştir'}
+                ? `${fmtDistance(currentDistance)} · durak değiştir`
+                : 'durak değiştir'}
             </small>
           </span>
           <ChevronRight size={16} className="bus-live-stop-chev" />
