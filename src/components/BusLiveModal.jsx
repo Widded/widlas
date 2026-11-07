@@ -25,6 +25,9 @@ const haversine = (lat1, lon1, lat2, lon2) => {
 
 const fmtDistance = (m) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.round(m)} m`);
 
+const SPEED_M_PER_MIN = 280;
+const LAYOVER_MIN = 6;
+
 const buildPathMetrics = (path) => {
   if (!Array.isArray(path) || path.length < 2) return null;
   const cum = [0];
@@ -166,46 +169,86 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
       const stopCount = Math.max(1, (dirData?.stopIds?.length || 2) - 1);
       const avgStopSpacing = metrics ? metrics.total / stopCount : 350;
 
-      const buses = busList
-        .map((b) => {
-          const lat = Number(b.lat);
-          const lon = Number(b.lng);
-          let eta = null;
-          let stopsLeft = null;
+      const buses = [];
+      const projected = [];
+      busList.forEach((b) => {
+        const lat = Number(b.lat);
+        const lon = Number(b.lng);
+        if (!metrics || !stopProj || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
-          if (metrics && stopProj && Number.isFinite(lat) && Number.isFinite(lon)) {
-            const busProj = projectPoint(path, metrics.cum, lat, lon);
-            const remaining = stopProj.along - busProj.along;
-            // otobüs durağa yaklaşıyorsa (çok yakınsa 1 dk)
-            if (remaining > -120) {
-              eta = Math.max(1, Math.ceil(Math.max(60, remaining) / 280));
-              stopsLeft = Math.max(1, Math.round(Math.max(0, remaining) / Math.max(120, avgStopSpacing)));
-            }
-          }
+        const busProj = projectPoint(path, metrics.cum, lat, lon);
+        const remaining = stopProj.along - busProj.along;
+        projected.push({ remaining });
 
-          return { ...b, lat, lon, eta, stopsLeft };
-        })
-        .filter((b) => b.eta !== null)
-        .sort((a, b) => a.eta - b.eta);
+        // otobüs durağa yaklaşıyorsa (çok yakınsa 1 dk)
+        if (remaining > -120) {
+          buses.push({
+            ...b,
+            lat,
+            lon,
+            eta: Math.max(1, Math.ceil(Math.max(60, remaining) / SPEED_M_PER_MIN)),
+            stopsLeft: Math.max(1, Math.round(Math.max(0, remaining) / Math.max(120, avgStopSpacing)))
+          });
+        }
+      });
+      buses.sort((a, b) => a.eta - b.eta);
 
-      return { dirIdx: idx, stop: target.stop, distance: target.distance, buses };
+      // Durağı geçmiş otobüsler: bir sonraki seferin tahmininde kullanılır.
+      const passedMinutes = projected
+        .filter((p) => p.remaining <= -120)
+        .map((p) => -p.remaining / SPEED_M_PER_MIN);
+      const lastPassedMinAgo = passedMinutes.length ? Math.min(...passedMinutes) : null;
+
+      return {
+        dirIdx: idx,
+        stop: target.stop,
+        distance: target.distance,
+        buses,
+        busesOnRoute: busList.length,
+        pathMinutes: metrics ? metrics.total / SPEED_M_PER_MIN : null,
+        lastPassedMinAgo
+      };
     };
 
     try {
       // Her iki yönü de hesapla; böylece tek yön gizlenmez.
-      const directions = (await Promise.all(
+      const rawDirections = (await Promise.all(
         (line.directions || []).map((_, idx) => computeDirection(idx))
       )).filter(Boolean);
 
-      if (!directions.length) throw new Error('no-stop');
+      if (!rawDirections.length) throw new Error('no-stop');
 
-      const withBuses = directions.filter((d) => d.buses.length > 0);
-      const pool = withBuses.length ? withBuses : directions;
-      const best = pool.slice().sort((a, b) => {
+      // Canlı araç yoksa sefer aralığından tahmini süre üret.
+      // Ortalama sefer aralığı ≈ (gidiş-dönüş süresi + son durak beklemesi) / hattaki araç sayısı
+      const fleetCount = rawDirections.reduce((n, d) => n + d.busesOnRoute, 0);
+      const maxPathMinutes = Math.max(0, ...rawDirections.map((d) => d.pathMinutes || 0));
+      const fleetHeadway = fleetCount > 0 && maxPathMinutes > 0
+        ? (2 * maxPathMinutes + LAYOVER_MIN) / fleetCount
+        : null;
+
+      const directions = rawDirections.map((d) => {
+        if (d.buses.length || !fleetHeadway) return { ...d, estimate: null, headway: null };
+        const headway = Math.min(60, Math.max(8, fleetHeadway));
+        // Son geçişten bu yana geçen süreyi sefer aralığına göre fazlandır.
+        let estimate = Math.round(headway);
+        if (d.lastPassedMinAgo != null) {
+          const phase = d.lastPassedMinAgo % headway;
+          estimate = Math.max(1, Math.round(headway - phase));
+        }
+        return {
+          ...d,
+          headway: Math.round(headway),
+          estimate
+        };
+      });
+
+      const best = directions.slice().sort((a, b) => {
+        if (a.buses.length && !b.buses.length) return -1;
+        if (!a.buses.length && b.buses.length) return 1;
         if (a.buses.length && b.buses.length) return a.buses[0].eta - b.buses[0].eta;
-        if (a.buses.length) return -1;
-        if (b.buses.length) return 1;
-        return a.distance - b.distance;
+        const ea = a.estimate ?? Number.POSITIVE_INFINITY;
+        const eb = b.estimate ?? Number.POSITIVE_INFINITY;
+        return ea - eb || a.distance - b.distance;
       })[0];
 
       setLive({ directions, bestDirIdx: best.dirIdx });
@@ -446,6 +489,7 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                       const dirData = dirs[d.dirIdx];
                       const isActive = activeResult?.dirIdx === d.dirIdx;
                       const first = d.buses[0];
+                      const estimate = first ? null : d.estimate;
                       return (
                         <button
                           key={`dir_${d.dirIdx}`}
@@ -460,8 +504,8 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                             <span className="bus-live-dir-arrow">→</span>
                             {destOf(dirData?.headSign)}
                           </span>
-                          <span className={`bus-live-dir-eta ${first ? '' : 'none'}`}>
-                            {first ? `${first.eta} dk` : 'yaklaşan yok'}
+                          <span className={`bus-live-dir-eta ${first ? '' : estimate ? 'estimate' : 'none'}`}>
+                            {first ? `${first.eta} dk` : estimate ? `~${estimate} dk` : 'yaklaşan yok'}
                           </span>
                         </button>
                       );
@@ -469,7 +513,25 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                   </div>
                 )}
 
-                {activeBuses.length === 0 ? (
+                {activeBuses.length === 0 && activeResult?.estimate ? (
+                  <div className="bus-live-result bus-live-result--estimate" style={{ '--line-color': color }}>
+                    <div className="bus-live-eta-main">
+                      <span className="bus-live-eta">~{activeResult.estimate}</span>
+                      <span className="bus-live-eta-unit">dk</span>
+                      <span className="bus-live-eta-sub">tahmini</span>
+                    </div>
+
+                    <div className="bus-live-bus-meta">
+                      <span>Canlı araç görünmüyor</span>
+                      <span className="bus-live-dot-sep" />
+                      <span>Sefer aralığına göre tahmin</span>
+                    </div>
+
+                    <p className="bus-live-estimate-note">
+                      Tahmini süre; hattaki canlı araç sayısı ve güzergah uzunluğundan hesaplanır.
+                    </p>
+                  </div>
+                ) : activeBuses.length === 0 ? (
                   <div className="bus-live-empty">
                     <Bus size={22} />
                     <p>Bu yönde durağa yaklaşan canlı araç yok.</p>
