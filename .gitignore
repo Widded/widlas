@@ -33,3 +33,5 @@ dist-ssr
 # Temporary test scripts
 *.mjs
 search_*.txt
+render_pages/
+pdf_text.txt

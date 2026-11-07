@@ -1,0 +1,576 @@
+[
+  {
+    "code": "3",
+    "di": 0,
+    "coverage": 0.94,
+    "matchedInOldOrder": 0.63,
+    "added": 12,
+    "dropped": 8,
+    "noMatch": [
+      "Kaleiçi A101",
+      "Plevne O."
+    ],
+    "applied": true
+  },
+  {
+    "code": "3",
+    "di": 1,
+    "coverage": 0.94,
+    "matchedInOldOrder": 0.53,
+    "added": 15,
+    "dropped": 10,
+    "noMatch": [
+      "Plevne O.",
+      "Kaleiçi A101"
+    ],
+    "applied": true
+  },
+  {
+    "code": "4",
+    "di": 0,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.07,
+    "added": 13,
+    "dropped": 9,
+    "noMatch": [
+      "Temizlik İşleri",
+      "İstasyon Depolama"
+    ],
+    "applied": false
+  },
+  {
+    "code": "4",
+    "di": 1,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.14,
+    "added": 12,
+    "dropped": 7,
+    "noMatch": [
+      "İstasyon Depolama",
+      "Temizlik İşleri"
+    ],
+    "applied": false
+  },
+  {
+    "code": "5",
+    "di": 0,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.92,
+    "added": 3,
+    "dropped": 3,
+    "noMatch": [
+      "Çam Mobilya",
+      "Sevgi Durağı",
+      "75. Yıl",
+      "Meric House",
+      "Çelik İnşaat"
+    ],
+    "applied": true
+  },
+  {
+    "code": "5",
+    "di": 1,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.86,
+    "added": 5,
+    "dropped": 3,
+    "noMatch": [
+      "Çelik İnşaat",
+      "Meric House",
+      "75. Yıl",
+      "Sevgi Durağı",
+      "Çam Mobilya"
+    ],
+    "applied": true
+  },
+  {
+    "code": "6",
+    "di": 0,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.63,
+    "added": 11,
+    "dropped": 17,
+    "noMatch": [
+      "Tokı Çıkış",
+      "PTT",
+      "Kıyık Merkez",
+      "Beykent"
+    ],
+    "applied": true
+  },
+  {
+    "code": "6",
+    "di": 1,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.47,
+    "added": 16,
+    "dropped": 21,
+    "noMatch": [
+      "Beykent",
+      "Kıyık Merkez",
+      "PTT",
+      "Tokı Çıkış"
+    ],
+    "applied": false
+  },
+  {
+    "code": "7",
+    "di": 0,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.5,
+    "added": 13,
+    "dropped": 11,
+    "noMatch": [
+      "Kıyık Merkez",
+      "Kaptan Halısaha",
+      "Bizkent"
+    ],
+    "applied": true
+  },
+  {
+    "code": "8",
+    "di": 0,
+    "coverage": 0.8,
+    "matchedInOldOrder": 0.93,
+    "added": 2,
+    "dropped": 6,
+    "noMatch": [
+      "Erasta AVM",
+      "Vali Fahri Yucel İlkokulu",
+      "Yayla Taksi",
+      "Emel Özgür Subaşı Ay Lisesi",
+      "Nimeteri Sitestsi",
+      "Bizkent",
+      "Ü"
+    ],
+    "applied": true
+  },
+  {
+    "code": "8",
+    "di": 1,
+    "coverage": 0.8,
+    "matchedInOldOrder": 0.89,
+    "added": 3,
+    "dropped": 7,
+    "noMatch": [
+      "Ü",
+      "Bizkent",
+      "Nimeteri Sitestsi",
+      "Emel Özgür Subaşı Ay Lisesi",
+      "Yayla Taksi",
+      "Vali Fahri Yucel İlkokulu",
+      "Erasta AVM"
+    ],
+    "applied": true
+  },
+  {
+    "code": "1A",
+    "di": 0,
+    "coverage": 1,
+    "matchedInOldOrder": 1,
+    "added": 0,
+    "dropped": 1,
+    "noMatch": [],
+    "applied": true
+  },
+  {
+    "code": "1A",
+    "di": 1,
+    "coverage": 1,
+    "matchedInOldOrder": 0.63,
+    "added": 11,
+    "dropped": 6,
+    "noMatch": [],
+    "applied": true
+  },
+  {
+    "code": "1F",
+    "di": 0,
+    "coverage": 1,
+    "matchedInOldOrder": 0,
+    "added": 22,
+    "dropped": 21,
+    "noMatch": [],
+    "applied": false
+  },
+  {
+    "code": "1G",
+    "di": 0,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.88,
+    "added": 2,
+    "dropped": 2,
+    "noMatch": [
+      "İl Özel İdare Arkası",
+      "Gümrük Loj."
+    ],
+    "applied": true
+  },
+  {
+    "code": "1G",
+    "di": 1,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.94,
+    "added": 1,
+    "dropped": 1,
+    "noMatch": [
+      "Gümrük Loj.",
+      "İl Özel İdare Arkası"
+    ],
+    "applied": true
+  },
+  {
+    "code": "1T",
+    "di": 0,
+    "coverage": 1,
+    "matchedInOldOrder": 0.74,
+    "added": 7,
+    "dropped": 1,
+    "noMatch": [],
+    "applied": true
+  },
+  {
+    "code": "1T",
+    "di": 1,
+    "coverage": 1,
+    "matchedInOldOrder": 0.44,
+    "added": 15,
+    "dropped": 7,
+    "noMatch": [],
+    "applied": false
+  },
+  {
+    "code": "2A",
+    "di": 0,
+    "coverage": 0.95,
+    "matchedInOldOrder": 0.79,
+    "added": 8,
+    "dropped": 9,
+    "noMatch": [
+      "Kaleiçi A101",
+      "75. Yıl O."
+    ],
+    "applied": true
+  },
+  {
+    "code": "2A",
+    "di": 1,
+    "coverage": 0.95,
+    "matchedInOldOrder": 0.58,
+    "added": 16,
+    "dropped": 13,
+    "noMatch": [
+      "75. Yıl O.",
+      "Kaleiçi A101"
+    ],
+    "applied": true
+  },
+  {
+    "code": "2B",
+    "di": 0,
+    "coverage": 0.94,
+    "matchedInOldOrder": 0.88,
+    "added": 4,
+    "dropped": 5,
+    "noMatch": [
+      "Kaleiçi A101",
+      "Gümrük Loj."
+    ],
+    "applied": true
+  },
+  {
+    "code": "2B",
+    "di": 1,
+    "coverage": 0.94,
+    "matchedInOldOrder": 0.64,
+    "added": 12,
+    "dropped": 9,
+    "noMatch": [
+      "Gümrük Loj.",
+      "Kaleiçi A101"
+    ],
+    "applied": true
+  },
+  {
+    "code": "3A",
+    "di": 0,
+    "coverage": 0.93,
+    "matchedInOldOrder": 0.95,
+    "added": 2,
+    "dropped": 6,
+    "noMatch": [
+      "Sarayıçi Yerleşkesi",
+      "Hacı İlbey",
+      "Kum Mah."
+    ],
+    "applied": true
+  },
+  {
+    "code": "3A",
+    "di": 1,
+    "coverage": 0.93,
+    "matchedInOldOrder": 0.65,
+    "added": 14,
+    "dropped": 14,
+    "noMatch": [
+      "Kum Mah.",
+      "Hacı İlbey",
+      "Sarayıçi Yerleşkesi"
+    ],
+    "applied": true
+  },
+  {
+    "code": "3AYM",
+    "di": 0,
+    "coverage": 0.88,
+    "matchedInOldOrder": 1,
+    "added": 0,
+    "dropped": 4,
+    "noMatch": [
+      "Hacı İlbeyi Camii"
+    ],
+    "applied": true
+  },
+  {
+    "code": "3AYM",
+    "di": 1,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.86,
+    "added": 1,
+    "dropped": 4,
+    "noMatch": [
+      "Hacı İlbeyi Camii"
+    ],
+    "applied": true
+  },
+  {
+    "code": "3C",
+    "di": 0,
+    "coverage": 0.92,
+    "matchedInOldOrder": 0.64,
+    "added": 16,
+    "dropped": 17,
+    "noMatch": [
+      "Bahçelievler",
+      "Orman İşletme Md.",
+      "Tarla Kapı",
+      "İl Özel İdare Arkası"
+    ],
+    "applied": true
+  },
+  {
+    "code": "3C",
+    "di": 1,
+    "coverage": 0.92,
+    "matchedInOldOrder": 0.59,
+    "added": 18,
+    "dropped": 16,
+    "noMatch": [
+      "İl Özel İdare Arkası",
+      "Tarla Kapı",
+      "Orman İşletme Md.",
+      "Bahçelievler"
+    ],
+    "applied": true
+  },
+  {
+    "code": "4A",
+    "di": 0,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.92,
+    "added": 2,
+    "dropped": 2,
+    "noMatch": [
+      "Tarla Kapı",
+      "Temizlik İşleri",
+      "Tren Garı"
+    ],
+    "applied": true
+  },
+  {
+    "code": "4A",
+    "di": 1,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.88,
+    "added": 3,
+    "dropped": 2,
+    "noMatch": [
+      "Tren Garı",
+      "Temizlik İşleri",
+      "Tarla Kapı"
+    ],
+    "applied": true
+  },
+  {
+    "code": "5A",
+    "di": 0,
+    "coverage": 0.92,
+    "matchedInOldOrder": 0.91,
+    "added": 3,
+    "dropped": 8,
+    "noMatch": [
+      "Kıyık Merkez",
+      "Mezarlık Köşe",
+      "75. Yıl O."
+    ],
+    "applied": true
+  },
+  {
+    "code": "5A",
+    "di": 1,
+    "coverage": 0.92,
+    "matchedInOldOrder": 0.76,
+    "added": 8,
+    "dropped": 11,
+    "noMatch": [
+      "75. Yıl O.",
+      "Mezarlık Köşe",
+      "Kıyık Merkez"
+    ],
+    "applied": true
+  },
+  {
+    "code": "5B",
+    "di": 0,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.7,
+    "added": 10,
+    "dropped": 11,
+    "noMatch": [
+      "TOKİ Altı",
+      "Kültürkapı",
+      "Emel Özgür SUBAŞI AY L.",
+      "Bizkent"
+    ],
+    "applied": true
+  },
+  {
+    "code": "5B",
+    "di": 1,
+    "coverage": 0.89,
+    "matchedInOldOrder": 0.7,
+    "added": 10,
+    "dropped": 11,
+    "noMatch": [
+      "Bizkent",
+      "Emel Özgür SUBAŞI AY L.",
+      "Kültürkapı",
+      "TOKİ Altı"
+    ],
+    "applied": true
+  },
+  {
+    "code": "6A",
+    "di": 0,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.44,
+    "added": 20,
+    "dropped": 21,
+    "noMatch": [
+      "Bahçelievler",
+      "Kaleiçi A101",
+      "Kıyık Merkez",
+      "TOKİ Çıkış"
+    ],
+    "applied": false
+  },
+  {
+    "code": "6A",
+    "di": 1,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.5,
+    "added": 18,
+    "dropped": 20,
+    "noMatch": [
+      "TOKİ Çıkış",
+      "Kıyık Merkez",
+      "Kaleiçi A101",
+      "Bahçelievler"
+    ],
+    "applied": true
+  },
+  {
+    "code": "6B",
+    "di": 0,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.38,
+    "added": 13,
+    "dropped": 15,
+    "noMatch": [
+      "Kaleiçi A101",
+      "Kıyık Merkez",
+      "TOKİ Çıkış"
+    ],
+    "applied": false
+  },
+  {
+    "code": "6B",
+    "di": 1,
+    "coverage": 0.88,
+    "matchedInOldOrder": 0.52,
+    "added": 10,
+    "dropped": 17,
+    "noMatch": [
+      "TOKİ Çıkış",
+      "Kıyık Merkez",
+      "Kaleiçi A101"
+    ],
+    "applied": true
+  },
+  {
+    "code": "7A",
+    "di": 0,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.58,
+    "added": 11,
+    "dropped": 15,
+    "noMatch": [
+      "TOKİ Altı",
+      "Yesshsinl Residans",
+      "İl Özel İdaresi"
+    ],
+    "applied": true
+  },
+  {
+    "code": "7A",
+    "di": 1,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.54,
+    "added": 12,
+    "dropped": 15,
+    "noMatch": [
+      "İl Özel İdaresi",
+      "Yesshsinl Residans",
+      "TOKİ Altı"
+    ],
+    "applied": true
+  },
+  {
+    "code": "7E",
+    "di": 0,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.62,
+    "added": 10,
+    "dropped": 15,
+    "noMatch": [
+      "TOKİ Altı",
+      "Seyfettin Selim Kreş",
+      "Bizkent"
+    ],
+    "applied": true
+  },
+  {
+    "code": "7E",
+    "di": 1,
+    "coverage": 0.9,
+    "matchedInOldOrder": 0.58,
+    "added": 11,
+    "dropped": 16,
+    "noMatch": [
+      "Bizkent",
+      "Seyfettin Selim Kreş",
+      "TOKİ Altı"
+    ],
+    "applied": true
+  }
+]
