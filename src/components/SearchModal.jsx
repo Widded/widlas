@@ -55,6 +55,8 @@ export default function SearchModal({
 
   const toInputRef = useRef(null);
   const fromInputRef = useRef(null);
+  // Sheet ve viewport: klavye açılınca sheet, görünür alana göre daraltılıp yükseltilir
+  const sheetRef = useRef(null);
   // Live truth: hangi input odaklı? (focus'ta set, blur'da temizlenir)
   const focusedFieldRef = useRef(targetType);
   // Quick-pick'te kullanılacak anlık değer (pointerdown, blur'dan önce yakalanır)
@@ -112,6 +114,30 @@ export default function SearchModal({
   const captureQuickPickTarget = () => {
     quickPickTargetRef.current = focusedFieldRef.current;
   };
+
+  // Klavye açıldığında sheet görünür alan (visualViewport) içinde kalsın.
+  useEffect(() => {
+    if (!isOpen) return;
+    const vv = window.visualViewport;
+    const sheet = sheetRef.current;
+    if (!vv || !sheet) return;
+
+    const apply = () => {
+      const kb = Math.max(0, window.innerHeight - vv.height);
+      sheet.style.maxHeight = `${vv.height}px`;
+      document.documentElement.style.setProperty('--kb-offset', `${kb}px`);
+    };
+
+    apply();
+    vv.addEventListener('resize', apply);
+    vv.addEventListener('scroll', apply);
+    return () => {
+      vv.removeEventListener('resize', apply);
+      vv.removeEventListener('scroll', apply);
+      sheet.style.maxHeight = '';
+      document.documentElement.style.setProperty('--kb-offset', '0px');
+    };
+  }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -242,6 +268,7 @@ export default function SearchModal({
   return (
     <div className="search-modal-backdrop" onClick={onClose}>
       <div
+        ref={sheetRef}
         className="search-modal-sheet"
         role="dialog"
         aria-modal="true"
