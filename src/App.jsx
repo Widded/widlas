@@ -102,10 +102,16 @@ export default function App() {
     }
 
     // 3. Road-snapped transit paths
+    // Güzergah silüeti (durak dizisi / hat yolu) gerçek yollara hizalanır: yoğun
+    // hat yolu kullanıldığında yol takibi kısayollar yapıp binalara girmez.
+
     if (!route.isTransfer) {
       const stops = [route.startStop, ...(route.legs?.[0]?.stops || []), route.endStop].filter(Boolean);
-      if (stops.length > 1) {
-        fetchRoadSnappedBusPath(stops).then(snapped => setRoadSnappedBusPath(snapped));
+      const source = (route.routeGeometry && route.routeGeometry.length > 1) ? route.routeGeometry : stops;
+      if (source.length > 1) {
+        fetchRoadSnappedBusPath(source)
+          .then(snapped => setRoadSnappedBusPath(snapped))
+          .catch(() => setRoadSnappedBusPath(null));
       } else {
         setRoadSnappedBusPath(null);
       }
@@ -115,13 +121,19 @@ export default function App() {
       setRoadSnappedBusPath(null);
       const stops1 = [route.startStop, ...(route.legs?.[0]?.stops || []), route.transferStop].filter(Boolean);
       const stops2 = [route.transferStop, ...(route.legs?.[1]?.stops || []), route.endStop].filter(Boolean);
-      if (stops1.length > 1) {
-        fetchRoadSnappedBusPath(stops1).then(snapped => setRoadSnappedBusPath1(snapped));
+      const source1 = (route.routeGeometry1 && route.routeGeometry1.length > 1) ? route.routeGeometry1 : stops1;
+      const source2 = (route.routeGeometry2 && route.routeGeometry2.length > 1) ? route.routeGeometry2 : stops2;
+      if (source1.length > 1) {
+        fetchRoadSnappedBusPath(source1)
+          .then(snapped => setRoadSnappedBusPath1(snapped))
+          .catch(() => setRoadSnappedBusPath1(null));
       } else {
         setRoadSnappedBusPath1(null);
       }
-      if (stops2.length > 1) {
-        fetchRoadSnappedBusPath(stops2).then(snapped => setRoadSnappedBusPath2(snapped));
+      if (source2.length > 1) {
+        fetchRoadSnappedBusPath(source2)
+          .then(snapped => setRoadSnappedBusPath2(snapped))
+          .catch(() => setRoadSnappedBusPath2(null));
       } else {
         setRoadSnappedBusPath2(null);
       }

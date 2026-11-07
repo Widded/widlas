@@ -211,53 +211,91 @@ export const fetchWalkingPath = async (fromLat, fromLon, toLat, toLon) => {
   ];
 };
 
-// 3. Mapbox Road-snapped Transit / Bus Route (Driving profile along real streets & roads)
-export const fetchRoadSnappedBusPath = async (stops) => {
-  if (!stops || stops.length < 2) return null;
-  if (!MAPBOX_TOKEN) return null;
+// 3. Rota çizgilerini gerçek yollara hizala (bus güzergahı doğru takip etsin diye)
+// Normalizasyon: {lat,lon} veya [lat,lon] kabul eder, ardışık tekrarları ve uçları temizler.
+const normalizePathPoints = (points) => {
+  const out = [];
+  points.forEach((s) => {
+    const lat = Number(s?.lat !== undefined ? s.lat : s?.[0]);
+    const lon = Number(s?.lon !== undefined ? s.lon : s?.[1]);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon) || (Math.abs(lat) < 1e-9 && Math.abs(lon) < 1e-9)) return;
+    const prev = out[out.length - 1];
+    if (prev && Math.abs(prev[0] - lat) < 1e-6 && Math.abs(prev[1] - lon) < 1e-6) return;
+    out.push([lat, lon]);
+  });
+  return out;
+};
 
-  try {
-    const uniqueStops = [];
-    stops.forEach((s) => {
-      const lat = Number(s?.lat !== undefined ? s.lat : s?.[0]);
-      const lon = Number(s?.lon !== undefined ? s.lon : s?.[1]);
-      if (isNaN(lat) || isNaN(lon) || !lat || !lon) return;
+const coordsToString = (points) =>
+  points.map(([lat, lon]) => `${Number(lon).toFixed(6)},${Number(lat).toFixed(6)}`).join(';');
 
-      if (uniqueStops.length === 0) {
-        uniqueStops.push({ lat, lon });
-      } else {
-        const prev = uniqueStops[uniqueStops.length - 1];
-        if (Math.abs(prev.lat - lat) > 0.0001 || Math.abs(prev.lon - lon) > 0.0001) {
-          uniqueStops.push({ lat, lon });
-        }
-      }
+// Mapbox Directions API en fazla 25 waypoint kabul eder; uzun patika parçalara bölünür.
+const MAX_WAYPOINTS = 25;
+
+const chunkPoints = (points) => {
+  const chunks = [];
+  for (let i = 0; i < points.length; i += MAX_WAYPOINTS - 1) {
+    chunks.push(points.slice(i, i + MAX_WAYPOINTS));
+  }
+  return chunks;
+};
+
+const stitchGeometries = (geoms) => {
+  const out = [];
+  geoms.forEach((g) => {
+    g.forEach((c) => {
+      const prev = out[out.length - 1];
+      if (prev && Math.abs(prev[0] - c[0]) < 1e-6 && Math.abs(prev[1] - c[1]) < 1e-6) return;
+      out.push([c[0], c[1]]);
     });
+  });
+  return out;
+};
 
-    if (uniqueStops.length < 2) return null;
-
-    let waypoints = uniqueStops;
-    if (waypoints.length > 25) {
-      const step = (waypoints.length - 1) / 24;
-      waypoints = [];
-      for (let i = 0; i < 24; i++) {
-        waypoints.push(uniqueStops[Math.round(i * step)]);
-      }
-      waypoints.push(uniqueStops[uniqueStops.length - 1]);
-    }
-
-    const coordsStr = waypoints
-      .map(s => `${s.lon.toFixed(6)},${s.lat.toFixed(6)}`)
-      .join(';');
-
-    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsStr}?geometries=geojson&overview=full&access_token=${MAPBOX_TOKEN}`;
+const snapViaMapbox = async (points) => {
+  const chunks = chunkPoints(points);
+  const geoms = [];
+  for (const chunk of chunks) {
+    const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordsToString(chunk)}?geometries=geojson&overview=full&steps=false&access_token=${MAPBOX_TOKEN}`;
     const res = await fetch(url);
     const data = await res.json();
+    const coords = data.routes?.[0]?.geometry?.coordinates;
+    if (!coords) return null;
+    // GeoJSON [lng, lat] → [lat, lng]
+    geoms.push(coords.map(c => [c[1], c[0]]));
+    if (chunks.length > 1) await new Promise(r => setTimeout(r, 60)); // kısa aralık
+  }
+  return stitchGeometries(geoms);
+};
 
-    if (data.routes && data.routes[0]?.geometry?.coordinates) {
-      return data.routes[0].geometry.coordinates.map(c => [c[1], c[0]]); // [latitude, longitude]
+const snapViaOsrm = async (points) => {
+  const chunks = chunkPoints(points);
+  const geoms = [];
+  for (const chunk of chunks) {
+    const url = `https://router.project-osrm.org/route/v1/driving/${coordsToString(chunk)}?overview=full&geometries=geojson&steps=false`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const coords = data.routes?.[0]?.geometry?.coordinates;
+    if (!coords || coords.length < 2) return null;
+    geoms.push(coords.map(c => [c[1], c[0]]));
+    if (chunks.length > 1) await new Promise(r => setTimeout(r, 60));
+  }
+  return stitchGeometries(geoms);
+};
+
+export const fetchRoadSnappedBusPath = async (points) => {
+  const norm = normalizePathPoints(points || []);
+  if (norm.length < 2) return null;
+
+  try {
+    if (MAPBOX_TOKEN) {
+      const snapped = await snapViaMapbox(norm);
+      if (snapped && snapped.length >= 2) return snapped;
     }
+    const osrm = await snapViaOsrm(norm);
+    if (osrm && osrm.length >= 2) return osrm;
   } catch (err) {
-    console.warn('Mapbox road-snapping error:', err);
+    console.warn('road-snapping error:', err);
   }
 
   return null;
