@@ -87,7 +87,12 @@ const replaceStopInDirection = (dir, fromId, toId, code, stops) => {
 export function buildPlatformData(baseLines, baseStops) {
   const stops = {};
   Object.values(baseStops || {}).forEach((stop) => {
-    stops[stop.id] = { ...stop, routes: [...(stop.routes || [])] };
+    stops[stop.id] = {
+      ...stop,
+      // Resmî sitede görünen 1/2 gibi platform eklerini kullan.
+      name: stop.fullName || stop.name,
+      routes: [...(stop.routes || [])]
+    };
   });
 
   const lines = {};
