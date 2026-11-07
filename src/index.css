@@ -625,7 +625,8 @@ html, body {
 /* Floating Line Preview Banner */
 .floating-line-preview-banner {
   position: fixed;
-  top: max(140px, calc(env(safe-area-inset-top, 0px) + 140px));
+  bottom: calc(max(20px, env(safe-area-inset-bottom, 20px)) + 54px);
+  top: auto;
   left: 16px;
   right: 16px;
   max-width: 420px;
@@ -640,6 +641,12 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  animation: linePreviewIn 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes linePreviewIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .line-preview-info {
