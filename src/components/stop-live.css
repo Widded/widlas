@@ -1,0 +1,175 @@
+/* ==========================================================================
+   STOP LIVE ("Durakta Ne Var?")
+   ========================================================================== */
+.stop-live-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 16px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  scrollbar-width: none;
+}
+
+.stop-live-body::-webkit-scrollbar { display: none; }
+
+.stop-live-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.stop-live-section-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-left: 2px;
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.stop-live-count {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text-muted);
+  font-size: 9.5px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  letter-spacing: 0;
+}
+
+.stop-live-count.muted {
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-dim);
+}
+
+.stop-live-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stop-live-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 11px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.025);
+  border: 1px solid var(--border-subtle);
+  opacity: 0.78;
+}
+
+.stop-live-row.is-live {
+  background: color-mix(in srgb, var(--line-color) 7%, rgba(255, 255, 255, 0.03));
+  border-color: color-mix(in srgb, var(--line-color) 28%, transparent);
+  opacity: 1;
+}
+
+.stop-live-code {
+  width: 42px;
+  height: 30px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--line-color);
+  color: #0A0D12;
+  font-size: 12px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stop-live-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.stop-live-dest {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stop-live-sub {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stop-live-eta {
+  flex-shrink: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.5px;
+  color: var(--line-color);
+}
+
+.stop-live-eta small {
+  font-size: 10px;
+  font-weight: 800;
+  opacity: 0.75;
+}
+
+.stop-live-eta.none {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dim);
+}
+
+.stop-live-more {
+  align-self: center;
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.stop-live-more:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.stop-live-note {
+  margin: 0 0 2px;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  font-size: 10px;
+  line-height: 1.4;
+  color: var(--text-dim);
+  font-weight: 600;
+}
+
+.stop-live-note svg {
+  margin-top: 1px;
+  flex-shrink: 0;
+}

@@ -1,17 +1,18 @@
 import React from 'react';
-import { Bus, CreditCard, Bookmark, ChevronRight, X, Radio } from 'lucide-react';
+import { Bus, CreditCard, Bookmark, ChevronRight, X, Radio, MapPin } from 'lucide-react';
 
 const MENU_ITEMS = [
   { id: 'buslive', title: 'Otobüs Nerede?', desc: 'Canlı otobüs konumu ve kalan süre', icon: Radio, action: 'onOpenBusLive' },
+  { id: 'stoplive', title: 'Durakta Ne Var?', desc: 'Durağa yaklaşan tüm hatlar', icon: MapPin, action: 'onOpenStopLive' },
   { id: 'lines', title: 'Hatlar', desc: 'Tüm ETUS hatları', icon: Bus, action: 'onOpenLines' },
   { id: 'fares', title: 'Tarife', desc: 'Bilet ve abonman ücretleri', icon: CreditCard, action: 'onOpenFares' },
   { id: 'saved', title: 'Kaydedilenler', desc: 'Sık kullandığın yerler', icon: Bookmark, action: 'onOpenSaved' }
 ];
 
-export default function HomeMenuModal({ isOpen, onClose, onOpenLines, onOpenFares, onOpenSaved, onOpenBusLive }) {
+export default function HomeMenuModal({ isOpen, onClose, onOpenLines, onOpenFares, onOpenSaved, onOpenBusLive, onOpenStopLive }) {
   if (!isOpen) return null;
 
-  const handlers = { onOpenLines, onOpenFares, onOpenSaved, onOpenBusLive };
+  const handlers = { onOpenLines, onOpenFares, onOpenSaved, onOpenBusLive, onOpenStopLive };
 
   return (
     <div className="home-menu-backdrop" onClick={onClose}>

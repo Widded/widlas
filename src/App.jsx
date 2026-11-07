@@ -17,6 +17,7 @@ import FaresModal from './components/FaresModal';
 import SavedPlacesModal from './components/SavedPlacesModal';
 import HomeMenuModal from './components/HomeMenuModal';
 import BusLiveModal from './components/BusLiveModal';
+import StopLiveModal from './components/StopLiveModal';
 import { calculateSmartRoute } from './data/routes';
 import { savePlace } from './lib/savedPlaces';
 import { getLineColor } from './lib/lineColors';
@@ -38,6 +39,7 @@ export default function App() {
   const [savedModalOpen, setSavedModalOpen] = useState(false);
   const [homeMenuOpen, setHomeMenuOpen] = useState(false);
   const [busLiveOpen, setBusLiveOpen] = useState(false);
+  const [stopLiveOpen, setStopLiveOpen] = useState(false);
 
   // Locations State
   const [fromLocation, setFromLocation] = useState({ name: '', lat: null, lon: null });
@@ -646,6 +648,13 @@ export default function App() {
         userLocation={liveLocation}
       />
 
+      {/* 8c. Stop Live Modal */}
+      <StopLiveModal
+        isOpen={stopLiveOpen}
+        onClose={() => setStopLiveOpen(false)}
+        userLocation={liveLocation}
+      />
+
       {/* 9. Fares Modal */}
       <FaresModal
         isOpen={faresModalOpen}
@@ -674,6 +683,10 @@ export default function App() {
         onOpenBusLive={() => {
           setHomeMenuOpen(false);
           setBusLiveOpen(true);
+        }}
+        onOpenStopLive={() => {
+          setHomeMenuOpen(false);
+          setStopLiveOpen(true);
         }}
         onOpenLines={() => {
           setHomeMenuOpen(false);
