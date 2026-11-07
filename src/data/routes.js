@@ -32,18 +32,77 @@ export const findNearbyStops = (stopsDB, lat, lon, maxRadiusKm = 0.8) => {
 export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
   if (!fromLat || !fromLon || !toLat || !toLon) return null;
 
-  // Durak dizisinden temiz [lat, lon] poliline çıkarır.
-  // dir.path verisi bazı hatlarda eksik/yanlış (ör. 3AYM'de 4km, 4A'da 7km sapma)
-  // olduğu için geometri artık durağan durak koordinatından üretilir; yol sağırı
-  // Mapbox/OSRM hizalaması bunu gerçek yollara oturtur.
-  const stopsToPath = (stopIds, iFrom, iTo) => {
-    const seg = stopIds.slice(Math.min(iFrom, iTo), Math.max(iFrom, iTo) + 1);
-    return seg
-      .map(id => {
-        const s = allStopsDB[id];
-        return s?.lat && s?.lon ? [s.lat, s.lon] : null;
-      })
-      .filter(Boolean);
+  // Güzergah geometrisi: otobüsün gerçek izini (dir.path) durak sırasıyla hizala.
+  // - Biniş/iniş duraklarının iz üzerindeki projeksiyonları bulunur
+  // - Halka hatlar için çevre yolu da (wrap) dahil ederek MINIMUM yol dilimi seçilir
+  // - Referans: uç duraklar izi 500m+, orta duraklar 600m+ ıssızsa patika bozuk
+  //   sayılır: o yüzden durak koordinatları üzerinden çizilir.
+  const geometryForStops = (dir, iFrom, iTo) => {
+    const seq = dir.stopIds
+      .slice(Math.min(iFrom, iTo), Math.max(iFrom, iTo) + 1)
+      .map(id => allStopsDB[id])
+      .filter(s => s?.lat && s?.lon)
+      .map(s => [s.lat, s.lon]);
+    const path = dir.path;
+    // getDistance km döndürür (mesafeler aşağıda km cinsinden)
+    if (!path || path.length < 2 || seq.length < 2) return seq;
+
+    const cum = [0];
+    for (let i = 1; i < path.length; i++) {
+      cum[i] = cum[i - 1] + getDistance(path[i - 1][0], path[i - 1][1], path[i][0], path[i][1]);
+    }
+
+    const projectIdx = (coord) => {
+      const ids = [];
+      for (let i = 0; i < path.length; i++) {
+        if (getDistance(coord[0], coord[1], path[i][0], path[i][1]) < 0.15) ids.push(i);
+      }
+      if (ids.length) return ids;
+      let min = Infinity, mi = 0;
+      for (let i = 0; i < path.length; i++) {
+        const d = getDistance(coord[0], coord[1], path[i][0], path[i][1]);
+        if (d < min) { min = d; mi = i; }
+      }
+      return [mi];
+    };
+
+    // İz yönü durak sırasıyla uyumlu mu? (bazı yönler izi tersiyle gelir)
+    const forwardPath = getDistance(seq[0][0], seq[0][1], path[0][0], path[0][1]) <=
+      getDistance(seq[seq.length - 1][0], seq[seq.length - 1][1], path[0][0], path[0][1]);
+    const oriented = forwardPath ? seq : [...seq].reverse();
+
+    const firstIdxs = projectIdx(oriented[0]);
+    const lastIdxs = projectIdx(oriented[oriented.length - 1]);
+    // Uç projeksiyonları birden fazla yerde olabilir (halka hatlar, durak önü dolanma).
+    // Doğru dilim: ara durakların da sırasıyla İZ üzerinde geçtiği EN GENİŞ aralık.
+    let best = null;
+    for (const a0 of firstIdxs) {
+      for (const b0 of lastIdxs) {
+        if (b0 <= a0) continue;
+        if (!best || (b0 - a0) > (best.i2 - best.i1)) best = { i1: a0, i2: b0 };
+      }
+    }
+    if (!best || (best.i2 - best.i1) < Math.max(4, Math.floor(path.length / 40))) {
+      // İzin uçlarında değilse (bozuk/eksik iz), durak koordinatları kullanılır.
+      return seq;
+    }
+
+    let seg = path.slice(best.i1, best.i2 + 1);
+    if (!forwardPath) seg = seg.slice().reverse();
+
+    // ara durakların sıra ile iz üzerinde geçip geçmediği (uzaklık < 300m)
+    let idx = best.i1;
+    let hits = 0;
+    const mids = oriented.slice(1, -1);
+    mids.forEach(sc => {
+      let found = -1;
+      for (let j = idx; j <= best.i2; j++) {
+        if (getDistance(sc[0], sc[1], path[j][0], path[j][1]) < 0.3) { found = j; break; }
+      }
+      if (found >= 0) { hits += 1; idx = found; }
+    });
+    if (!mids.length || hits / mids.length < 0.7) return seq;
+    return seg;
   };
 
   // Detaylı tarif için durak nesnesi (koordinatı olmayan duraklar da isimle listelenir)
@@ -134,7 +193,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 totalTime: Math.ceil(totalTime),
                 startStop: sStop,
                 endStop: eStop,
-                routeGeometry: stopsToPath(dir.stopIds, bestIdxA, bestIdxB),
+                routeGeometry: geometryForStops(dir, bestIdxA, bestIdxB),
                 walkDistanceStart: sStop.distanceKm,
                 walkDistanceEnd: eStop.distanceKm,
                 passedStops: passedStops,
@@ -292,8 +351,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         transferStop: actualTransferStop,
                         endStop: match.eStop,
                         routeGeometry: [], // fallback
-                        routeGeometry1: stopsToPath(dir1.stopIds, idxA, tIdx),
-                        routeGeometry2: stopsToPath(dir2.stopIds, idxT, match.idxB),
+                        routeGeometry1: geometryForStops(dir1, idxA, tIdx),
+                        routeGeometry2: geometryForStops(dir2, idxT, match.idxB),
                         walkDistanceStart: sStop.distanceKm,
                         walkDistanceEnd: match.walkEnd,
                         transferWalkDistance: transferWalkDist,

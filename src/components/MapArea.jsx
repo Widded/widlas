@@ -75,39 +75,60 @@ function buildDirectionArrows(points, { maxArrows = 12, minSpacingM = 220 } = {}
 }
 
 // Hat önizleme geometrisi: dir.path güvenilir değilse durak koordinatlarıyla çiz.
-function getDistanceMetersPts(lat1, lon1, lat2, lon2) {
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a = Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-    Math.cos((lat2 * Math.PI) / 180) *
-    Math.sin(dLon / 2) ** 2;
-  return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
-
+// Hat önizleme geometrisi
 function buildLineGeometry(dir, stopsDB) {
   const stopIds = dir?.stopIds || [];
-  const stopsCoords = stopIds
+  const coords = stopIds
     .map(id => stopsDB[id])
     .filter(s => s && s.lat && s.lon)
     .map(s => [s.lat, s.lon]);
-  const rawPath = (dir?.path?.length > 1) ? dir.path : [];
+  const path = (dir?.path?.length > 1) ? dir.path : [];
+  if (!path.length || coords.length < 2) return coords;
 
-  if (rawPath.length && stopsCoords.length > 1) {
-    // Duraklar patikadan ne kadar uzak? (500m'den büyükse patika bozuktur)
-    let maxGap = 0;
-    stopsCoords.forEach(sc => {
-      let min = Infinity;
-      rawPath.forEach(pc => {
-        const d = getDistanceMetersPts(sc[0], sc[1], pc[0], pc[1]);
-        if (d < min) min = d;
-      });
-      if (min > maxGap) maxGap = min;
-    });
-    if (maxGap <= 500) return rawPath;
+  const cum = [0];
+  for (let i = 1; i < path.length; i++) {
+    cum[i] = cum[i - 1] + getDistanceMeters(path[i - 1][0], path[i - 1][1], path[i][0], path[i][1]);
   }
+  const projectIdx = (coord) => {
+    const ids = [];
+    for (let i = 0; i < path.length; i++) {
+      if (getDistanceMeters(coord[0], coord[1], path[i][0], path[i][1]) < 150) ids.push(i);
+    }
+    if (ids.length) return ids;
+    let min = Infinity, mi = 0;
+    for (let i = 0; i < path.length; i++) {
+      const d = getDistanceMeters(coord[0], coord[1], path[i][0], path[i][1]);
+      if (d < min) { min = d; mi = i; }
+    }
+    return [mi];
+  };
 
-  return (rawPath.length > 1) ? rawPath : stopsCoords;
+  const a = projectIdx(coords[0]);
+  const b = projectIdx(coords[coords.length - 1]);
+  let best = null;
+  for (const x of a) for (const y of b) {
+    if (Math.abs(x - y) < 2) continue;
+    if (y > x) {
+      const len = cum[y] - cum[x];
+      if (!best || len < best.len) best = { i1: x, i2: y, len, forward: true };
+    } else {
+      const len = cum[x] - cum[y];
+      if (!best || len < best.len) best = { i1: y, i2: x, len, forward: false };
+    }
+  }
+  if (!best || best.len > 60000) return coords;
+  const seg = best.forward ? path.slice(best.i1, best.i2 + 1) : path.slice(best.i1, best.i2 + 1).reverse();
+
+  const endpointsOk =
+    getDistanceMeters(coords[0][0], coords[0][1], path[best.i1][0], path[best.i1][1]) < 500 &&
+    getDistanceMeters(coords[coords.length - 1][0], coords[coords.length - 1][1], path[best.i2][0], path[best.i2][1]) < 500;
+  const midOk = coords.slice(1, -1).every(sc => {
+    let m = Infinity;
+    for (const c of seg) m = Math.min(m, getDistanceMeters(sc[0], sc[1], c[0], c[1]));
+    return m < 600;
+  });
+  if (!endpointsOk || !midOk) return coords;
+  return seg;
 }
 
 // Rota üzerinde belirli bir orana denk gelen noktayı bulur (hat etiketi için).
