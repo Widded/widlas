@@ -12,7 +12,8 @@ function getBearing(lat1, lon1, lat2, lon2) {
   const dLat2 = (lat2 * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const y = Math.sin(dLon) * Math.cos(dLat2);
-  const x = Math.cos(dLat1) * Math.sin(dLat2) - Math.sin(dLat1) * Math.cos(dLon);
+  const x = Math.cos(dLat1) * Math.sin(dLat2) -
+    Math.sin(dLat1) * Math.cos(dLat2) * Math.cos(dLon);
   const brng = (Math.atan2(y, x) * 180) / Math.PI;
   return Math.round((brng + 360) % 360);
 }
