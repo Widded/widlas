@@ -372,10 +372,9 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
           <span className="bus-live-stop-text">
             <b>{currentStop?.name || 'Durak seç'}</b>
             <small>
-              {currentStop ? `Durak ${currentStop.id} · ` : ''}
               {currentDistance != null
-                ? `${fmtDistance(currentDistance)} · durak değiştir`
-                : 'durak değiştir'}
+                ? `Size ${fmtDistance(currentDistance)} uzaklıkta · durak değiştir`
+                : 'Durak değiştir'}
             </small>
           </span>
           <ChevronRight size={16} className="bus-live-stop-chev" />
