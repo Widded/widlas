@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
 import {
   Search,
   X,
@@ -202,36 +202,6 @@ export default function App() {
     );
   }), [setLiveLocation, attachCompass]);
 
-  // "Konumum" seçimi
-  const handleUseMyLocation = useCallback(async (target) => {
-    try {
-      const coords = await getCurrentCoords();
-      const place = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
-
-      if (target === 'from') {
-        setFromLocation(place);
-        if (toLocation?.lat && toLocation?.lon) {
-          await calculateRoute(place, toLocation);
-        }
-        showToast('Kalkış noktanız konumunuz olarak ayarlandı.', 'success');
-      } else {
-        setFromLocation(place);
-        showToast('Konumunuz kalkış noktası olarak alındı.', 'success');
-      }
-
-      return place;
-    } catch (error) {
-      if (!window.isSecureContext) {
-        showToast('Konum için HTTPS gerekli. Canlı site veya localhost kullanın.', 'error', 6000);
-      } else if (error?.code === 1) {
-        showToast('Konum izni verilmedi. Tarayıcı ayarlarından izin verin.', 'error', 5000);
-      } else {
-        showToast('Konum alınamadı. Lütfen tekrar deneyin.', 'error');
-      }
-      return null;
-    }
-  }, [getCurrentCoords, toLocation, calculateRoute, showToast]);
-
   // Başlangıç noktasını çözer. İzin yoksa boş bırakır (şehir merkezine düşmez).
   const resolveOrigin = useCallback(async () => {
     if (fromLocation?.lat && fromLocation?.lon) return fromLocation;
@@ -292,6 +262,42 @@ export default function App() {
 
     await calculateRoute(origin, resolved);
   };
+
+  // "Konumum" seçimi — target: 'from' (kalkış) | 'to' (varış) | null (sadece kalkış)
+  const handleSelectPlaceRef = useRef(null);
+  useEffect(() => {
+    handleSelectPlaceRef.current = handleSelectLocation;
+  });
+  const handleUseMyLocation = useCallback(async (target) => {
+    try {
+      const coords = await getCurrentCoords();
+      const place = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+
+      if (target === 'to') {
+        // Odaklı alan varışsa: varış noktası = mevcut konum (rota hesaplanır)
+        await handleSelectPlaceRef.current(place, 'to');
+        return place;
+      }
+
+      // Odak yok ya da kalkış odaklıysa: kalkış = mevcut konum
+      setFromLocation(place);
+      if (toLocation?.lat && toLocation?.lon) {
+        await calculateRoute(place, toLocation);
+      }
+      showToast('Kalkış noktanız konumunuz olarak ayarlandı.', 'success');
+
+      return place;
+    } catch (error) {
+      if (!window.isSecureContext) {
+        showToast('Konum için HTTPS gerekli. Canlı site veya localhost kullanın.', 'error', 6000);
+      } else if (error?.code === 1) {
+        showToast('Konum izni verilmedi. Tarayıcı ayarlarından izin verin.', 'error', 5000);
+      } else {
+        showToast('Konum alınamadı. Lütfen tekrar deneyin.', 'error');
+      }
+      return null;
+    }
+  }, [getCurrentCoords, toLocation, calculateRoute, showToast]);
 
   // Clear active route & return to explore
   const handleClearRoute = () => {

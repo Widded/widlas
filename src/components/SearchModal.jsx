@@ -41,6 +41,12 @@ export default function SearchModal({
 
   const toInputRef = useRef(null);
   const fromInputRef = useRef(null);
+  // Modal açılırken programatik odaklama zamanlayıcısı
+  const autofocusTimerRef = useRef(null);
+  // Live truth: hangi input odaklı? (focus'ta set, blur'da temizlenir)
+  const focusedFieldRef = useRef(targetType);
+  // Quick-pick'te kullanılacak anlık değer (pointerdown, blur'dan önce yakalanır)
+  const quickPickTargetRef = useRef(targetType);
   const debounceTimer = useRef(null);
   const abortRef = useRef(null);
   const requestIdRef = useRef(0);
@@ -50,6 +56,8 @@ export default function SearchModal({
 
     // oxlint-disable-next-line react/set-state-in-effect
     setActiveTab(targetType);
+    quickPickTargetRef.current = targetType;
+    focusedFieldRef.current = targetType;
     setFromQuery(fromLocation?.name || '');
     setToQuery(toLocation?.name || '');
     setSearchResults([]);
@@ -62,8 +70,12 @@ export default function SearchModal({
         toInputRef.current?.focus();
       }
     }, 180);
+    autofocusTimerRef.current = focusTimer;
 
-    return () => clearTimeout(focusTimer);
+    return () => {
+      clearTimeout(focusTimer);
+      autofocusTimerRef.current = null;
+    };
     // Prop değerleri yalnızca modal açılırken senkronize edilmeli; açıkken
     // "Konumum" seçimi formu sıfırlamasın.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -81,6 +93,27 @@ export default function SearchModal({
 
   const activeQuery = activeTab === 'from' ? fromQuery : toQuery;
   const hasQuery = !isPlaceholderQuery(activeQuery);
+
+  const handleInputFocus = (field) => {
+    // Kullanıcı başka bir alana odaklandıysa, beklemedeki otomatik odağı iptal et.
+    // Kullanıcı başka bir alana odaklandıysa, beklemedeki otomatik odağı iptal et.
+    if (autofocusTimerRef.current) {
+      clearTimeout(autofocusTimerRef.current);
+      autofocusTimerRef.current = null;
+    }
+    focusedFieldRef.current = field;
+    quickPickTargetRef.current = field;
+    setActiveTab(field);
+  };
+
+  const handleInputBlur = () => {
+    // Odak gitti; tıklama sırasında hedef snapshot'ı pointerdown'da alındı.
+    focusedFieldRef.current = null;
+  };
+
+  const captureQuickPickTarget = () => {
+    quickPickTargetRef.current = focusedFieldRef.current;
+  };
 
   useEffect(() => {
     if (!isOpen) return;
@@ -143,15 +176,21 @@ export default function SearchModal({
   const handleUseMyLocation = async () => {
     if (isLocating || !onUseMyLocation) return;
     setIsLocating(true);
-    const place = await onUseMyLocation(activeTab);
+    // Odak yoksa (null) kalkışı, odaklı alan varsa o inputu ayarlar.
+    // Pointerdown anındaki değer kullanılır (blur zaten state'i düşürmüş olabilir).
+    const target = quickPickTargetRef.current;
+    const place = await onUseMyLocation(target);
     setIsLocating(false);
 
     if (!place) return;
 
-    if (activeTab === 'from') {
+    if (target === 'to') {
       onClose();
     } else {
       setFromQuery(place.name || 'Mevcut Konumum');
+      if (target === 'from') {
+        onClose();
+      }
     }
   };
 
@@ -242,7 +281,8 @@ export default function SearchModal({
                   setFromQuery(e.target.value);
                   setActiveTab('from');
                 }}
-                onFocus={() => setActiveTab('from')}
+                onFocus={() => handleInputFocus('from')}
+                onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
                 className="search-text-input"
                 autoComplete="off"
@@ -282,7 +322,8 @@ export default function SearchModal({
                   setToQuery(e.target.value);
                   setActiveTab('to');
                 }}
-                onFocus={() => setActiveTab('to')}
+                onFocus={() => handleInputFocus('to')}
+                onBlur={handleInputBlur}
                 onKeyDown={handleInputKeyDown}
                 className="search-text-input"
                 autoComplete="off"
@@ -340,6 +381,7 @@ export default function SearchModal({
                 <button
                   type="button"
                   className="search-quick-pick"
+                  onPointerDown={captureQuickPickTarget}
                   onClick={handleUseMyLocation}
                   disabled={isLocating}
                 >
