@@ -41,7 +41,8 @@ export default function App() {
   const [toLocation, setToLocation] = useState({ name: '', lat: null, lon: null });
 
   // Live Location & GPS
-  const { liveLocation, setLiveLocation, isFollowing, setIsFollowing } = useLiveLocation();
+  // Live Location & GPS
+  const { liveLocation, setLiveLocation, isFollowing, setIsFollowing, attachCompass } = useLiveLocation();
 
   // Routing State
   const [searchResults, setSearchResults] = useState(null);
@@ -172,6 +173,9 @@ export default function App() {
 
   // Browser geolocation (tek seferlik)
   const getCurrentCoords = useCallback(() => new Promise((resolve, reject) => {
+    // iOS: pusula izni kullanıcı hareketi içinde istenmelidir
+    attachCompass();
+
     if (!window.isSecureContext) {
       reject(new Error('insecure-context'));
       return;
@@ -182,22 +186,20 @@ export default function App() {
     }
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const coords = {
+        setLiveLocation(prev => ({
           lat: position.coords.latitude,
-          lon: position.coords.longitude
-        };
-        setLiveLocation({
-          ...coords,
-          heading: null,
+          lon: position.coords.longitude,
+          // Pusula başlıksını koru; GPS başlığı yoksa adresin başlığını doğrulamak için kullanılır
+          heading: prev?.heading ?? position.coords.heading ?? null,
           accuracy: position.coords.accuracy,
           speed: position.coords.speed
-        });
-        resolve(coords);
+        }));
+        resolve({ lat: position.coords.latitude, lon: position.coords.longitude });
       },
       (error) => reject(error),
       { enableHighAccuracy: true, timeout: 12000, maximumAge: 30000 }
     );
-  }), [setLiveLocation]);
+  }), [setLiveLocation, attachCompass]);
 
   // "Konumum" seçimi
   const handleUseMyLocation = useCallback(async (target) => {

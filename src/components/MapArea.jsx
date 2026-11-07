@@ -29,6 +29,12 @@ function getDistanceMeters(lat1, lon1, lat2, lon2) {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+// Pusula açısını Türkçe yön kısaltmasına çevirir (K, KD, D...)
+const CARDINAL_DIRECTIONS = ['K', 'KD', 'D', 'GD', 'G', 'GB', 'B', 'KB'];
+function headingToCardinal(deg) {
+  return CARDINAL_DIRECTIONS[Math.round(((deg % 360) + 360) % 360 / 45) % 8];
+}
+
 // Rota çizgisi boyunca yön okları üretir.
 function buildDirectionArrows(points, { maxArrows = 12, minSpacingM = 220 } = {}) {
   if (!Array.isArray(points) || points.length < 2) return [];
@@ -539,6 +545,11 @@ const MapArea = React.memo(function MapArea({
               <b>Mevcut Konumunuz</b>
               <br />
               Doğruluk: ±{Math.round(liveLocation.accuracy || 10)}m
+              <br />
+              Yön:
+              {typeof liveLocation.heading === 'number' && !isNaN(liveLocation.heading)
+                ? ` ${headingToCardinal(liveLocation.heading)} (${Math.round(liveLocation.heading)}°)`
+                : ' algılanamadı'}
             </Popup>
           </Marker>
         )}

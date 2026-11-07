@@ -10,17 +10,23 @@ export default function useLiveLocation() {
 
   const handleOrientation = useCallback((event) => {
     let compassHeading = null;
-    if (event.webkitCompassHeading) {
-      // iOS
+
+    if (typeof event.webkitCompassHeading === 'number' && !isNaN(event.webkitCompassHeading)) {
+      // iOS Safari: gerçek pusula yönü
       compassHeading = event.webkitCompassHeading;
-    } else if (event.absolute && event.alpha !== null) {
-      // Android
-      compassHeading = 360 - event.alpha;
+    } else if (typeof event.alpha === 'number' && !isNaN(event.alpha)) {
+      if (event.type === 'deviceorientationabsolute' || event.absolute === true) {
+        // Android: mutlak pusula verisi (true north); ekran dönüşü ile düzelt
+        const screenAngle = (window.screen?.orientation?.angle ?? window.orientation ?? 0) || 0;
+        compassHeading = (((360 - event.alpha - screenAngle) % 360) + 360) % 360;
+      }
+      // absolute olmayan (göreli) veriler güvenilir değildir; yön gösterme.
     }
-    
+
     if (compassHeading !== null) {
       setLiveLocation(prev => {
         if (!prev) return prev;
+        if (prev.heading === compassHeading) return prev;
         return { ...prev, heading: compassHeading };
       });
     }
@@ -34,25 +40,22 @@ export default function useLiveLocation() {
     }
   }, [handleOrientation]);
 
-  const attachOrientation = useCallback(() => {
-    if (orientationAttachedRef.current || !isWatchingRef.current) return;
+  // Pusulayı dinlemeye başla. iOS'ta kullanıcı hareketi (tıklama) sırasında çağrılmalı.
+  const attachCompass = useCallback(() => {
+    if (!window.DeviceOrientationEvent || orientationAttachedRef.current) return false;
 
-    if (window.DeviceOrientationEvent) {
-      if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted' && isWatchingRef.current) {
-              window.addEventListener('deviceorientation', handleOrientation);
-              orientationAttachedRef.current = true;
-            }
-          })
-          .catch(console.error);
-      } else {
-        window.addEventListener('deviceorientationabsolute', handleOrientation);
-        window.addEventListener('deviceorientation', handleOrientation);
-        orientationAttachedRef.current = true;
-      }
+    if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+      // iOS Safari: izin isteme kullanıcı hareketi içinde başlatılmalı.
+      // İzin sonucu beklemeden dinleyiciler eklenir; izin gelince olaylar akmaya başlar.
+      DeviceOrientationEvent.requestPermission().catch(() => {
+        // Pusula izni verilmedi; yön gösterilmez.
+      });
     }
+
+    window.addEventListener('deviceorientationabsolute', handleOrientation);
+    window.addEventListener('deviceorientation', handleOrientation);
+    orientationAttachedRef.current = true;
+    return true;
   }, [handleOrientation]);
 
   const startWatching = useCallback(() => {
@@ -96,8 +99,8 @@ export default function useLiveLocation() {
       }
     );
 
-    attachOrientation();
-  }, [attachOrientation, detachOrientation]);
+    attachCompass();
+  }, [attachCompass, detachOrientation]);
 
   const stopWatching = useCallback(() => {
     isWatchingRef.current = false;
@@ -136,6 +139,7 @@ export default function useLiveLocation() {
     isWatching,
     isFollowing,
     setIsFollowing,
+    attachCompass,
     startWatching,
     stopWatching,
     toggleWatching
