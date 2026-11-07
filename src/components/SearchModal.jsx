@@ -17,6 +17,18 @@ const POPULAR_PLACES = [
   { id: 'p4', name: 'Edirne Otogar', subtitle: 'Şehirlerarası Terminal', lat: 41.6320, lon: 26.6184 }
 ];
 
+// Odak durumuna göre hızlı seçim butonlarının alt yazıları
+const quickPickHints = (focus) => ({
+  konumum:
+    focus === 'to'
+      ? 'Varış noktasını mevcut konumun yapar'
+      : 'Kalkış noktasını mevcut konumun yapar',
+  harita:
+    focus === 'to'
+      ? 'Haritada varış noktası seçersin'
+      : 'Haritada kalkış noktası seçersin'
+});
+
 const PLACEHOLDER_QUERIES = ['Konumunuz', 'Mevcut Konumunuz', 'Mevcut Konum', 'Mevcut Konumum', 'Konumum'];
 const isPlaceholderQuery = (query) =>
   !query || query.trim().length < 2 || PLACEHOLDER_QUERIES.includes(query);
@@ -38,11 +50,11 @@ export default function SearchModal({
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  // Odaklı alan ('from' | 'to' | null) — hızlı seçim butonlarının hedefi ve görsel vurgu için.
+  const [focusedField, setFocusedField] = useState(targetType);
 
   const toInputRef = useRef(null);
   const fromInputRef = useRef(null);
-  // Modal açılırken programatik odaklama zamanlayıcısı
-  const autofocusTimerRef = useRef(null);
   // Live truth: hangi input odaklı? (focus'ta set, blur'da temizlenir)
   const focusedFieldRef = useRef(targetType);
   // Quick-pick'te kullanılacak anlık değer (pointerdown, blur'dan önce yakalanır)
@@ -58,24 +70,14 @@ export default function SearchModal({
     setActiveTab(targetType);
     quickPickTargetRef.current = targetType;
     focusedFieldRef.current = targetType;
+    // oxlint-disable-next-line react/set-state-in-effect
+    setFocusedField(targetType);
     setFromQuery(fromLocation?.name || '');
     setToQuery(toLocation?.name || '');
     setSearchResults([]);
     setIsSearching(false);
-
-    const focusTimer = setTimeout(() => {
-      if (targetType === 'from') {
-        fromInputRef.current?.focus();
-      } else {
-        toInputRef.current?.focus();
-      }
-    }, 180);
-    autofocusTimerRef.current = focusTimer;
-
-    return () => {
-      clearTimeout(focusTimer);
-      autofocusTimerRef.current = null;
-    };
+    // Klavyenin ilk dokunuşta açılabilmesi için programatik odak ertelenmez;
+    // input'a autoFocus verildi, burada yalnızca state senkronize edilir.
     // Prop değerleri yalnızca modal açılırken senkronize edilmeli; açıkken
     // "Konumum" seçimi formu sıfırlamasın.
     // oxlint-disable-next-line react-hooks/exhaustive-deps
@@ -95,20 +97,16 @@ export default function SearchModal({
   const hasQuery = !isPlaceholderQuery(activeQuery);
 
   const handleInputFocus = (field) => {
-    // Kullanıcı başka bir alana odaklandıysa, beklemedeki otomatik odağı iptal et.
-    // Kullanıcı başka bir alana odaklandıysa, beklemedeki otomatik odağı iptal et.
-    if (autofocusTimerRef.current) {
-      clearTimeout(autofocusTimerRef.current);
-      autofocusTimerRef.current = null;
-    }
     focusedFieldRef.current = field;
     quickPickTargetRef.current = field;
+    setFocusedField(field);
     setActiveTab(field);
   };
 
   const handleInputBlur = () => {
     // Odak gitti; tıklama sırasında hedef snapshot'ı pointerdown'da alındı.
     focusedFieldRef.current = null;
+    setFocusedField(null);
   };
 
   const captureQuickPickTarget = () => {
@@ -196,7 +194,9 @@ export default function SearchModal({
 
   const handleSelectFromMap = () => {
     if (!onSelectFromMap) return;
-    onSelectFromMap(activeTab);
+    // Odaklı alan varsa haritada o nokta seçilir; odak yoksa kalkış varsayılan.
+    const mapTarget = quickPickTargetRef.current || 'from';
+    onSelectFromMap(mapTarget);
     onClose();
   };
 
@@ -255,10 +255,11 @@ export default function SearchModal({
         <div className="search-modal-header">
           <div className="search-modal-heading">
             <span className="search-modal-eyebrow">
-              {activeTab === 'from' ? 'Kalkış' : 'Varış'}
+              {/* Odaklı alana göre başlık değişir; odak yoksa modal açılış hedefi */}
+              {focusedField === 'to' ? 'Varış' : focusedField === 'from' ? 'Kalkış' : (activeTab === 'from' ? 'Kalkış' : 'Varış')}
             </span>
             <h2 className="search-modal-title">
-              {activeTab === 'from' ? 'Nereden?' : 'Nereye?'}
+              {focusedField === 'to' ? 'Nereye?' : focusedField === 'from' ? 'Nereden?' : (activeTab === 'from' ? 'Nereden?' : 'Nereye?')}
             </h2>
           </div>
           <button className="search-modal-close-btn" onClick={onClose} title="Kapat" aria-label="Kapat">
@@ -267,7 +268,7 @@ export default function SearchModal({
         </div>
 
         <div className="search-inputs-stack">
-          <div className={`search-input-pill ${activeTab === 'from' ? 'is-active' : ''}`}>
+          <div className={`search-input-pill ${focusedField === 'from' ? 'is-active' : ''}`}>
             <span className="search-input-dot origin-dot" />
             <div className="search-input-body">
               <label className="search-input-label" htmlFor="search-from-input">Nereden</label>
@@ -275,6 +276,7 @@ export default function SearchModal({
                 id="search-from-input"
                 ref={fromInputRef}
                 type="text"
+                autoFocus={targetType === 'from'}
                 placeholder="Başlangıç noktası"
                 value={fromQuery}
                 onChange={(e) => {
@@ -308,7 +310,7 @@ export default function SearchModal({
             <ArrowUpDown size={14} />
           </button>
 
-          <div className={`search-input-pill ${activeTab === 'to' ? 'is-active' : ''}`}>
+          <div className={`search-input-pill ${focusedField === 'to' ? 'is-active' : ''}`}>
             <span className="search-input-dot dest-dot" />
             <div className="search-input-body">
               <label className="search-input-label" htmlFor="search-to-input">Nereye</label>
@@ -316,6 +318,7 @@ export default function SearchModal({
                 id="search-to-input"
                 ref={toInputRef}
                 type="text"
+                autoFocus={targetType === 'to'}
                 placeholder="Durak, yer veya hat ara"
                 value={toQuery}
                 onChange={(e) => {
@@ -390,14 +393,13 @@ export default function SearchModal({
                   </span>
                   <span className="search-quick-pick-text">
                     <b>{isLocating ? 'Konum alınıyor…' : 'Konumum'}</b>
-                    <small>
-                      {activeTab === 'from' ? 'Mevcut konumumu kullan' : 'Kalkış noktası yap'}
-                    </small>
+                    <small>{quickPickHints(focusedField).konumum}</small>
                   </span>
                 </button>
                 <button
                   type="button"
                   className="search-quick-pick"
+                  onPointerDown={captureQuickPickTarget}
                   onClick={handleSelectFromMap}
                 >
                   <span className="search-quick-pick-icon">
@@ -405,9 +407,7 @@ export default function SearchModal({
                   </span>
                   <span className="search-quick-pick-text">
                     <b>Haritadan Seç</b>
-                    <small>
-                      {activeTab === 'from' ? 'Haritada kalkış seç' : 'Haritada varış seç'}
-                    </small>
+                    <small>{quickPickHints(focusedField).harita}</small>
                   </span>
                 </button>
               </div>
