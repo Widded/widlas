@@ -4,7 +4,6 @@ import {
   X,
   Bookmark,
   ArrowRight,
-  ChevronDown,
   Crosshair,
   Navigation,
   Menu,
@@ -440,23 +439,6 @@ export default function App() {
           /* Home: minimal route planner */
           <div className="explore-header-wrapper">
             <div className="home-route-stack">
-              <button
-                className="home-input-pill origin"
-                onClick={() => {
-                  setSearchTargetType('from');
-                  setSearchModalOpen(true);
-                }}
-              >
-                <span className="home-route-dot origin" />
-                <span
-                  className={`home-input-text ${!fromLocation.name ? 'is-placeholder' : ''}`}
-                  title={fromLocation.name}
-                >
-                  {fromLocation.name || 'Başlangıç noktası'}
-                </span>
-                <ChevronDown size={16} className="home-input-tail" />
-              </button>
-
               <button
                 className="home-input-pill dest"
                 onClick={() => {

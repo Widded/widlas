@@ -353,22 +353,8 @@ html, body {
   position: relative;
   display: flex;
   flex-direction: column;
-  gap: 8px;
   width: 100%;
   min-width: 0;
-}
-
-/* İki nokta arasında ince bağlantı çizgisi */
-.home-route-stack::before {
-  content: '';
-  position: absolute;
-  left: 19px;
-  top: 26px;
-  bottom: 26px;
-  width: 1px;
-  background: var(--border-color);
-  opacity: 0.9;
-  pointer-events: none;
 }
 
 .home-input-pill {
