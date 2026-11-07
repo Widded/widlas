@@ -101,37 +101,46 @@ export default function App() {
       setWalkingPathEnd([]);
     }
 
-    // 3. Road-snapped transit paths
-    // Güzergah silüeti (durak dizisi / hat yolu) gerçek yollara hizalanır: yoğun
-    // hat yolu kullanıldığında yol takibi kısayollar yapıp binalara girmez.
+    // 3. Transit geometry
+    // Artık güzergah geometrisi resmi Kentkart verisinden (gerçek otobüs yolu)
+    // geliyor; Mapbox ile yeniden "snap"lemek kavşaklarda bozuyordu. Bu yüzden
+    // resmi dilim doğrudan kullanılır. Yalnızca geometri yoksa durak dizisinden üretilir.
 
     if (!route.isTransfer) {
-      const stops = [route.startStop, ...(route.legs?.[0]?.stops || []), route.endStop].filter(Boolean);
-      const source = (route.routeGeometry && route.routeGeometry.length > 1) ? route.routeGeometry : stops;
-      if (source.length > 1) {
-        fetchRoadSnappedBusPath(source)
-          .then(snapped => setRoadSnappedBusPath(snapped))
-          .catch(() => setRoadSnappedBusPath(null));
+      const official = (route.routeGeometry && route.routeGeometry.length > 1) ? route.routeGeometry : null;
+      if (official) {
+        setRoadSnappedBusPath(official);
       } else {
-        setRoadSnappedBusPath(null);
+        const stops = [route.startStop, ...(route.legs?.[0]?.stops || []), route.endStop].filter(Boolean);
+        if (stops.length > 1) {
+          fetchRoadSnappedBusPath(stops)
+            .then(snapped => setRoadSnappedBusPath(snapped))
+            .catch(() => setRoadSnappedBusPath(null));
+        } else {
+          setRoadSnappedBusPath(null);
+        }
       }
       setRoadSnappedBusPath1(null);
       setRoadSnappedBusPath2(null);
     } else {
       setRoadSnappedBusPath(null);
+      const official1 = (route.routeGeometry1 && route.routeGeometry1.length > 1) ? route.routeGeometry1 : null;
+      const official2 = (route.routeGeometry2 && route.routeGeometry2.length > 1) ? route.routeGeometry2 : null;
       const stops1 = [route.startStop, ...(route.legs?.[0]?.stops || []), route.transferStop].filter(Boolean);
       const stops2 = [route.transferStop, ...(route.legs?.[1]?.stops || []), route.endStop].filter(Boolean);
-      const source1 = (route.routeGeometry1 && route.routeGeometry1.length > 1) ? route.routeGeometry1 : stops1;
-      const source2 = (route.routeGeometry2 && route.routeGeometry2.length > 1) ? route.routeGeometry2 : stops2;
-      if (source1.length > 1) {
-        fetchRoadSnappedBusPath(source1)
+      if (official1) {
+        setRoadSnappedBusPath1(official1);
+      } else if (stops1.length > 1) {
+        fetchRoadSnappedBusPath(stops1)
           .then(snapped => setRoadSnappedBusPath1(snapped))
           .catch(() => setRoadSnappedBusPath1(null));
       } else {
         setRoadSnappedBusPath1(null);
       }
-      if (source2.length > 1) {
-        fetchRoadSnappedBusPath(source2)
+      if (official2) {
+        setRoadSnappedBusPath2(official2);
+      } else if (stops2.length > 1) {
+        fetchRoadSnappedBusPath(stops2)
           .then(snapped => setRoadSnappedBusPath2(snapped))
           .catch(() => setRoadSnappedBusPath2(null));
       } else {
