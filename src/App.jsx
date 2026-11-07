@@ -5,6 +5,8 @@ import {
   Bookmark,
   ArrowRight,
   ChevronDown,
+  Crosshair,
+  Navigation,
   Menu,
   MapPin
 } from 'lucide-react';
@@ -42,7 +44,7 @@ export default function App() {
 
   // Live Location & GPS
   // Live Location & GPS
-  const { liveLocation, setLiveLocation, isFollowing, setIsFollowing, attachCompass } = useLiveLocation();
+  const { liveLocation, setLiveLocation, isFollowing, setIsFollowing, isWatching, startWatching, stopWatching, attachCompass } = useLiveLocation();
 
   // Routing State
   const [searchResults, setSearchResults] = useState(null);
@@ -354,6 +356,32 @@ export default function App() {
     setMapSelectionMode(target);
   };
 
+  // Canlı konum + yön takip düğmesi (Menü'nün yanındaki konum işareti)
+  const handleToggleLiveTrack = useCallback(async () => {
+    if (isWatching) {
+      stopWatching();
+      showToast('Konum ve yön takibi kapatıldı.');
+      return;
+    }
+
+    startWatching();
+    showToast('Konum ve yön takibi açıldı. Telefonunuzu dik tutun.', 'success', 4000);
+
+    // Başlangıç konumu boşsa mevcut konumu kalkış olarak kullan.
+    try {
+      const coords = await getCurrentCoords();
+      const place = { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+      if (!fromLocation?.lat || !fromLocation?.lon) {
+        setFromLocation(place);
+        if (toLocation?.lat && toLocation?.lon) {
+          await calculateRoute(place, toLocation);
+        }
+      }
+    } catch {
+      // Canlı izleme zaten çalışıyor; tek seferlik konum alınamazsa sessiz geç.
+    }
+  }, [isWatching, startWatching, stopWatching, getCurrentCoords, fromLocation, toLocation, calculateRoute, showToast]);
+
   // Line Explorer selection
   const handleSelectLineOnMap = (lineData, dirIdx = 0) => {
     setSearchResults(null);
@@ -552,17 +580,28 @@ export default function App() {
         />
       )}
 
-      {/* 6. Minimal home menu */}
+      {/* 6. Minimal home menu: konum takibi + menü */}
       {!searchResults && !mapSelectionMode && (
-        <button
-          className="home-menu-btn"
-          onClick={() => setHomeMenuOpen(true)}
-          aria-label="Menüyü aç"
-          title="Menü"
-        >
-          <Menu size={17} />
-          <span>Menü</span>
-        </button>
+        <div className="home-bottom-actions">
+          <button
+            className={`home-locate-btn ${isWatching ? 'is-active' : ''}`}
+            onClick={handleToggleLiveTrack}
+            aria-label={isWatching ? 'Konum takibini kapat' : 'Konumu ve yönümü takip et'}
+            title={isWatching ? 'Konum takibini kapat' : 'Konumu ve yönümü takip et'}
+          >
+            {isWatching ? <Navigation size={16} /> : <Crosshair size={17} />}
+            {isWatching && <span className="home-locate-dot" />}
+          </button>
+          <button
+            className="home-menu-btn"
+            onClick={() => setHomeMenuOpen(true)}
+            aria-label="Menüyü aç"
+            title="Menü"
+          >
+            <Menu size={17} />
+            <span>Menü</span>
+          </button>
+        </div>
       )}
 
       {/* 7. Search Modal */}

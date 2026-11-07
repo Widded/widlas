@@ -412,19 +412,23 @@ const MapArea = React.memo(function MapArea({
   // User live location icon
   const userLiveIcon = useMemo(() => {
     if (!liveLocation) return null;
-    const rotateStyle = liveLocation.heading !== null && !isNaN(liveLocation.heading) ? `transform: rotate(${liveLocation.heading}deg);` : '';
+    const hasHeading = typeof liveLocation.heading === 'number' && !isNaN(liveLocation.heading);
+    const rotateStyle = hasHeading ? `transform: rotate(${liveLocation.heading}deg);` : '';
+    const headingParts = hasHeading
+      ? '<div class="user-puck-cone"></div><div class="user-puck-arrow"></div>'
+      : '';
     return L.divIcon({
       className: '',
       html: `
         <div class="user-puck-container">
           <div class="user-puck-pulse"></div>
           <div class="user-puck-dot" style="${rotateStyle}">
-            ${liveLocation.heading !== null && !isNaN(liveLocation.heading) ? '<div class="user-puck-arrow"></div>' : ''}
+            ${headingParts}
           </div>
         </div>
       `,
-      iconSize: [26, 26],
-      iconAnchor: [13, 13]
+      iconSize: [48, 48],
+      iconAnchor: [24, 24]
     });
   }, [liveLocation]);
 
