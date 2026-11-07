@@ -42,6 +42,7 @@ export default function SearchModal({
   onSelectLocation,
   onUseMyLocation,
   onSelectFromMap,
+  onSwapLocations,
   userLocation
 }) {
   const [activeTab, setActiveTab] = useState(targetType);
@@ -195,6 +196,13 @@ export default function SearchModal({
     setFromQuery(toQuery);
     setToQuery(tempF);
     setActiveTab((prev) => (prev === 'from' ? 'to' : 'from'));
+
+    // Sadece metni değil, gerçek kalkış/varış noktalarını da değiştir.
+    // Aksi halde rota ters çevrilmiş gibi görünür ama aynı durak/koordinatlar kullanılır.
+    if (onSwapLocations && fromLocation?.lat && fromLocation?.lon && toLocation?.lat && toLocation?.lon) {
+      onClose();
+      onSwapLocations();
+    }
   };
 
   const handleSelectPlace = (place) => {

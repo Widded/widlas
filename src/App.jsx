@@ -386,6 +386,21 @@ export default function App() {
     setMapSelectionMode(target);
   };
 
+  // Kalkış ve varışı gerçek koordinatlarıyla değiştirip rotayı yeniden hesapla.
+  const handleSwapLocations = useCallback(async () => {
+    if (!fromLocation?.lat || !fromLocation?.lon || !toLocation?.lat || !toLocation?.lon) return;
+
+    const nextFrom = { ...toLocation };
+    const nextTo = { ...fromLocation };
+
+    setFromLocation(nextFrom);
+    setToLocation(nextTo);
+    setSearchResults(null);
+    setSelectedRouteIdx(0);
+
+    await calculateRoute(nextFrom, nextTo);
+  }, [fromLocation, toLocation, calculateRoute]);
+
   // Canlı konum + yön takip düğmesi (Menü'nün yanındaki konum işareti)
   const handleToggleLiveTrack = useCallback(async () => {
     if (isWatching) {
@@ -628,6 +643,7 @@ export default function App() {
         onSelectLocation={handleSelectLocation}
         onUseMyLocation={handleUseMyLocation}
         onSelectFromMap={handleSelectFromMap}
+        onSwapLocations={handleSwapLocations}
       />
 
       {/* 8. Lines Explorer Modal */}
