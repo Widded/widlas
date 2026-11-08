@@ -27,6 +27,7 @@ const fmtDistance = (m) => (m >= 1000 ? `${(m / 1000).toFixed(1)} km` : `${Math.
 
 const SPEED_M_PER_MIN = 280;
 const LAYOVER_MIN = 6;
+const TURNAROUND_MIN = 5;
 
 const buildPathMetrics = (path) => {
   if (!Array.isArray(path) || path.length < 2) return null;
@@ -169,6 +170,14 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
       const stopCount = Math.max(1, (dirData?.stopIds?.length || 2) - 1);
       const avgStopSpacing = metrics ? metrics.total / stopCount : 350;
 
+      const dirStopIds = dirData?.stopIds || [];
+      const stopIdx = dirStopIds.findIndex((sid) =>
+        sid === target.stop.id ||
+        normalizeName(allStopsDB[sid]?.name) === normalizeName(target.stop.name)
+      );
+      const isOrigin = stopIdx === 0;
+      const isTerminus = stopIdx >= 0 && stopIdx === dirStopIds.length - 1;
+
       const buses = [];
       const projected = [];
       busList.forEach((b) => {
@@ -206,7 +215,9 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         buses,
         busesOnRoute: busList.length,
         pathMinutes: metrics ? metrics.total / SPEED_M_PER_MIN : null,
-        lastPassedMinAgo
+        lastPassedMinAgo,
+        isOrigin,
+        isTerminus
       };
     };
 
@@ -227,18 +238,47 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         : null;
 
       const directions = rawDirections.map((d) => {
-        if (d.buses.length || !fleetHeadway) return { ...d, estimate: null, headway: null };
+        if (d.buses.length) {
+          return { ...d, estimate: null, headway: null, estimateReason: null };
+        }
+
+        const opposite = rawDirections.find((x) => x.dirIdx !== d.dirIdx);
+
+        // Terminaldeyiz: karşı yönden terminale yaklaşan otobüs, bu yönde
+        // kısa bir beklemeden sonra geri dönecek.
+        if (d.isOrigin && opposite?.buses?.length) {
+          const arriving = Math.min(...opposite.buses.map((b) => b.eta));
+          return {
+            ...d,
+            estimate: Math.max(1, Math.round(arriving + TURNAROUND_MIN)),
+            headway: null,
+            estimateReason: 'terminal'
+          };
+        }
+
+        if (!fleetHeadway) {
+          return { ...d, estimate: null, headway: null, estimateReason: null };
+        }
+
+        // Çok seyrek/tek araçlı durumlarda "~60 dk" gibi güvenilmez
+        // tahminler göstermemek için üst sınırı aşanları gizle.
         const headway = Math.min(60, Math.max(8, fleetHeadway));
+        if (headway > 45) {
+          return { ...d, estimate: null, headway: Math.round(headway), estimateReason: null };
+        }
+
         // Son geçişten bu yana geçen süreyi sefer aralığına göre fazlandır.
         let estimate = Math.round(headway);
         if (d.lastPassedMinAgo != null) {
           const phase = d.lastPassedMinAgo % headway;
           estimate = Math.max(1, Math.round(headway - phase));
         }
+
         return {
           ...d,
           headway: Math.round(headway),
-          estimate
+          estimate,
+          estimateReason: 'headway'
         };
       });
 
@@ -524,11 +564,17 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
                     <div className="bus-live-bus-meta">
                       <span>Canlı araç görünmüyor</span>
                       <span className="bus-live-dot-sep" />
-                      <span>Sefer aralığına göre tahmin</span>
+                      <span>
+                        {activeResult?.estimateReason === 'terminal'
+                          ? 'Terminal dönüşü tahmini'
+                          : 'Sefer aralığına göre tahmin'}
+                      </span>
                     </div>
 
                     <p className="bus-live-estimate-note">
-                      Tahmini süre; hattaki canlı araç sayısı ve güzergah uzunluğundan hesaplanır.
+                      {activeResult?.estimateReason === 'terminal'
+                        ? 'Karşı yönden gelen otobüsün terminale varıp geri dönmesi bekleniyor.'
+                        : 'Tahmini süre; hattaki canlı araç sayısı ve güzergah uzunluğundan hesaplanır.'}
                     </p>
                   </div>
                 ) : activeBuses.length === 0 ? (
