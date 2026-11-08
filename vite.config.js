@@ -4,6 +4,20 @@ import { defineConfig } from 'vite'
 
 const KK_ALLOWED_PATH = /^web\/[a-zA-Z0-9/_-]+$/
 
+// Yerelde /api/history çağrıları 404 yerine "depolama yok" dönsün.
+function historyDevStub() {
+  return {
+    name: 'history-dev-stub',
+    configureServer(server) {
+      server.middlewares.use('/api/history', (req, res) => {
+        res.statusCode = 200
+        res.setHeader('Content-Type', 'application/json')
+        res.end(JSON.stringify({ enabled: false, reason: 'storage-not-configured' }))
+      })
+    }
+  }
+}
+
 // Kentkart canlı API proxy'si (yerel geliştirme). Vercel'de api/kk.js devreye girer.
 function kentkartProxy() {
   return {
@@ -50,7 +64,7 @@ function kentkartProxy() {
 // "npm run dev:https" → HTTPS (telefondan konum izni için; kendinden imzalı sertifika)
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => ({
-  plugins: [react(), ...(mode === 'https-dev' ? [basicSsl()] : []), kentkartProxy()],
+  plugins: [react(), ...(mode === 'https-dev' ? [basicSsl()] : []), kentkartProxy(), historyDevStub()],
   server: {
     allowedHosts: true
   },

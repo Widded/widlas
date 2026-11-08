@@ -1,6 +1,8 @@
 // Kentkart resmi canlı veri servisi (Edirne).
 // Resmi siteyle aynı imza (WASM) kullanılır; CORS açık olduğu için tarayıcıdan çağrılır.
 
+import { recordLineSnapshot } from './history';
+
 const REGION = '013';
 const LANG = 'tr';
 const AUTH_TYPE = '4';
@@ -90,10 +92,31 @@ export const getNearestBus = async ({ stopId, lat, lng }) => {
     lng: String(lng),
     busStopId: stopId ? String(stopId) : ''
   });
+  const busList = json.busList || [];
+  const routeList = json.routeList || [];
+
+  // Durak ekranından da hat/yön bazlı geçmiş topla.
+  const byLine = new Map();
+  busList.forEach((bus) => {
+    const code = bus.displayRouteCode;
+    if (!code || bus.direction == null) return;
+    const key = `${code}_${bus.direction}`;
+    if (!byLine.has(key)) byLine.set(key, []);
+    byLine.get(key).push(bus);
+  });
+  byLine.forEach((buses, key) => {
+    const splitAt = key.lastIndexOf('_');
+    recordLineSnapshot({
+      code: key.slice(0, splitAt),
+      direction: key.slice(splitAt + 1),
+      buses
+    });
+  });
+
   return {
     stopInfo: json.stopInfo || null,
-    busList: json.busList || [],
-    routeList: json.routeList || []
+    busList,
+    routeList
   };
 };
 
@@ -105,5 +128,7 @@ export const getLineBuses = async ({ code, direction }) => {
     resultType: '010000'
   });
   const path = (json.pathList || [])[0] || {};
-  return path.busList || [];
+  const buses = path.busList || [];
+  recordLineSnapshot({ code, direction, buses });
+  return buses;
 };
