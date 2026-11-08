@@ -157,9 +157,38 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
 
       const routeList = json.routeList && json.routeList.length
         ? json.routeList
-        : fallbackRoutes(stop);
+        : [];
 
-      const rows = routeList.map((route) => {
+      // nearest/bus routeList'i eksik gelebiliyor (ör. durakta 7E çalışırken
+      // listede görünmüyor). Bu yüzden db'deki hatlar + routeList + canlı
+      // busList'in birleşimini kullan; hiçbir yaklaşan otobüs kaybolmasın.
+      const routeMap = new Map();
+      const addRoute = (route) => {
+        if (!route || !route.displayRouteCode) return;
+        const code = route.displayRouteCode;
+        const direction = String(route.direction ?? '0');
+        const key = `${code}_${direction}`;
+        const existing = routeMap.get(key);
+        if (!existing) {
+          routeMap.set(key, {
+            displayRouteCode: code,
+            direction,
+            headSign: route.headSign || ''
+          });
+        } else if (!existing.headSign && route.headSign) {
+          existing.headSign = route.headSign;
+        }
+      };
+
+      fallbackRoutes(stop).forEach(addRoute);
+      routeList.forEach(addRoute);
+      buses.forEach((bus) => addRoute({
+        displayRouteCode: bus.displayRouteCode,
+        direction: bus.direction,
+        headSign: bus.headSign || bus.displayName
+      }));
+
+      const rows = [...routeMap.values()].map((route) => {
         const code = route.displayRouteCode;
         const direction = String(route.direction);
         const bus = busMap.get(`${code}_${direction}`) || null;
@@ -290,7 +319,6 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
 
   const filteredStops = (() => {
     const q = normalize(stopQuery);
-    const seen = new Set();
     return stops
       .filter((stop) => !q || normalize(stop.name).includes(q) || normalize(stop.fullName).includes(q))
       .map((stop) => ({ stop, distance: distanceTo(position, stop) }))
@@ -299,12 +327,6 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
         if (a.distance != null) return -1;
         if (b.distance != null) return 1;
         return a.stop.name.localeCompare(b.stop.name, 'tr');
-      })
-      .filter(({ stop }) => {
-        const key = normalize(stop.name);
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
       });
   })();
 
@@ -370,7 +392,7 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
         >
           <span className="bus-live-stop-icon"><MapPin size={14} /></span>
           <span className="bus-live-stop-text">
-            <b>{currentStop?.name || 'Durak seç'}</b>
+            <b>{currentStop?.fullName || currentStop?.name || 'Durak seç'}</b>
             <small>
               {currentDistance != null
                 ? `Size ${fmtDistance(currentDistance)} uzaklıkta · durak değiştir`
@@ -506,7 +528,7 @@ export default function StopLiveModal({ isOpen, onClose, userLocation }) {
                   className={`bus-live-picker-row ${stopId === stop.id ? 'active' : ''}`}
                   onClick={() => handlePickStop(stop.id)}
                 >
-                  <span className="bus-live-picker-name">{stop.name}</span>
+                  <span className="bus-live-picker-name">{stop.fullName || stop.name}</span>
                   {distance != null && <small>{fmtDistance(distance)}</small>}
                 </button>
               ))}
