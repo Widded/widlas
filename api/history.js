@@ -18,9 +18,24 @@ const LINE_RE = /^[A-Za-z0-9]{1,12}$/;
 const DIRECTION_RE = /^[0-9]$/;
 
 const redisConfig = () => {
-  const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
-  const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
-  return url && token ? { url, token } : null;
+  const pairs = [
+    ['KV_REST_API_URL', 'KV_REST_API_TOKEN'],
+    ['UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN'],
+    ['STORAGE_REST_API_URL', 'STORAGE_REST_API_TOKEN'],
+    ['STORAGE_REDIS_REST_URL', 'STORAGE_REDIS_REST_TOKEN'],
+    ['STORAGE_KV_REST_API_URL', 'STORAGE_KV_REST_API_TOKEN'],
+    ['STORAGE_URL', 'STORAGE_TOKEN']
+  ];
+
+  for (const [urlKey, tokenKey] of pairs) {
+    const url = process.env[urlKey];
+    const token = process.env[tokenKey];
+    // Upstash REST uç noktası http(s) ile başlar; rediss:// bağlantı
+    // URL'sini REST istemcisi olarak kullanmayız.
+    if (url && token && /^https?:\/\//.test(url)) return { url, token };
+  }
+
+  return null;
 };
 
 const pipeline = async (config, commands) => {

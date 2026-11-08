@@ -24,7 +24,9 @@ Vercel panelinde:
 2. Projeye bağla.
 3. Aşağıdaki ortam değişkenlerinden biri otomatik gelir:
    - `KV_REST_API_URL` + `KV_REST_API_TOKEN`
-   - veya `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+   - `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`
+   - `STORAGE_REST_API_URL` + `STORAGE_REST_API_TOKEN`
+   - veya `STORAGE_URL` + `STORAGE_TOKEN` (URL http(s) ise)
 4. Yeniden deploy et.
 
 ## API
