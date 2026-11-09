@@ -511,3 +511,42 @@
   background: var(--line-color);
   opacity: 0.85;
 }
+
+/* Desktop / large screens */
+@media (min-width: 900px) {
+  .lines-modal-sheet {
+    max-width: 1040px;
+    height: 88vh;
+    max-height: 880px;
+  }
+
+  .lines-header {
+    padding: 6px 26px 12px;
+  }
+
+  .lines-filters {
+    padding-left: 26px;
+    padding-right: 26px;
+  }
+
+  .lines-scroll-list {
+    padding: 8px 26px 26px;
+    gap: 10px;
+  }
+
+  .lines-card-header {
+    padding: 14px 16px;
+  }
+
+  .lines-card-body {
+    padding: 16px 18px 18px;
+  }
+
+  .lines-card-title {
+    font-size: 14.5px;
+  }
+
+  .lines-stop-name {
+    font-size: 12.5px;
+  }
+}

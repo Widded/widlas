@@ -2497,3 +2497,156 @@ html, body {
   from { opacity: 0; transform: translate(-50%, 10px); }
   to { opacity: 1; transform: translate(-50%, 0); }
 }
+
+/* ==========================================================================
+   DESKTOP / LARGE SCREEN
+   ========================================================================== */
+@media (min-width: 900px) {
+  .floating-top-container {
+    justify-content: center;
+    left: 24px;
+    right: 24px;
+  }
+
+  .explore-header-wrapper {
+    max-width: 680px;
+    width: 100%;
+  }
+
+  .home-route-stack {
+    gap: 8px;
+  }
+
+  .home-input-pill {
+    height: 58px;
+    border-radius: 18px;
+    padding: 0 18px 0 18px;
+  }
+
+  .home-input-text {
+    font-size: 15.5px;
+  }
+
+  .route-header-wrapper {
+    max-width: 840px;
+    width: 100%;
+  }
+
+  .route-active-pill-bar {
+    height: 54px;
+    padding: 5px 7px;
+  }
+
+  .route-pill-chip {
+    height: 42px;
+    padding: 0 14px;
+  }
+
+  .route-chip-text {
+    font-size: 13.5px;
+  }
+
+  .home-bottom-actions {
+    bottom: max(26px, env(safe-area-inset-bottom, 26px));
+  }
+
+  .home-locate-btn,
+  .home-menu-btn {
+    height: 44px;
+  }
+
+  .home-menu-btn {
+    padding: 0 18px;
+    font-size: 12.5px;
+  }
+
+  .floating-line-preview-banner {
+    max-width: 620px;
+  }
+
+  /* Home menu becomes a centered, two-column dialog */
+  .home-menu-backdrop {
+    align-items: center;
+  }
+
+  .home-menu-sheet {
+    max-width: 780px;
+    border-radius: 24px;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 24px 24px;
+  }
+
+  .home-menu-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .home-menu-item {
+    padding: 15px 14px;
+  }
+
+  /* Bigger search dialog */
+  .search-modal-sheet {
+    max-width: 920px;
+    min-height: 600px;
+    max-height: 84vh;
+  }
+
+  .search-modal-header {
+    padding: 2px 24px 14px;
+  }
+
+  .search-inputs-stack {
+    margin: 0 24px;
+  }
+
+  .search-results-container {
+    padding: 16px 24px 24px;
+  }
+
+  .search-results-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    align-content: start;
+  }
+
+  .search-quick-picks {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  /* Route results use a wider sheet and two-column cards */
+  .route-sheet-container {
+    max-width: 980px;
+    height: 58dvh;
+    max-height: 680px;
+    border-top-left-radius: 26px;
+    border-top-right-radius: 26px;
+  }
+
+  .route-sheet-header {
+    padding: 10px 26px 14px;
+  }
+
+  .route-cards-scroll-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+    gap: 12px;
+    padding: 14px 26px 28px;
+  }
+
+  .route-card-item:has(.route-itinerary-box) {
+    grid-column: 1 / -1;
+  }
+
+  .route-card-item {
+    padding: 16px 18px;
+  }
+
+  .route-sheet-main-title {
+    font-size: 18px;
+  }
+}
+
