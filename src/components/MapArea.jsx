@@ -347,9 +347,12 @@ function MapAutoFitter({
           const bounds = L.latLngBounds(validCoords);
           if (bounds.isValid()) {
             const isMobile = window.innerWidth < 768;
-            // Rota paneli açıkken haritanın görünen üst kısmına sığdır.
+            // Masaüstünde detaylar sağ panelde açıldığı için harita zaten
+            // panel kadar daralıyor; alt boşluk bırakmaya gerek yok.
+            const isDesktopSplit = window.innerWidth >= 900 && !routeSheetMinimized;
+            // Mobil/masaüstü alt sayfasında haritanın görünen üst kısmına sığdır.
             // Panel yüksekliği CSS'te 64dvh (max 720px) olduğu için aynı değeri kullan.
-            const bottomPad = activeRoute && !routeSheetMinimized
+            const bottomPad = activeRoute && !routeSheetMinimized && !isDesktopSplit
               ? Math.min(Math.round(window.innerHeight * 0.64), 720)
               : (isMobile ? 110 : 80);
             map.fitBounds(bounds, {
@@ -433,6 +436,33 @@ function MapInteractionHandler({ onMapClick, setIsFollowing }) {
       if (setIsFollowing) setIsFollowing(false);
     }
   });
+  return null;
+}
+
+// Subcomponent: keep Leaflet in sync when the map container changes size
+// (desktop split view: map shrinks when the route panel opens).
+function MapResizeObserver() {
+  const map = useMap();
+
+  useEffect(() => {
+    const container = map.getContainer();
+    if (!container || typeof ResizeObserver === 'undefined') return undefined;
+
+    let frame = null;
+    const observer = new ResizeObserver(() => {
+      if (frame) cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        map.invalidateSize({ animate: false });
+      });
+    });
+
+    observer.observe(container);
+    return () => {
+      observer.disconnect();
+      if (frame) cancelAnimationFrame(frame);
+    };
+  }, [map]);
+
   return null;
 }
 
@@ -584,6 +614,7 @@ const MapArea = React.memo(function MapArea({
 
         <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
         <MapInteractionHandler onMapClick={onMapClick} setIsFollowing={setIsFollowing} />
+        <MapResizeObserver />
         <MapAutoFitter
           activeRoute={activeRoute}
           activeLineData={activeLineData}

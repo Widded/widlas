@@ -446,9 +446,13 @@ export default function App() {
 
   const activeRoute = searchResults?.[selectedRouteIdx] || null;
 
+  // Desktop: route details open as a right panel, map stays on the left.
+  const routePanelOpen =
+    Array.isArray(searchResults) && searchResults.length > 0 && !routeSheetMinimized;
+
   // Homepage: closest stops to the user (or city center as fallback)
   return (
-    <div className="mobile-web-app">
+    <div className={`mobile-web-app${routePanelOpen ? ' has-route-panel' : ''}`}>
       {/* 1. Full-Screen Fixed Leaflet Background Map */}
       <MapArea
         fromLocation={fromLocation}
