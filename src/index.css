@@ -1535,6 +1535,12 @@ html, body {
   color: #fca5a5;
 }
 
+/* Masaüstünde arama ekranı 4 kolonluk hızlı seçim kullanıyor; paylaşımda
+   2 seçenek olduğu için satırın yarısı boş kalıyordu. Eşit iki kolon. */
+.share-modal-sheet .search-quick-picks {
+  grid-template-columns: 1fr 1fr;
+}
+
 .search-modal-close-btn {
   width: 32px;
   height: 32px;
