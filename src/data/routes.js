@@ -109,6 +109,24 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
     return seg;
   };
 
+  // Rota çizgisinin uçlarını gerçek biniş/iniş/aktarma durağına oturt.
+  // Platform karşılıkları iz üzerinde ±20 m kayabildiği için çizgi durağa değmiyordu.
+  const withStopEndpoints = (geometry, fromStop, toStop) => {
+    const out = (geometry || []).map((p) => [p[0], p[1]]);
+    const from = fromStop?.lat && fromStop?.lon ? [fromStop.lat, fromStop.lon] : null;
+    const to = toStop?.lat && toStop?.lon ? [toStop.lat, toStop.lon] : null;
+
+    if (from) {
+      const first = out[0];
+      if (!first || getDistance(from[0], from[1], first[0], first[1]) > 0.005) out.unshift(from);
+    }
+    if (to) {
+      const last = out[out.length - 1];
+      if (!last || getDistance(to[0], to[1], last[0], last[1]) > 0.005) out.push(to);
+    }
+    return out;
+  };
+
   // Detaylı tarif için durak nesnesi (koordinatı olmayan duraklar da isimle listelenir)
   const toStopObj = (id) => {
     const s = platformStops[id];
@@ -197,7 +215,7 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                 totalTime: Math.ceil(totalTime),
                 startStop: sStop,
                 endStop: eStop,
-                routeGeometry: geometryForStops(dir, bestIdxA, bestIdxB),
+                routeGeometry: withStopEndpoints(geometryForStops(dir, bestIdxA, bestIdxB), sStop, eStop),
                 walkDistanceStart: sStop.distanceKm,
                 walkDistanceEnd: eStop.distanceKm,
                 passedStops: passedStops,
@@ -355,8 +373,8 @@ export const calculateSmartRoute = async (fromLat, fromLon, toLat, toLon) => {
                         transferStop: actualTransferStop,
                         endStop: match.eStop,
                         routeGeometry: [], // fallback
-                        routeGeometry1: geometryForStops(dir1, idxA, tIdx),
-                        routeGeometry2: geometryForStops(dir2, idxT, match.idxB),
+                        routeGeometry1: withStopEndpoints(geometryForStops(dir1, idxA, tIdx), sStop, actualTransferStop),
+                        routeGeometry2: withStopEndpoints(geometryForStops(dir2, idxT, match.idxB), actualTransferStop, match.eStop),
                         walkDistanceStart: sStop.distanceKm,
                         walkDistanceEnd: match.walkEnd,
                         transferWalkDistance: transferWalkDist,
