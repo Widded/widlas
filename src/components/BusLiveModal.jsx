@@ -11,7 +11,8 @@ import {
 } from 'lucide-react';
 import { etusLines, allStopsDB } from '../data/db';
 import { getLineColor } from '../lib/lineColors';
-import { getLineBuses } from '../services/kentkart';
+import { getLineBuses, getNearestBus } from '../services/kentkart';
+import { mergeOfficialEta } from '../lib/liveEta';
 import './bus-live.css';
 
 const haversine = (lat1, lon1, lat2, lon2) => {
@@ -167,6 +168,18 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         : null;
 
       const busList = await getLineBuses({ code, direction: idx });
+      let nearestBuses = [];
+      try {
+        const near = await getNearestBus({
+          stopId: target.stop.id,
+          lat: target.stop.lat,
+          lng: target.stop.lon
+        });
+        nearestBuses = near.busList || [];
+      } catch {
+        // Resmi süre alınamazsa yerel projeksiyon kullanılır.
+      }
+      const mergedBuses = mergeOfficialEta(busList, nearestBuses, code, idx);
       const stopCount = Math.max(1, (dirData?.stopIds?.length || 2) - 1);
       const avgStopSpacing = metrics ? metrics.total / stopCount : 350;
 
@@ -180,7 +193,7 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
 
       const buses = [];
       const projected = [];
-      busList.forEach((b) => {
+      mergedBuses.forEach((b) => {
         const lat = Number(b.lat);
         const lon = Number(b.lng);
         if (!metrics || !stopProj || !Number.isFinite(lat) || !Number.isFinite(lon)) return;
@@ -189,14 +202,16 @@ export default function BusLiveModal({ isOpen, onClose, userLocation, initialLin
         const remaining = stopProj.along - busProj.along;
         projected.push({ remaining });
 
-        // otobüs durağa yaklaşıyorsa (çok yakınsa 1 dk)
+        // Resmi nearest/bus süresi varsa onu kullan; yoksa yerel projeksiyon.
         if (remaining > -120) {
+          const localEta = Math.max(1, Math.ceil(Math.max(60, remaining) / SPEED_M_PER_MIN));
+          const localStopsLeft = Math.max(1, Math.round(Math.max(0, remaining) / Math.max(120, avgStopSpacing)));
           buses.push({
             ...b,
             lat,
             lon,
-            eta: Math.max(1, Math.ceil(Math.max(60, remaining) / SPEED_M_PER_MIN)),
-            stopsLeft: Math.max(1, Math.round(Math.max(0, remaining) / Math.max(120, avgStopSpacing)))
+            eta: b.officialEta ?? localEta,
+            stopsLeft: b.officialStopsLeft ?? localStopsLeft
           });
         }
       });
