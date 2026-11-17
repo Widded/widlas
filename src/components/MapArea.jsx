@@ -291,7 +291,8 @@ function MapAutoFitter({
   roadSnappedBusPath1,
   roadSnappedBusPath2,
   routeSheetMinimized,
-  recenterTarget
+  recenterTarget,
+  walkFit
 }) {
   const map = useMap();
   const fitTimerRef = useRef(null);
@@ -301,6 +302,8 @@ function MapAutoFitter({
     // fitBounds çağırmak haritayı sürekli zıplatıyordu. Kısa debounce ile
     // tüm geometri oturduktan sonra tek seferde sığdırıyoruz.
     if (fitTimerRef.current) clearTimeout(fitTimerRef.current);
+    // Yürüyüş rehberi açıkken fit'i WalkFitter yapar; rota fit'i onu ezmesin.
+    if (walkFit) return undefined;
 
     fitTimerRef.current = setTimeout(() => {
       // 1. Recenter target if provided
@@ -408,6 +411,7 @@ function MapAutoFitter({
     roadSnappedBusPath,
     roadSnappedBusPath1,
     roadSnappedBusPath2,
+    walkFit,
     map
   ]);
 
@@ -466,6 +470,29 @@ function MapResizeObserver() {
   return null;
 }
 
+// Subcomponent: fit the map once to the walking user + target stop.
+function WalkFitter({ walkFit }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!walkFit?.from || !walkFit?.to) return;
+    const bounds = L.latLngBounds([
+      [walkFit.from.lat, walkFit.from.lon],
+      [walkFit.to.lat, walkFit.to.lon]
+    ]);
+    if (!bounds.isValid()) return;
+
+    map.fitBounds(bounds, {
+      paddingTopLeft: [50, 110],
+      paddingBottomRight: [50, 250],
+      maxZoom: 17,
+      animate: true
+    });
+  }, [walkFit, map]);
+
+  return null;
+}
+
 const MapArea = React.memo(function MapArea({
   mapCenter = [41.6771, 26.5557],
   mapZoom = 14,
@@ -485,6 +512,7 @@ const MapArea = React.memo(function MapArea({
   setIsFollowing,
   recenterTarget = null,
   routeSheetMinimized = false,
+  walkFit = null,
   onMapClick
 }) {
   const mapRef = useRef(null);
@@ -615,6 +643,7 @@ const MapArea = React.memo(function MapArea({
         <LiveLocationFollower liveLocation={liveLocation} isFollowing={isFollowing} />
         <MapInteractionHandler onMapClick={onMapClick} setIsFollowing={setIsFollowing} />
         <MapResizeObserver />
+        <WalkFitter walkFit={walkFit} />
         <MapAutoFitter
           activeRoute={activeRoute}
           activeLineData={activeLineData}
@@ -628,6 +657,7 @@ const MapArea = React.memo(function MapArea({
           roadSnappedBusPath2={roadSnappedBusPath2}
           routeSheetMinimized={routeSheetMinimized}
           recenterTarget={recenterTarget}
+          walkFit={walkFit}
         />
 
         {/* 1. User Live GPS Location */}
