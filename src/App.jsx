@@ -19,6 +19,7 @@ import SavedPlacesModal from './components/SavedPlacesModal';
 import HomeMenuModal from './components/HomeMenuModal';
 import BusLiveModal from './components/BusLiveModal';
 import StopLiveModal from './components/StopLiveModal';
+import ShareLocationModal from './components/ShareLocationModal';
 import WalkGuidance from './components/WalkGuidance';
 import { calculateSmartRoute } from './data/routes';
 import { savePlace } from './lib/savedPlaces';
@@ -41,6 +42,7 @@ export default function App() {
   const [faresModalOpen, setFaresModalOpen] = useState(false);
   const [savedModalOpen, setSavedModalOpen] = useState(false);
   const [homeMenuOpen, setHomeMenuOpen] = useState(false);
+  const [shareModalOpen, setShareModalOpen] = useState(false);
   const [busLiveOpen, setBusLiveOpen] = useState(false);
   const [stopLiveOpen, setStopLiveOpen] = useState(false);
 
@@ -58,7 +60,7 @@ export default function App() {
   const [loading, setLoading] = useState(false);
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
   const [routeSheetMinimized, setRouteSheetMinimized] = useState(false);
-  const [mapSelectionMode, setMapSelectionMode] = useState(null); // null | 'from' | 'to'
+  const [mapSelectionMode, setMapSelectionMode] = useState(null); // null | 'from' | 'to' | 'share'
 
   // Walk guidance to the selected route's boarding stop
   const [walkGuidance, setWalkGuidance] = useState(null);
@@ -279,7 +281,6 @@ export default function App() {
 
   // Menüden "Konum paylaş": seçilen varış noktasını link olarak gönder.
   // Linkte yalnızca hedef vardır; açan kişi kendi konumundan yola çıkar.
-  const sharePickRef = useRef(false);
   const sharedLinkOpenedRef = useRef(false);
 
   const shareDestination = useCallback(async (place) => {
@@ -309,13 +310,6 @@ export default function App() {
 
   // Handle selecting location from search modal
   const handleSelectLocation = async (place, target) => {
-    // Paylaşım için hedef seçildiyse rota hesaplama, sadece link üret.
-    if (sharePickRef.current) {
-      sharePickRef.current = false;
-      await shareDestination(place);
-      return;
-    }
-
     const resolved = (!place?.lat || !place?.lon) && liveLocation?.lat
       ? { ...place, lat: liveLocation.lat, lon: liveLocation.lon }
       : place;
@@ -464,6 +458,11 @@ export default function App() {
     const placeName = await reverseGeocodeCoord(lat, lon);
     const picked = { name: placeName, lat, lon };
 
+    if (target === 'share') {
+      await shareDestination(picked);
+      return;
+    }
+
     if (target === 'from') {
       setFromLocation(picked);
       showToast(`Kalkış noktası seçildi: ${placeName}`);
@@ -584,7 +583,9 @@ export default function App() {
           <span>
             {mapSelectionMode === 'from'
               ? 'Haritada kalkış noktasını seç'
-              : 'Haritada varış noktasını seç'}
+              : mapSelectionMode === 'share'
+                ? 'Haritada paylaşılacak hedefi seç'
+                : 'Haritada varış noktasını seç'}
           </span>
           <button onClick={() => setMapSelectionMode(null)}>İptal</button>
         </div>
@@ -785,10 +786,7 @@ export default function App() {
       {/* 7. Search Modal */}
       <SearchModal
         isOpen={searchModalOpen}
-        onClose={() => {
-          setSearchModalOpen(false);
-          sharePickRef.current = false;
-        }}
+        onClose={() => setSearchModalOpen(false)}
         targetType={searchTargetType}
         fromLocation={fromLocation}
         toLocation={toLocation}
@@ -872,10 +870,28 @@ export default function App() {
         }}
         onShareLocation={() => {
           setHomeMenuOpen(false);
-          setSearchTargetType('to');
-          sharePickRef.current = true;
-          setSearchModalOpen(true);
+          setShareModalOpen(true);
         }}
+      />
+
+      {/* 11b. Konum paylaş */}
+      <ShareLocationModal
+        isOpen={shareModalOpen}
+        onClose={() => setShareModalOpen(false)}
+        onShare={shareDestination}
+        onLocate={async () => {
+          try {
+            const coords = await getCurrentCoords();
+            return { name: 'Mevcut Konumum', lat: coords.lat, lon: coords.lon };
+          } catch {
+            return null;
+          }
+        }}
+        onPickOnMap={() => {
+          setShareModalOpen(false);
+          setMapSelectionMode('share');
+        }}
+        userLocation={liveLocation}
       />
 
       {/* 12. Toast Notification */}
