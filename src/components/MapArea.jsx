@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup, Tooltip, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Popup, useMap, useMapEvents } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { allStopsDB } from '../data/db';
@@ -778,7 +778,6 @@ const MapArea = React.memo(function MapArea({
               icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}
               riseOnHover
             >
-              <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
               <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{idx + 1}</span></Popup>
             </Marker>
           );
@@ -881,7 +880,6 @@ const MapArea = React.memo(function MapArea({
                   icon={createIntermediateStopIcon(bearing, activeRoute.color || '#3B82F6')}
                   riseOnHover
                 >
-                  <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                   <Popup><b>{stop.name}</b></Popup>
                 </Marker>
               );
@@ -913,7 +911,6 @@ const MapArea = React.memo(function MapArea({
                   icon={createIntermediateStopIcon(bearing, activeRoute.color2 || '#F59E0B')}
                   riseOnHover
                 >
-                  <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                   <Popup><b>{stop.name}</b></Popup>
                 </Marker>
               );
@@ -998,7 +995,6 @@ const MapArea = React.memo(function MapArea({
                     icon={createIntermediateStopIcon(bearing, lineColor)}
                     riseOnHover
                   >
-                    <Tooltip className="route-tooltip" direction="top" offset={[0, -10]} opacity={0.95}>{stop.name}</Tooltip>
                     <Popup><b>{stop.name}</b><br /><span style={{ color: '#94a3b8' }}>Durak #{i + 1}</span></Popup>
                   </Marker>
                 );
