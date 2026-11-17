@@ -1,54 +1,8 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import {
-  Repeat,
-  Footprints,
-  Bus,
-  ChevronDown,
-  ChevronUp,
-  Maximize2,
-  RefreshCw,
-  ArrowRight,
-  MapPin,
-  CheckCircle2,
-  Navigation
-} from 'lucide-react';
-
-const fmtDuration = (totalMinutes) => {
-  if (!totalMinutes) return '0 dk';
-  const m = Math.round(totalMinutes);
-  if (m >= 60) {
-    const hours = Math.floor(m / 60);
-    const rem = m % 60;
-    return rem > 0 ? `${hours} sa ${rem} dk` : `${hours} sa`;
-  }
-  return `${m} dk`;
-};
-
-const fmtDist = (route) => {
-  if (!route) return '';
-  const km = route.totalDistanceKm || (route.isWalkOnly ? (route.walkDistanceStart || 1.2) : (route.busTimeMins || 10) * 0.38) || 3.5;
-  return `${Number(km).toFixed(1).replace('.', ',')} km`;
-};
-
-const walkDistanceKm = (route, side) => {
-  const value = Number(side === 'start' ? route?.walkDistanceStart : route?.walkDistanceEnd);
-  return Number.isFinite(value) && value > 0 ? value : 0;
-};
-
-const walkMinutes = (route, side) => {
-  const value = Number(side === 'start' ? route?.walkStartMins : route?.walkEndMins);
-  if (Number.isFinite(value) && value > 0) return Math.round(value);
-  const legacy = Number(side === 'start' ? route?.walkTimeStart : route?.walkTimeEnd);
-  return Number.isFinite(legacy) && legacy > 0 ? Math.round(legacy) : 0;
-};
-
-const fmtWalkKm = (km) => {
-  const meters = Number(km) * 1000;
-  if (!Number.isFinite(meters) || meters <= 0) return '';
-  return meters >= 1000
-    ? `${(meters / 1000).toFixed(1).replace('.', ',')} km`
-    : `${Math.round(meters)} m`;
-};
+import { Bus, Footprints, ChevronDown, Maximize2, RefreshCw } from 'lucide-react';
+import RouteOptionCard from './RouteOptionCard';
+import { fmtDuration, fmtDist } from '../lib/routeDisplay';
+import './RouteResultSheet.css';
 
 export default function RouteResultSheet({
   routes: incomingRoutes = [],
@@ -67,7 +21,6 @@ export default function RouteResultSheet({
   }, [incomingRoutes]);
 
   const [isMinimized, setIsMinimized] = useState(false);
-  const [expandedRouteId, setExpandedRouteId] = useState(null);
 
   const setMinimized = useCallback((value) => {
     setIsMinimized(value);
@@ -88,13 +41,11 @@ export default function RouteResultSheet({
     setMinimized(false);
   }, [routes, forceMinimized, setMinimized]);
 
-  // Preserve original indices for selection
   const indexedRoutes = useMemo(() => {
     if (!routes || !Array.isArray(routes)) return [];
     return routes.map((r, idx) => ({ ...r, _originalIdx: idx }));
   }, [routes]);
 
-  // En hızlıdan yavaşa sırala, ilk 6 alternatifi göster
   const sortedRoutes = useMemo(
     () => [...indexedRoutes]
       .sort((a, b) => (a.totalTime || 0) - (b.totalTime || 0))
@@ -104,7 +55,6 @@ export default function RouteResultSheet({
 
   const currentRoute = routes[selectedIdx] || routes[0];
 
-  // 1. EMPTY STATE
   if (!routes || routes.length === 0) {
     return (
       <div className="route-sheet-container is-empty">
@@ -130,7 +80,6 @@ export default function RouteResultSheet({
     );
   }
 
-  // 2. MINIMIZED FLOATING CAPSULE VIEW (For inspecting the map freely)
   if (isMinimized) {
     return (
       <div className="route-minimized-wrapper">
@@ -166,25 +115,19 @@ export default function RouteResultSheet({
     );
   }
 
-  // 3. FULL "TÜM ROTALAR" LIST SHEET
   return (
     <div className="route-sheet-container">
-      {/* Top Grabber Handle */}
       <div className="route-sheet-grabber-box" onClick={() => setMinimized(true)}>
         <div className="route-sheet-grabber-bar" />
       </div>
 
-      {/* Header */}
-      <div className="route-sheet-header">
-        <div className="route-sheet-title-col">
-          <div className="route-sheet-title-row">
-            <span className="route-sheet-main-title">Rotalar</span>
-            <span className="route-sheet-count-tag">{sortedRoutes.length} seçenek</span>
-          </div>
+      <div className="rs-header">
+        <div className="rs-title-wrap">
+          <span className="rs-title">Rotalar</span>
+          <span className="rs-count">{sortedRoutes.length} seçenek</span>
         </div>
-
         <button
-          className="route-sheet-minimize-btn"
+          className="rs-minimize"
           onClick={() => setMinimized(true)}
           title="Haritayı Gör"
           aria-label="Haritayı Gör"
@@ -193,274 +136,18 @@ export default function RouteResultSheet({
         </button>
       </div>
 
-      {/* Route Cards Scrollable List */}
-      <div className="route-cards-scroll-list">
-        {sortedRoutes.map((route) => {
-          const isSelected = route._originalIdx === selectedIdx;
-          const isExpanded = expandedRouteId === route.id;
-          const startWalkKm = walkDistanceKm(route, 'start');
-          const endWalkKm = walkDistanceKm(route, 'end');
-          const startWalkMin = walkMinutes(route, 'start');
-          const endWalkMin = walkMinutes(route, 'end');
-
-          return (
-            <div
-              key={`rcard_${route.id}`}
-              className={`route-card-item ${isSelected ? 'selected' : ''}`}
-              onClick={() => onSelectIdx(route._originalIdx)}
-            >
-              {/* Card Header Row */}
-              <div className="route-card-header">
-                {/* Transit Breadcrumbs */}
-                <div className="route-card-breadcrumbs">
-                  {route.isWalkOnly ? (
-                    <div className="route-crumb-badge walk-crumb">
-                      <Footprints size={14} />
-                      <span>{fmtDuration(route.totalTime)} Yürüyüş</span>
-                    </div>
-                  ) : (
-                    <>
-                      {walkDistanceKm(route, 'start') > 0 && (
-                        <>
-                          <div className="route-crumb-badge walk-crumb">
-                            <Footprints size={12} />
-                            <span>{fmtWalkKm(walkDistanceKm(route, 'start'))}</span>
-                          </div>
-                          <ArrowRight size={13} className="text-dim" />
-                        </>
-                      )}
-
-                      {route.isTransfer ? (
-                        <>
-                          <div
-                            className="route-crumb-badge bus-crumb"
-                            style={{ backgroundColor: route.color || '#3B82F6' }}
-                          >
-                            <Bus size={13} />
-                            <span>{route.line1 || route.legs?.[0]?.line || 'Hat'}</span>
-                          </div>
-
-                          {Number(route.transferWalkDistance) > 0 && (
-                            <>
-                              <ArrowRight size={13} className="text-dim" />
-                              <div className="route-crumb-badge walk-crumb">
-                                <Footprints size={12} />
-                                <span>{fmtWalkKm(route.transferWalkDistance)}</span>
-                              </div>
-                            </>
-                          )}
-
-                          <ArrowRight size={13} className="text-dim" />
-                          <div
-                            className="route-crumb-badge bus-crumb"
-                            style={{ backgroundColor: route.color2 || '#F59E0B' }}
-                          >
-                            <Bus size={13} />
-                            <span>{route.line2 || route.legs?.[1]?.line || 'Hat'}</span>
-                          </div>
-                        </>
-                      ) : (
-                        <div
-                          className="route-crumb-badge bus-crumb"
-                          style={{ backgroundColor: route.color || '#3B82F6' }}
-                        >
-                          <Bus size={13} />
-                          <span>{route.name || route.lineCode || route.legs?.[0]?.line || 'Hat'}</span>
-                        </div>
-                      )}
-
-                      {walkDistanceKm(route, 'end') > 0 && (
-                        <>
-                          <ArrowRight size={13} className="text-dim" />
-                          <div className="route-crumb-badge walk-crumb">
-                            <Footprints size={12} />
-                            <span>{fmtWalkKm(walkDistanceKm(route, 'end'))}</span>
-                          </div>
-                        </>
-                      )}
-                    </>
-                  )}
-                </div>
-
-                {/* Duration & Fare Badges */}
-                <div className="route-card-stats">
-                  <span className="route-stat-time">{fmtDuration(route.totalTime)}</span>
-                </div>
-              </div>
-
-              {/* Subtitle Info Row */}
-              <div className="route-card-sub-row">
-                <span className="route-card-sub-info">
-                  {route.isWalkOnly
-                    ? `${fmtDist(route)} yürüme mesafesi`
-                    : route.isTransfer
-                      ? `1 Aktarma · ${route.startStop?.name || 'Durak'} üzerinden`
-                      : `Aktarmasız Doğrudan · ${route.startStop?.name || 'Durak'} biniş`}
-                </span>
-
-                <button
-                  className="route-card-expand-toggle"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setExpandedRouteId(prev => (prev === route.id ? null : route.id));
-                  }}
-                >
-                  <span>{isExpanded ? 'Gizle' : 'Adımlar'}</span>
-                  {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-                </button>
-              </div>
-
-              {!route.isWalkOnly && (startWalkKm > 0 || endWalkKm > 0) && (
-                <div className="route-walk-summary">
-                  {startWalkKm > 0 && (
-                    <span className="route-walk-chip">
-                      <Footprints size={12} />
-                      Binişe <b>{fmtWalkKm(startWalkKm)}</b>
-                      {startWalkMin > 0 && <small>({startWalkMin} dk)</small>}
-                    </span>
-                  )}
-                  {endWalkKm > 0 && (
-                    <span className="route-walk-chip">
-                      <Footprints size={12} />
-                      İnişten sonra <b>{fmtWalkKm(endWalkKm)}</b>
-                      {endWalkMin > 0 && <small>({endWalkMin} dk)</small>}
-                    </span>
-                  )}
-                </div>
-              )}
-
-              {isSelected && !route.isWalkOnly && (
-                <button
-                  type="button"
-                  className="route-walk-go-btn"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onStartWalk?.(route);
-                  }}
-                >
-                  <Navigation size={14} />
-                  Durağa Git
-                </button>
-              )}
-
-              {/* Detailed Step-by-Step Itinerary (Accordion) */}
-              {isExpanded && (
-                <div className="route-itinerary-box" onClick={(e) => e.stopPropagation()}>
-                  <div className="itinerary-timeline">
-                    {/* Step 1: Walk to Start Stop */}
-                    {(startWalkKm > 0 || startWalkMin > 0) && (
-                      <div className="itinerary-step">
-                        <div className="itinerary-node walk-node">
-                          <Footprints size={13} />
-                        </div>
-                        <div className="itinerary-content">
-                          <span className="itinerary-step-title">
-                            {route.startStop?.name || 'Biniş Durağı'} durağına yürü
-                          </span>
-                          <span className="itinerary-step-meta">
-                            {startWalkMin > 0 ? `~${startWalkMin} dk` : 'Yürüme'}
-                            {startWalkKm > 0 ? ` (${fmtWalkKm(startWalkKm)})` : ''}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 2: Board First Bus */}
-                    {!route.isWalkOnly && (
-                      <div className="itinerary-step">
-                        <div className="itinerary-node bus-node" style={{ backgroundColor: route.color || '#3B82F6' }}>
-                          <Bus size={13} />
-                        </div>
-                        <div className="itinerary-content">
-                          <span className="itinerary-step-title">
-                            <b>{route.isTransfer ? route.line1 : (route.name || route.lineCode)}</b> hattına bin
-                          </span>
-                          <span className="itinerary-step-meta">
-                            {route.startStop?.name} durağından biniş
-                            {(route.directStops?.length || route.legs?.[0]?.stops?.length || route.passedStops?.length)
-                              ? ` · ${(route.directStops?.length || route.legs?.[0]?.stops?.length || route.passedStops?.length)} durak`
-                              : ''}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 3: Transfer (If applicable) */}
-                    {route.isTransfer && (
-                      <>
-                        <div className="itinerary-step">
-                          <div className="itinerary-node transfer-node">
-                            <Repeat size={13} />
-                          </div>
-                          <div className="itinerary-content">
-                            <span className="itinerary-step-title">
-                              <b>{route.transferStop?.name}</b> durağında aktarma yap
-                            </span>
-                            <span className="itinerary-step-meta">
-                              <b>{route.line2}</b> hattına geçiş yapın
-                              {Number(route.transferWalkDistance) > 0
-                                ? ` · ${fmtWalkKm(route.transferWalkDistance)} yürüme`
-                                : ''}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="itinerary-step">
-                          <div className="itinerary-node bus-node" style={{ backgroundColor: route.color2 || '#F59E0B' }}>
-                            <Bus size={13} />
-                          </div>
-                          <div className="itinerary-content">
-                            <span className="itinerary-step-title">
-                              <b>{route.line2}</b> hattı ile seyahat et
-                            </span>
-                            <span className="itinerary-step-meta">
-                              {route.endStop?.name} durağında inin
-                              {route.legs?.[1]?.stops?.length ? ` · ${route.legs[1].stops.length} durak` : ''}
-                            </span>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* Step 4: Alight & Final Walk */}
-                    {!route.isWalkOnly && (
-                      <div className="itinerary-step">
-                        <div className="itinerary-node alight-node">
-                          <CheckCircle2 size={13} />
-                        </div>
-                        <div className="itinerary-content">
-                          <span className="itinerary-step-title">
-                            {route.endStop?.name} durağında in
-                          </span>
-                          <span className="itinerary-step-meta">
-                            {endWalkKm > 0
-                              ? `Hedefe yürüme: ${fmtWalkKm(endWalkKm)}${endWalkMin > 0 ? ` (~${endWalkMin} dk)` : ''}`
-                              : 'İndiğiniz durak hedefe yakın'}
-                          </span>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Step 5: Arrive */}
-                    <div className="itinerary-step">
-                      <div className="itinerary-node dest-node">
-                        <MapPin size={13} />
-                      </div>
-                      <div className="itinerary-content">
-                        <span className="itinerary-step-title">
-                          Varış: {toLocation?.name || 'Hedef'}
-                        </span>
-                        <span className="itinerary-step-meta">
-                          Toplam Süre: {fmtDuration(route.totalTime)}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+      <div className="rs-list">
+        {sortedRoutes.map((route, idx) => (
+          <RouteOptionCard
+            key={`rcard_${route.id}`}
+            route={route}
+            isSelected={route._originalIdx === selectedIdx}
+            isFirst={idx === 0}
+            toLocation={toLocation}
+            onSelect={() => onSelectIdx?.(route._originalIdx)}
+            onStartWalk={onStartWalk}
+          />
+        ))}
       </div>
     </div>
   );
