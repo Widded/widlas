@@ -160,9 +160,23 @@ export default function App() {
     }
   }, [liveLocation]);
 
+  const clearWalkGuidance = useCallback(() => {
+    setWalkGuidance(null);
+    setWalkFit(null);
+    setIsFollowing(false);
+    if (guidanceWatchStartedRef.current) {
+      guidanceWatchStartedRef.current = false;
+      stopWatching();
+    }
+  }, [setIsFollowing, stopWatching]);
+
+  const handleExitWalk = clearWalkGuidance;
+
   // Main Route Calculation
   const calculateRoute = useCallback(async (from, to) => {
     if (!to || !to.lat || !to.lon) return;
+
+    clearWalkGuidance();
 
     let fromLat = from?.lat;
     let fromLon = from?.lon;
@@ -202,7 +216,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [liveLocation, showToast, updateRouteGeometry]);
+  }, [liveLocation, showToast, updateRouteGeometry, clearWalkGuidance]);
 
   // Browser geolocation (tek seferlik)
   const getCurrentCoords = useCallback(() => new Promise((resolve, reject) => {
@@ -365,18 +379,6 @@ export default function App() {
     });
   }, [walkGuidance, walkFit, liveLocation?.lat, liveLocation?.lon]);
 
-  const clearWalkGuidance = useCallback(() => {
-    setWalkGuidance(null);
-    setWalkFit(null);
-    setIsFollowing(false);
-    if (guidanceWatchStartedRef.current) {
-      guidanceWatchStartedRef.current = false;
-      stopWatching();
-    }
-  }, [setIsFollowing, stopWatching]);
-
-  const handleExitWalk = clearWalkGuidance;
-
   // Clear active route & return to explore
   const handleClearRoute = () => {
     clearWalkGuidance();
@@ -483,6 +485,7 @@ export default function App() {
 
   // Line Explorer selection
   const handleSelectLineOnMap = (lineData, dirIdx = 0) => {
+    clearWalkGuidance();
     setSearchResults(null);
     setSelectedRouteIdx(0);
     setToLocation({ name: '', lat: null, lon: null });

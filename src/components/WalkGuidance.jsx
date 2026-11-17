@@ -55,14 +55,16 @@ export default function WalkGuidance({
             {dest && <span className="walk-guidance-dest">{dest} yönü</span>}
           </div>
           <div className="walk-guidance-stop">{stop.fullName || stop.name}</div>
-          <div className="walk-guidance-meta">
+          <div className="walk-guidance-meta" role="status" aria-live="polite">
             {arrived
               ? 'Duraktasın'
-              : distance != null
-                ? `${fmtDistance(distance)} · ${minutes} dk`
-                : isWatching
-                  ? 'Konum alınıyor…'
-                  : 'Konum alınamadı. İzinleri kontrol et.'}
+              : !isWatching && distance != null
+                ? 'Konum bekleniyor…'
+                : distance != null
+                  ? `${fmtDistance(distance)} · ${minutes} dk`
+                  : isWatching
+                    ? 'Konum alınıyor…'
+                    : 'Konum alınamadı. İzinleri kontrol et.'}
           </div>
         </div>
 

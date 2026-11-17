@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Repeat,
   Footprints,
@@ -69,10 +69,10 @@ export default function RouteResultSheet({
   const [isMinimized, setIsMinimized] = useState(false);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
 
-  const setMinimized = (value) => {
+  const setMinimized = useCallback((value) => {
     setIsMinimized(value);
     if (onMinimizedChange) onMinimizedChange(value);
-  };
+  }, [onMinimizedChange]);
 
   useEffect(() => {
     if (!forceMinimized) return;
@@ -80,6 +80,13 @@ export default function RouteResultSheet({
     setIsMinimized(true);
     if (onMinimizedChange) onMinimizedChange(true);
   }, [forceMinimized, onMinimizedChange]);
+
+  useEffect(() => {
+    if (forceMinimized) return;
+    // Yeni rota sonuçları geldiğinde tam listeyi göster.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setMinimized(false);
+  }, [routes, forceMinimized, setMinimized]);
 
   // Preserve original indices for selection
   const indexedRoutes = useMemo(() => {
