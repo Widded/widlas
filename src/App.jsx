@@ -22,6 +22,7 @@ import StopLiveModal from './components/StopLiveModal';
 import WalkGuidance from './components/WalkGuidance';
 import { calculateSmartRoute } from './data/routes';
 import { savePlace } from './lib/savedPlaces';
+import { buildShareUrl, parseShareTarget } from './lib/shareLink';
 import { getLineColor } from './lib/lineColors';
 import {
   fetchWalkingPath,
@@ -276,8 +277,45 @@ export default function App() {
     }
   }, [fromLocation, liveLocation, getCurrentCoords, showToast]);
 
+  // Menüden "Konum paylaş": seçilen varış noktasını link olarak gönder.
+  // Linkte yalnızca hedef vardır; açan kişi kendi konumundan yola çıkar.
+  const sharePickRef = useRef(false);
+  const sharedLinkOpenedRef = useRef(false);
+
+  const shareDestination = useCallback(async (place) => {
+    if (!place?.lat || !place?.lon) {
+      showToast('Paylaşmak için bir varış noktası seçin.', 'warning');
+      return;
+    }
+
+    const url = buildShareUrl(place, `${window.location.origin}${window.location.pathname}`);
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: 'ETUS Rehberi',
+          text: `${place.name || 'Konum'} — buradan bana gel:`,
+          url
+        });
+      } else {
+        await navigator.clipboard.writeText(url);
+        showToast('Bağlantı kopyalandı. Gönderebilirsin.', 'success', 4000);
+      }
+    } catch (error) {
+      if (error?.name === 'AbortError') return;
+      showToast('Paylaşım açılamadı. Bağlantıyı kopyalayıp gönder.', 'warning');
+    }
+  }, [showToast]);
+
   // Handle selecting location from search modal
   const handleSelectLocation = async (place, target) => {
+    // Paylaşım için hedef seçildiyse rota hesaplama, sadece link üret.
+    if (sharePickRef.current) {
+      sharePickRef.current = false;
+      await shareDestination(place);
+      return;
+    }
+
     const resolved = (!place?.lat || !place?.lon) && liveLocation?.lat
       ? { ...place, lat: liveLocation.lat, lon: liveLocation.lon }
       : place;
@@ -314,6 +352,17 @@ export default function App() {
   useEffect(() => {
     handleSelectPlaceRef.current = handleSelectLocation;
   });
+
+  // Paylaşılan linki açan kişi: hedef hazır gelir, kalkış kendi konumu olur.
+  // StrictMode'da iki kez tetiklenmemesi için tek seferlik koruma.
+  useEffect(() => {
+    if (sharedLinkOpenedRef.current) return;
+    sharedLinkOpenedRef.current = true;
+
+    const target = parseShareTarget(window.location.search);
+    if (target) handleSelectPlaceRef.current?.(target, 'to');
+  }, []);
+
   const handleUseMyLocation = useCallback(async (target) => {
     try {
       const coords = await getCurrentCoords();
@@ -736,7 +785,10 @@ export default function App() {
       {/* 7. Search Modal */}
       <SearchModal
         isOpen={searchModalOpen}
-        onClose={() => setSearchModalOpen(false)}
+        onClose={() => {
+          setSearchModalOpen(false);
+          sharePickRef.current = false;
+        }}
         targetType={searchTargetType}
         fromLocation={fromLocation}
         toLocation={toLocation}
@@ -817,6 +869,12 @@ export default function App() {
         onOpenSaved={() => {
           setHomeMenuOpen(false);
           setSavedModalOpen(true);
+        }}
+        onShareLocation={() => {
+          setHomeMenuOpen(false);
+          setSearchTargetType('to');
+          sharePickRef.current = true;
+          setSearchModalOpen(true);
         }}
       />
 
