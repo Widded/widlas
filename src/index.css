@@ -1164,6 +1164,37 @@ html, body {
   font-weight: 600;
 }
 
+.route-walk-go-btn {
+  margin-top: 10px;
+  width: 100%;
+  min-height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.12);
+  color: var(--sky);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.route-walk-go-btn:hover {
+  background: rgba(56, 189, 248, 0.2);
+  border-color: rgba(56, 189, 248, 0.55);
+}
+
+.route-sheet-layer {
+  display: contents;
+}
+
+.route-sheet-layer.is-walk-hidden {
+  display: none;
+}
+
 .route-card-expand-toggle {
   background: transparent;
   border: none;
