@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Repeat,
   Footprints,
@@ -9,7 +9,8 @@ import {
   RefreshCw,
   ArrowRight,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  Navigation
 } from 'lucide-react';
 
 const fmtDuration = (totalMinutes) => {
@@ -55,7 +56,9 @@ export default function RouteResultSheet({
   onSelectIdx,
   toLocation,
   onMinimizedChange,
-  onClose
+  onClose,
+  onStartWalk,
+  forceMinimized = false
 }) {
   const routes = useMemo(() => {
     if (Array.isArray(incomingRoutes)) return incomingRoutes;
@@ -66,10 +69,24 @@ export default function RouteResultSheet({
   const [isMinimized, setIsMinimized] = useState(false);
   const [expandedRouteId, setExpandedRouteId] = useState(null);
 
-  const setMinimized = (value) => {
+  const setMinimized = useCallback((value) => {
     setIsMinimized(value);
     if (onMinimizedChange) onMinimizedChange(value);
-  };
+  }, [onMinimizedChange]);
+
+  useEffect(() => {
+    if (!forceMinimized) return;
+    // oxlint-disable-next-line react/set-state-in-effect
+    setIsMinimized(true);
+    if (onMinimizedChange) onMinimizedChange(true);
+  }, [forceMinimized, onMinimizedChange]);
+
+  useEffect(() => {
+    if (forceMinimized) return;
+    // Yeni rota sonuçları geldiğinde tam listeyi göster.
+    // oxlint-disable-next-line react/set-state-in-effect
+    setMinimized(false);
+  }, [routes, forceMinimized, setMinimized]);
 
   // Preserve original indices for selection
   const indexedRoutes = useMemo(() => {
@@ -310,6 +327,20 @@ export default function RouteResultSheet({
                     </span>
                   )}
                 </div>
+              )}
+
+              {isSelected && !route.isWalkOnly && (
+                <button
+                  type="button"
+                  className="route-walk-go-btn"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onStartWalk?.(route);
+                  }}
+                >
+                  <Navigation size={14} />
+                  Durağa Git
+                </button>
               )}
 
               {/* Detailed Step-by-Step Itinerary (Accordion) */}

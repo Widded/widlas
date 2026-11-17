@@ -1,0 +1,126 @@
+.walk-guidance-wrapper {
+  position: fixed;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, calc(100% - 32px));
+  z-index: 1150;
+  pointer-events: none;
+}
+
+.walk-guidance {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 18px;
+  background: rgba(17, 21, 27, 0.96);
+  border: 1px solid var(--border-color);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+.walk-guidance-arrow {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(56, 189, 248, 0.16);
+  color: var(--sky);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
+}
+
+.walk-guidance-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.walk-guidance-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.walk-guidance-badge {
+  height: 22px;
+  padding: 0 8px;
+  border-radius: 7px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.walk-guidance-dest {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.walk-guidance-stop {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-main);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.walk-guidance-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.walk-guidance.is-arrived {
+  border-color: #10b981;
+}
+
+.walk-guidance.is-arrived .walk-guidance-arrow {
+  background: rgba(16, 185, 129, 0.18);
+  color: #10b981;
+}
+
+.walk-guidance.is-arrived .walk-guidance-meta {
+  color: #10b981;
+  font-weight: 700;
+}
+
+.walk-guidance-exit {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s ease;
+}
+
+.walk-guidance-exit:hover {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.12);
+}
+
+@media (min-width: 900px) {
+  .walk-guidance-wrapper {
+    bottom: 26px;
+    width: 420px;
+  }
+}

@@ -19,6 +19,7 @@ import SavedPlacesModal from './components/SavedPlacesModal';
 import HomeMenuModal from './components/HomeMenuModal';
 import BusLiveModal from './components/BusLiveModal';
 import StopLiveModal from './components/StopLiveModal';
+import WalkGuidance from './components/WalkGuidance';
 import { calculateSmartRoute } from './data/routes';
 import { savePlace } from './lib/savedPlaces';
 import { getLineColor } from './lib/lineColors';
@@ -57,6 +58,11 @@ export default function App() {
   const [fareType, setFareType] = useState('ogrenci'); // 'ogrenci' | 'tam'
   const [routeSheetMinimized, setRouteSheetMinimized] = useState(false);
   const [mapSelectionMode, setMapSelectionMode] = useState(null); // null | 'from' | 'to'
+
+  // Walk guidance to the selected route's boarding stop
+  const [walkGuidance, setWalkGuidance] = useState(null);
+  const [walkFit, setWalkFit] = useState(null);
+  const guidanceWatchStartedRef = useRef(false);
 
   // Geometry: Walking & Bus Roads
   const [walkingPathStart, setWalkingPathStart] = useState([]);
@@ -154,9 +160,23 @@ export default function App() {
     }
   }, [liveLocation]);
 
+  const clearWalkGuidance = useCallback(() => {
+    setWalkGuidance(null);
+    setWalkFit(null);
+    setIsFollowing(false);
+    if (guidanceWatchStartedRef.current) {
+      guidanceWatchStartedRef.current = false;
+      stopWatching();
+    }
+  }, [setIsFollowing, stopWatching]);
+
+  const handleExitWalk = clearWalkGuidance;
+
   // Main Route Calculation
   const calculateRoute = useCallback(async (from, to) => {
     if (!to || !to.lat || !to.lon) return;
+
+    clearWalkGuidance();
 
     let fromLat = from?.lat;
     let fromLon = from?.lon;
@@ -196,7 +216,7 @@ export default function App() {
     } finally {
       setLoading(false);
     }
-  }, [liveLocation, showToast, updateRouteGeometry]);
+  }, [liveLocation, showToast, updateRouteGeometry, clearWalkGuidance]);
 
   // Browser geolocation (tek seferlik)
   const getCurrentCoords = useCallback(() => new Promise((resolve, reject) => {
@@ -325,8 +345,43 @@ export default function App() {
     }
   }, [getCurrentCoords, toLocation, calculateRoute, showToast]);
 
+  const handleStartWalk = useCallback((route) => {
+    const stop = route?.startStop;
+    if (!stop?.lat || !stop?.lon) return;
+
+    guidanceWatchStartedRef.current = !isWatching;
+    if (!isWatching) startWatching();
+
+    setWalkGuidance({
+      stop,
+      lineCode: route.legs?.[0]?.line || route.line1 || route.name || '',
+      lineColor: route.color || '#3B82F6',
+      headSign: route.legs?.[0]?.headSign || route.description || ''
+    });
+    setRouteSheetMinimized(true);
+    setIsFollowing(true);
+
+    if (liveLocation?.lat && liveLocation?.lon) {
+      setWalkFit({
+        from: { lat: liveLocation.lat, lon: liveLocation.lon },
+        to: { lat: stop.lat, lon: stop.lon }
+      });
+    }
+  }, [isWatching, liveLocation, setIsFollowing, startWatching]);
+
+  useEffect(() => {
+    if (!walkGuidance || walkFit) return;
+    if (!liveLocation?.lat || !liveLocation?.lon) return;
+    // oxlint-disable-next-line react/set-state-in-effect
+    setWalkFit({
+      from: { lat: liveLocation.lat, lon: liveLocation.lon },
+      to: { lat: walkGuidance.stop.lat, lon: walkGuidance.stop.lon }
+    });
+  }, [walkGuidance, walkFit, liveLocation?.lat, liveLocation?.lon]);
+
   // Clear active route & return to explore
   const handleClearRoute = () => {
+    clearWalkGuidance();
     setSearchResults(null);
     setSelectedRouteIdx(0);
     setRouteSheetMinimized(false);
@@ -430,6 +485,7 @@ export default function App() {
 
   // Line Explorer selection
   const handleSelectLineOnMap = (lineData, dirIdx = 0) => {
+    clearWalkGuidance();
     setSearchResults(null);
     setSelectedRouteIdx(0);
     setToLocation({ name: '', lat: null, lon: null });
@@ -469,6 +525,7 @@ export default function App() {
         isFollowing={isFollowing}
         setIsFollowing={setIsFollowing}
         routeSheetMinimized={routeSheetMinimized}
+        walkFit={walkFit}
         onMapClick={handleMapClick}
       />
 
@@ -622,17 +679,33 @@ export default function App() {
 
       {/* 5. Bottom Route Result Sheet */}
       {searchResults && (
-        <RouteResultSheet
-          routes={searchResults}
-          selectedIdx={selectedRouteIdx}
-          onSelectIdx={(idx) => {
-            setSelectedRouteIdx(idx);
-            updateRouteGeometry(searchResults[idx], fromLocation, toLocation);
-          }}
-          toLocation={toLocation}
-          fromLocation={fromLocation}
-          onMinimizedChange={setRouteSheetMinimized}
-          onClose={handleClearRoute}
+        <div className={`route-sheet-layer${walkGuidance ? ' is-walk-hidden' : ''}`}>
+          <RouteResultSheet
+            routes={searchResults}
+            selectedIdx={selectedRouteIdx}
+            onSelectIdx={(idx) => {
+              setSelectedRouteIdx(idx);
+              updateRouteGeometry(searchResults[idx], fromLocation, toLocation);
+            }}
+            toLocation={toLocation}
+            fromLocation={fromLocation}
+            onMinimizedChange={setRouteSheetMinimized}
+            onClose={handleClearRoute}
+            onStartWalk={handleStartWalk}
+            forceMinimized={Boolean(walkGuidance)}
+          />
+        </div>
+      )}
+
+      {walkGuidance && (
+        <WalkGuidance
+          stop={walkGuidance.stop}
+          lineCode={walkGuidance.lineCode}
+          lineColor={walkGuidance.lineColor}
+          headSign={walkGuidance.headSign}
+          liveLocation={liveLocation}
+          isWatching={isWatching}
+          onExit={handleExitWalk}
         />
       )}
 
