@@ -341,7 +341,7 @@ html, body {
 .explore-header-wrapper {
   flex: 1;
   min-width: 0;
-  max-width: 680px;
+  max-width: 980px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -459,7 +459,7 @@ html, body {
 .route-header-wrapper {
   flex: 1;
   min-width: 0;
-  max-width: 520px;
+  max-width: 560px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -2575,8 +2575,8 @@ html, body {
 @media (min-width: 900px) {
   .floating-top-container {
     justify-content: center;
-    left: 24px;
-    right: 24px;
+    left: 16px;
+    right: 16px;
   }
 
   .explore-header-wrapper {
@@ -2727,7 +2727,7 @@ html, body {
      ROUTE DETAILS: MAP LEFT + DETAILS PANEL RIGHT
      ------------------------------------------------------------------ */
   .mobile-web-app.has-route-panel {
-    --route-panel-width: clamp(400px, 42vw, 540px);
+    --route-panel-width: clamp(400px, 36vw, 500px);
   }
 
   .mobile-web-app.has-route-panel .map-viewport-fixed {
@@ -2736,7 +2736,7 @@ html, body {
   }
 
   .mobile-web-app.has-route-panel .floating-top-container {
-    right: calc(var(--route-panel-width) + 24px);
+    right: calc(var(--route-panel-width) + 16px);
   }
 
   .mobile-web-app.has-route-panel .floating-loading-capsule {
