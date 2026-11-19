@@ -341,7 +341,7 @@ html, body {
 .explore-header-wrapper {
   flex: 1;
   min-width: 0;
-  max-width: 520px;
+  max-width: 680px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -2580,7 +2580,6 @@ html, body {
   }
 
   .explore-header-wrapper {
-    max-width: 680px;
     width: 100%;
   }
 
@@ -2596,11 +2595,6 @@ html, body {
 
   .home-input-text {
     font-size: 15.5px;
-  }
-
-  .route-header-wrapper {
-    max-width: 840px;
-    width: 100%;
   }
 
   .route-active-pill-bar {
@@ -2718,6 +2712,15 @@ html, body {
 
   .route-sheet-main-title {
     font-size: 18px;
+  }
+}
+
+/* 900–1023 arası sağ panel, üstteki arama kutusunu gereksiz daraltıyordu
+   (viewport büyürken kutu küçülüyordu). Split layout 1024+'da açılır. */
+@media (min-width: 1024px) {
+  .route-header-wrapper {
+    max-width: 840px;
+    width: 100%;
   }
 
   /* ------------------------------------------------------------------
